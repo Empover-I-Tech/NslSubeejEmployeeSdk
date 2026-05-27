@@ -1,0 +1,50 @@
+{
+    "statusCode": 200,
+    "message": "Success",
+    "response": {
+        "cropId": 1,
+        "stateId": 1,
+        "cropName": "Bajra",
+        "advantagesMaster": {
+            "advantageImages": [
+                "http://3.110.159.82:8080/subeejkisan/KnowledgeCentreImages/FABImages/1732193316787_NSL.jpg"
+            ],
+            "advantageVideoFile": [
+                "http://3.110.159.82:8080/subeejkisan/KnowledgeCentreImages/FABImages/1732193710265_5538137-hd_1920_1080_25fps.mp4"
+            ],
+            "advantagePdfFile": "http://3.110.159.82:8080/subeejkisan/KnowledgeCentreImages/FABImages/1732192763363_Missed_product_details.pptx",
+            "advantageVoiceFile": [],
+            "advantageMessage": "1. Testing SK\n1. Testing with data\n"
+        },
+        "description": " Hi testing for SK",
+        "hybridId": 3,
+        "version": 0,
+        "stateName": "Telangana",
+        "seasonId": 2,
+        "seasonName": "Rabi",
+        "id": "1",
+        "hybridName": "Hybrid",
+        "benefitsMaster": {
+            "benefitImages": [
+                "http://3.110.159.82:8080/subeejkisan/KnowledgeCentreImages/FABImages/1732193316787_NSL.jpg"
+            ],
+            "benefitVideoFile": [
+                "http://3.110.159.82:8080/subeejkisan/KnowledgeCentreImages/FABImages/1732193710265_5538137-hd_1920_1080_25fps.mp4"
+            ],
+            "benefitVoiceFile": [],
+            "benefitMessage": "1. Testing subeej Benefits\n1. Testing sample Benefits\n2. Testing subeej kisan Benefits1111\n2. Testing with sample Benefits2222\n",
+            "benefitPdfFile": "http://3.110.159.82:8080/subeejkisan/KnowledgeCentreImages/FABImages/1732192763363_Missed_product_details.pptx"
+        },
+        "featuresMaster": {
+            "featureImages": [
+                "http://3.110.159.82:8080/subeejkisan/KnowledgeCentreImages/FABImages/1732193316787_NSL.jpg"
+            ],
+            "featureMessage": "1. hi am testing\n1. hi am testing\n2. agian\n2. testing\n",
+            "featureVideoFile": [
+                "http://3.110.159.82:8080/subeejkisan/KnowledgeCentreImages/FABImages/1732193710265_5538137-hd_1920_1080_25fps.mp4"
+            ],
+            "featurePdfFile": "http://3.110.159.82:8080/subeejkisan/KnowledgeCentreImages/FABImages/1732192763363_Missed_product_details.pptx",
+            "featureVoiceFile": []
+        }
+    }
+}

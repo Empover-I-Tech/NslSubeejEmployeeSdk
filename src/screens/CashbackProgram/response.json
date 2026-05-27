@@ -1,0 +1,68 @@
+{
+  "cashFreeTransactionList": {
+    "programTitle": "Nuziveedu Reward Program ",
+    "totalClaimAmount": "50.00",
+    "claimRupeeTotal": "₹50.00",
+    "claimBtnVisible":true,
+    "claimBtnText":"Claim",
+    "reClaimList": [
+      {
+        "buttonText": "Re Claim",
+        "reClaimBtnVisible":true,
+        "amount": "₹20.00",
+        "totalReClaimAmount": "20.00",
+        "mobileNumber": "9704164746",
+        "beneId": "9704164746BENF344830",
+        "reClaim": "Yes",
+        "cashFreeTransactionId": 16430,
+        "transferId": "MAR20250310151915760",
+        "createdOn": "2025-03-10 15:19:15.76",
+        "transferMode": "upi",
+        "farmerRewardCashPaymentModeId": 16352,
+        "status": "FAILED"
+      }
+    ],
+    "successList": [
+      {
+        "buttonText": "",
+        "amount": "₹10.00",
+        "mobileNumber": "9704164746",
+        "beneId": "9704164746BENF344830",
+        "showView": false,
+        "cashFreeTransactionId": 16425,
+        "transferId": "MAR20250310144942236",
+        "createdOn": "2025-03-10 14:49:42.237",
+        "referenceId": "660706067",
+        "transferMode": "upi",
+        "farmerRewardCashPaymentModeId": 16347,
+        "status": "SUCCESS"
+      }
+    ],
+    "paymentOptions": [
+      "Bank Details",
+      "upi"
+    ],
+    "claimList": [
+      {
+        "buttonText": "Claim",
+        "amount": "₹30.00",
+        "reClaim": "No",
+        "serverRecordId": "21272",
+        "createdOn": "2025-03-10 14:50:44.007",
+        "productName": "VIVAYA (1ltr)",
+        "prodSerialNumber": "cv1Mku9jonN0qMca0yBoULyN",
+        "status": ""
+      },
+      {
+        "buttonText": "Claim",
+        "amount": "₹20.00",
+        "reClaim": "No",
+        "serverRecordId": "21273",
+        "createdOn": "2025-03-10 14:53:06.16",
+        "productName": "VIVAYA (1ltr)",
+        "prodSerialNumber": "cv1SllDPSILCEK1BscqMca0y",
+        "status": ""
+      }
+    ]
+  }
+}
