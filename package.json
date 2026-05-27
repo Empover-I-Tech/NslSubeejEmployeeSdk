@@ -2,7 +2,7 @@
   "name": "subeejnsl-sdk",
   "version": "1.0.0",
   "description": "SubeejKisan React Native SDK",
-  "main": "src/index.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
