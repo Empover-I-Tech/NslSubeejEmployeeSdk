@@ -42,16 +42,12 @@ import firestore from '@react-native-firebase/firestore';
 import SimpleToast from 'react-native-simple-toast';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import { setLocationActions } from '../../state/actions/locationActions';
-import { useRealm, useQuery } from '@realm/react';
 import { v4 as uuidv4 } from 'uuid';
 import RNFS from 'react-native-fs';
 
-import { useGeoTaggingCRUD } from '../realmOffline/useGeoTaggingCRUD';
+
 import useGetRequestWithJwt from '../../api/useGetRequestWithJwt';
 import { CASHBACK, CASHBACKSCAN, CASHBACKSCAN2, DOWNLOAD_FOLDER_PATH, FIELDACTIVITYQR, REWARDS, USERMENUCONTROL, compareVersions, processComplaintImages, retrieveData, storeData } from '../../assets/Utils/Utils';
-import { useOfflineSync } from '../../utils/syncUtils';
-import { useOfflineCalculatorsCRUD } from '../realmOffline/useOfflineCalculatorsCRUD';
-import { helpDeskRaiseCRUD } from '../realmOffline/helpDeskRaiseCRUD';
 import { useFontStyles } from '../../hooks/useFontStyles';
 import { setWeatherTitle } from '../../state/actions/weatherTitleActions';
 import { setMarketpriceData } from '../../state/actions/marketPricesList';
@@ -67,7 +63,6 @@ const playStore = 'https://play.google.com/store/apps/details?id=com.nsl.subeejk
 const appStoreLink = 'https://apps.apple.com/us/app/subeej/id6748138745'
 
 const defaultImage = require('../../../assets/Images/farmerIconImg.png');
-import { useRoute } from '@react-navigation/native';
 import { setCashBackSuccessGenuineModal } from '../../state/actions/cashBackSuccessGenuineModal';
 import { CustomCommonModal } from '../../components/CustomCommonModal';
 import PreLoginCustomLoader from '../../components/PreLoginCustomLoader';
@@ -80,22 +75,6 @@ const RETRY_ATTEMPTS = 2;
 const HomeScreenEmp = ({ route }) => {
   // const route = useRoute();
   const fonts = useFontStyles()
-  const { uploadOfflineGeoTagDataToServer, uploadOfflineHelpDesk, uploadOfflineSeedCalc, uploadOfflineYieldCalc, incrementOfflineCount, decrementOfflineCount, updateOfflineCount } = useOfflineSync();
-  const { saveSeedMasterList, saveYieldMasterList, saveSeedCalc, fertilizerMasterList, fertilizerMasterList2 } = useOfflineCalculatorsCRUD();
-
-  const {
-    getOfflineGeoTagCount
-  } = useGeoTaggingCRUD();
-
-  const {
-    getOfflineHelpDeskCount,
-  } = helpDeskRaiseCRUD();
-
-  const {
-    hasSeedCalc,
-    hasYieldCalc,
-    getSeedCalc
-  } = useOfflineCalculatorsCRUD();
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const currentTheme = useSelector(state => state.theme.theme);
@@ -137,26 +116,6 @@ const HomeScreenEmp = ({ route }) => {
   const [uploadTotalCount, setUploadTotalCount] = useState(0)
   const { fetchData } = useGetRequestWithJwt();
   const [langId, setLangId] = useState(null)
-  const realm = useRealm();
-
-  const cachedImages = useQuery('Image');
-  const cachedGeoTaggingHistory = useQuery('GEOTAGGINGHISTORY');
-  const cachedKnowledgeCenter = useQuery('KnowledgeCenter');
-  const cachedGoldClubKnowledgeCenter = useQuery('GoldCludKnowledgeCenter')
-  const cachedSamadhanHistory = useQuery('SAMADHANHISTORY');
-
-  const Meeting = useQuery('Meeting');
-  const GeoTaggingView = useQuery('GeoTaggingView');
-  const cachedHybridList = useQuery('hybridMaster');
-  const FABDetails = useQuery('FABDetails')
-  const helpDeskRaise = useQuery('helpDeskRaise')
-  const YieldMaster = useQuery('YieldMaster');
-  const SeedMaster = useQuery('SeedMaster');
-  const FertilizerMaster = useQuery('FertilizerMaster');
-  const FertilizerMaster2 = useQuery('FertilizerMaster2')
-  const SeedCalSubmit = useQuery('SeedCalSubmit')
-  const YieldCalSubmit = useQuery('YieldCalSubmit')
-  const goldClubKnowledgeCenter = useQuery('GoldCludKnowledgeCenter')
   const [marketPricesList, setMarketPricesList] = useState({})
   const [marketPriceFlatList, setMarketPriceList] = useState([])
   const [weatherTwo, setWeatherTwo] = useState("")
@@ -399,77 +358,6 @@ const HomeScreenEmp = ({ route }) => {
   const formattedDate = String(today.getDate()).padStart(2, '0') + '-' +
     String(today.getMonth() + 1).padStart(2, '0') + '-' +
     today.getFullYear();
-  const callApiofflineSynch = async (showLoader) => {
-    if (uploadTotalCount == 0 && showLoader) {
-      SimpleToast.show(translate('no_data_to_upload'))
-      return
-    }
-
-    if (isSyncInProgress.current) {
-      // Prevent multiple calls
-      console.log("Sync already in progress...");
-      return;
-    }
-    isSyncInProgress.current = true; // Set lock
-    try {
-
-      if (isConnected) {
-        setLoaderApi(showLoader);
-        const hassOfflineSeedCalc = hasSeedCalc();
-        const hassOfflineYieldCalc = hasYieldCalc();
-
-        if (hassOfflineSeedCalc) {
-          const seedCalUpdated = await uploadOfflineSeedCalc();
-          if (seedCalUpdated) {
-            updateOfflineCount()
-          }
-        }
-        if (hassOfflineYieldCalc) {
-          const yieldCalUpdated = await uploadOfflineYieldCalc();
-          if (yieldCalUpdated) {
-            updateOfflineCount()
-          }
-        }
-        if (getOfflineGeoTagCount() > 0) {
-          const result = await uploadOfflineGeoTagDataToServer();
-          if (result.success) {
-            updateOfflineCount()
-
-            // call here transactiontablemasters data
-            getSampleGeoTaggingHistory()
-          } else {
-            SimpleToast.show("Sync failed");
-          }
-        }
-        if (getOfflineHelpDeskCount() > 0) {
-          const result = await uploadOfflineHelpDesk();
-          if (result.success) {
-            updateOfflineCount()
-            fetchSamadhanHistory()
-          } else {
-            // SimpleToast.show("Sync failed");
-          }
-          // fetchKnowledgeCenterRefresh()
-        }
-      } else {
-        if (showLoader) {
-          SimpleToast.show(translate("please_check_connection"));
-        }
-
-      }
-    } catch (e) {
-      console.error("Sync error:", e);
-    } finally {
-      setTimeout(() => {
-        // setLoaderApi(false);
-        isSyncInProgress.current = false; // Release lock
-      }, 1000);
-    }
-
-    setTimeout(() => {
-      // setLoaderApi(false);
-    }, 1000);
-  }
 
   const farmerServiceHandle = () => {
     setFarmerServiceModalVisible(true)
@@ -503,7 +391,6 @@ const HomeScreenEmp = ({ route }) => {
   }, [offlineCount])
 
   useEffect(() => {
-    callApiofflineSynch(false)
     getUserMenuControl()
     getMenuController()
   }, [isConnected])
@@ -536,7 +423,7 @@ const HomeScreenEmp = ({ route }) => {
         }
       };
       getUserDetailsVersion11()
-      updateOfflineCount();
+     
       fetchUserData();
       checkForceUpdate();
       GetUserLocation();
@@ -549,11 +436,6 @@ const HomeScreenEmp = ({ route }) => {
       setFellowFarmerNameValidationContent('');
       setFellowFarmerMobileValidation(false);
       setFellowFarmerMobileValidationContent('');
-      fetchHybridsAndIssueTypesAndCrops()
-      fetchKnowledgeCenter()
-      goldClubFetchKnowledgeCenter()
-      fetchSamadhanHistory()
-      getSampleGeoTaggingHistory()
       fetchCurrentLocation()
       getMenuController()
       getUserMenuControl()
@@ -939,558 +821,7 @@ const HomeScreenEmp = ({ route }) => {
   }
 
 
-  const fetchHybridsAndIssueTypesAndCrops = async () => {
-    if (isConnected) {
-      try {
-        const headers = await GetApiHeaders();
-        headers.authType = "JSONREQUEST"
-        const payload = { companyCode: dynamicStyles.companyCode };
-        const url = APIConfig.BASE_URL + APIConfig.mastersgetHybridsDropdownList;
-        const response = await axios.post(url, payload, { headers });
-        if (response.data.statusCode === HTTP_OK) {
-          const parseData = response.data.response.hybridList
-          let hybridListId;
-          const maxAttempts = 3;
-          let attempts = 0;
-          while (attempts < maxAttempts) {
-            try {
-              hybridListId = uuidv4();
-              const existinghybridMaster = realm.objects('hybridMaster').filtered('_id == $0', hybridListId);
-              if (existinghybridMaster.length === 0) {
-                break;
-              }
-              console.warn(`UUID collision detected for ${hybridListId}, attempt ${attempts + 1}`);
-              attempts++;
-            } catch (uuidError) {
-              console.error('Error generating UUID for hybridMaster:', uuidError);
-              // setLoaderApi(false);
-              return;
-            }
-            if (attempts >= maxAttempts) {
-              console.error('Failed to generate unique UUID after', maxAttempts, 'attempts');
-              // setLoaderApi(false);
-              return;
-            }
-          }
-          try {
-            realm.write(() => {
-              realm.create('hybridMaster', {
-                _id: hybridListId,
-                hybridsList: JSON.stringify(parseData || []),
-                timestamp: new Date(),
-              });
-            });
-          } catch (realmError) {
-            console.error('Error creating hybridList object in Realm:', realmError);
-            // setLoaderApi(false);
-            return;
-          }
-        } else {
-          // setLoaderApi(false)
-          // setAlertModal(true)
-          // setAlertTextContent(translate("Unable_to_fetch_issue_details"))
-        }
-      } catch (error) {
-        // setLoaderApi(false)
-      }
-    }
-  };
-
-  const getSampleGeoTaggingHistory = async () => {
-    if (isConnected) {
-      try {
-        const url = APIConfig.BASE_URL + APIConfig.geoTagging_getScanHistory
-        const headers = await GetApiHeaders();
-        const response = await fetchData(url, headers);
-        if (response && response?.data) {
-          if (response?.data?.scanHistoryList) {
-            const uploadedGeotaggingData = await processSampleGeoTaggingData(response?.data?.scanHistoryList)
-            const imageUrls = new Set();
-            let scanMssgOffline
-            if (langId === "2") {
-              scanMssgOffline = response.data.scanTeluguMessage
-            } else if (langId === "3") {
-              scanMssgOffline = response.data.scanHindiMessage
-            } else if (langId === "1") {
-              scanMssgOffline = response.data.scanMessage
-            }
-            let geoTaggingHistoryId;
-            const maxAttempts = 3;
-            let attempts = 0;
-            while (attempts < maxAttempts) {
-              try {
-                geoTaggingHistoryId = uuidv4();
-                const existingDashboard = realm.objects('GEOTAGGINGHISTORY').filtered('_id == $0', geoTaggingHistoryId);
-                if (existingDashboard.length === 0) {
-                  break;
-                }
-                attempts++;
-              } catch (uuidError) {
-                return;
-              }
-              if (attempts >= maxAttempts) {
-                return;
-              }
-            }
-            if (uploadedGeotaggingData) {
-              try {
-                realm.write(() => {
-                  realm.delete(cachedGeoTaggingHistory);
-                  realm.create('GEOTAGGINGHISTORY', {
-                    _id: geoTaggingHistoryId,
-                    couponsHistoryList: JSON.stringify(uploadedGeotaggingData.updatedList || []),
-                    scanMssg: JSON.stringify(scanMssgOffline || ""),
-                    timestamp: new Date(),
-                  });
-                });
-              } catch (realmError) {
-                console.error('Error creating GEOTAGGINGHISTORY object in Realm:', realmError);
-                return;
-              }
-            }
-          } else {
-            console.log("API Error:", response.data.message);
-          }
-        } else {
-        }
-      } catch (error) {
-        console.error("Error fetching scan history:", error);
-      }
-    } else {
-      // setLoaderApi(false);
-    }
-
-  };
-
-  const ShowHistoryRefresh = async () => {
-
-    if (isConnected) {
-      try {
-        const url = APIConfig.BASE_URL + APIConfig.geoTagging_getScanHistory
-        const headers = await GetApiHeaders();
-        const response = await fetchData(url, headers);
-        if (response && response?.data) {
-          if (response?.data?.scanHistoryList) {
-            const uploadedGeotaggingData = await processSampleGeoTaggingData(response?.data?.scanHistoryList)
-            const imageUrls = new Set();
-            let scanMssgOffline
-            if (langId === "2") {
-              scanMssgOffline = response.data.scanTeluguMessage
-            } else if (langId === "3") {
-              scanMssgOffline = response.data.scanHindiMessage
-            } else if (langId === "1") {
-              scanMssgOffline = response.data.scanMessage
-            }
-            let geoTaggingHistoryId;
-            const maxAttempts = 3;
-            let attempts = 0;
-            while (attempts < maxAttempts) {
-              try {
-                geoTaggingHistoryId = uuidv4();
-                const existingDashboard = realm.objects('GEOTAGGINGHISTORY').filtered('_id == $0', geoTaggingHistoryId);
-                if (existingDashboard.length === 0) {
-                  break;
-                }
-                attempts++;
-              } catch (uuidError) {
-                return;
-              }
-              if (attempts >= maxAttempts) {
-                return;
-              }
-            }
-            if (uploadedGeotaggingData) {
-              try {
-                realm.write(() => {
-                  realm.delete(cachedGeoTaggingHistory);
-                  realm.create('GEOTAGGINGHISTORY', {
-                    _id: geoTaggingHistoryId,
-                    couponsHistoryList: JSON.stringify(uploadedGeotaggingData.updatedList || []),
-                    scanMssg: JSON.stringify(scanMssgOffline || ""),
-                    timestamp: new Date(),
-                  });
-                });
-                console.log('Successfully created GEOTAGGINGHISTORY with _id:', geoTaggingHistoryId);
-              } catch (realmError) {
-                console.error('Error creating GEOTAGGINGHISTORY object in Realm:', realmError);
-                return;
-              }
-            }
-          } else {
-            console.log("API Error:", response.data.message);
-          }
-        } else {
-        }
-      } catch (error) {
-        console.error("Error fetching scan history:", error);
-      }
-    } else {
-      // setLoaderApi(false);
-      // SimpleToast.show(translate('no_internet_conneccted'))
-
-    }
-
-  };
-
-  const fetchKnowledgeCenter = async () => {
-    if (cachedKnowledgeCenter && cachedKnowledgeCenter.length > 0) {
-      console.log("offlinecallknowledgeCenter-=0=->", cachedKnowledgeCenter)
-      return
-    }
-    else if (isConnected) {
-      try {
-        const headers = await GetApiHeaders();
-        headers.authType = "JSONREQUEST";
-        const payload = { companyCode: dynamicStyles.companyCode };
-        const url = APIConfig.BASE_URL + APIConfig.GETACTIVECROPS;
-        const response = await axios.post(url, payload, { headers });
-        if (response.data.statusCode === HTTP_OK) {
-          const parseData = response.data.response;
-          let knowledgeCenterId;
-          const maxAttempts = 3;
-          let attempts = 0;
-          while (attempts < maxAttempts) {
-            try {
-              knowledgeCenterId = uuidv4();
-              console.log('Generated knowledgeCenterId:', knowledgeCenterId);
-              const existingKnowledgeCenter = realm.objects('KnowledgeCenter').filtered('_id == $0', knowledgeCenterId);
-              if (existingKnowledgeCenter.length === 0) {
-                break;
-              }
-              console.warn(`UUID collision detected for ${knowledgeCenterId}, attempt ${attempts + 1}`);
-              attempts++;
-            } catch (uuidError) {
-              console.error('Error generating UUID for KnowledgeCenter:', uuidError);
-              // setLoaderApi(false);
-              return;
-            }
-            if (attempts >= maxAttempts) {
-              console.error('Failed to generate unique UUID after', maxAttempts, 'attempts');
-              // setLoaderApi(false);
-              return;
-            }
-          }
-          if (parseData) {
-            try {
-              realm.write(() => {
-                realm.delete(cachedKnowledgeCenter);
-                realm.create('KnowledgeCenter', {
-                  _id: knowledgeCenterId,
-                  cropsList: JSON.stringify(parseData),
-                  timestamp: new Date(),
-                });
-              });
-              console.log('Successfully created KnowledgeCenter with _id:', knowledgeCenterId);
-            } catch (realmError) {
-              console.error('Error creating KnowledgeCenter object in Realm:', realmError);
-            }
-          }
-
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        // setLoaderApi(false);
-      }
-    } else {
-      // setLoaderApi(false);
-    }
-  };
-
-  const goldClubFetchKnowledgeCenter = async () => {
-    if (cachedGoldClubKnowledgeCenter.length > 0) {
-      console.log("offlinecallknowledgeCenter-=0=->", cachedGoldClubKnowledgeCenter)
-      return
-    }
-    else if (isConnected) {
-      try {
-        const headers = await GetApiHeaders();
-        headers.authType = "JSONREQUEST";
-        const payload = { companyCode: dynamicStyles.companyCode };
-        const url = APIConfig.BASE_URL_NVM + APIConfig.masters_getAllActiveProductsForSubeejKisan;
-        const response = await axios.post(url, payload, { headers });
-        if (response.data.statusCode === HTTP_OK) {
-          const parseData = response.data.response;
-          console.log("siaLatChcek-=-=->", JSON.stringify(parseData))
-          const updatedKnowledgeCenter = await processMarketPriceData(parseData)
-          let goldClubknowledgeCenterId;
-          const maxAttempts = 3;
-          let attempts = 0;
-          while (attempts < maxAttempts) {
-            try {
-              goldClubknowledgeCenterId = uuidv4();
-              console.log('Generated goldClubknowledgeCenterId:', goldClubknowledgeCenterId);
-              const existingKnowledgeCenter = realm.objects('GoldCludKnowledgeCenter').filtered('_id == $0', goldClubknowledgeCenterId);
-              if (existingKnowledgeCenter.length === 0) {
-                break;
-              }
-              console.warn(`UUID collision detected for ${goldClubknowledgeCenterId}, attempt ${attempts + 1}`);
-              attempts++;
-            } catch (uuidError) {
-              console.error('Error generating UUID for goldClubknowledgeCenterId:', uuidError);
-              // setLoaderApi(false);
-              return;
-            }
-            if (attempts >= maxAttempts) {
-              console.error('Failed to generate unique UUID after', maxAttempts, 'attempts');
-              // setLoaderApi(false);
-              return;
-            }
-          }
-          if (updatedKnowledgeCenter) {
-            try {
-              realm.write(() => {
-                realm.delete(cachedGoldClubKnowledgeCenter);
-                realm.create('GoldCludKnowledgeCenter', {
-                  _id: goldClubknowledgeCenterId,
-                  cropsList: JSON.stringify(updatedKnowledgeCenter),
-                  timestamp: new Date(),
-                });
-              });
-              console.log('Successfully created goldclub with _id:', goldClubknowledgeCenterId);
-            } catch (realmError) {
-              console.error('Error creating KnowledgeCenter object in Realm:', realmError);
-            }
-          }
-
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        // setLoaderApi(false);
-      }
-    } else {
-      // setLoaderApi(false);
-    }
-  };
-
-  const fetchKnowledgeCenterRefresh = async () => {
-    if (isConnected) {
-      try {
-        const headers = await GetApiHeaders();
-        headers.authType = "JSONREQUEST";
-        const payload = { companyCode: dynamicStyles.companyCode };
-        const url = APIConfig.BASE_URL + APIConfig.GETACTIVECROPS;
-        const response = await axios.post(url, payload, { headers });
-        if (response.data.statusCode === HTTP_OK) {
-          const parseData = response.data.response;
-          console.log("checkingKnowledgeRefes=-=->", parseData)
-          let knowledgeCenterId;
-          const maxAttempts = 3;
-          let attempts = 0;
-          while (attempts < maxAttempts) {
-            try {
-              knowledgeCenterId = uuidv4();
-              console.log('Generated knowledgeCenterId:', knowledgeCenterId);
-              const existingKnowledgeCenter = realm.objects('KnowledgeCenter').filtered('_id == $0', knowledgeCenterId);
-              if (existingKnowledgeCenter.length === 0) {
-                break;
-              }
-              console.warn(`UUID collision detected for ${knowledgeCenterId}, attempt ${attempts + 1}`);
-              attempts++;
-            } catch (uuidError) {
-              console.error('Error generating UUID for KnowledgeCenter:', uuidError);
-              // setLoaderApi(false);
-              return;
-            }
-            if (attempts >= maxAttempts) {
-              console.error('Failed to generate unique UUID after', maxAttempts, 'attempts');
-              // setLoaderApi(false);
-              return;
-            }
-          }
-          if (parseData) {
-            try {
-              realm.write(() => {
-                realm.delete(cachedKnowledgeCenter);
-                realm.create('KnowledgeCenter', {
-                  _id: knowledgeCenterId,
-                  cropsList: JSON.stringify(parseData),
-                  timestamp: new Date(),
-                });
-              });
-              console.log('Successfully created KnowledgeCenter with _id:', knowledgeCenterId);
-            } catch (realmError) {
-              console.error('Error creating KnowledgeCenter object in Realm:', realmError);
-            }
-          }
-
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        // setLoaderApi(false);
-      }
-    }
-  };
-
-  const goldClubFetchKnowledgeCenterRefresh = async () => {
-    if (isConnected) {
-      try {
-        const headers = await GetApiHeaders();
-        headers.authType = "JSONREQUEST";
-        const payload = { companyCode: dynamicStyles.companyCode };
-        const url = APIConfig.BASE_URL_NVM + APIConfig.masters_getAllActiveProductsForSubeejKisan;
-        const response = await axios.post(url, payload, { headers });
-        console.log("two-=-=->", JSON.stringify(response.data))
-
-        if (response.data.statusCode === HTTP_OK) {
-          const parseData = response.data.response;
-          const updatedKnowledgeCenter = await processMarketPriceData(parseData)
-          let knowledgeCenterId;
-          const maxAttempts = 3;
-          let attempts = 0;
-          while (attempts < maxAttempts) {
-            try {
-              knowledgeCenterId = uuidv4();
-              console.log('Generated knowledgeCenterId:', knowledgeCenterId);
-              const existingKnowledgeCenter = realm.objects('KnowledgeCenter').filtered('_id == $0', knowledgeCenterId);
-              if (existingKnowledgeCenter.length === 0) {
-                break;
-              }
-              console.warn(`UUID collision detected for ${knowledgeCenterId}, attempt ${attempts + 1}`);
-              attempts++;
-            } catch (uuidError) {
-              console.error('Error generating UUID for KnowledgeCenter:', uuidError);
-              // setLoaderApi(false);
-              return;
-            }
-            if (attempts >= maxAttempts) {
-              console.error('Failed to generate unique UUID after', maxAttempts, 'attempts');
-              // setLoaderApi(false);
-              return;
-            }
-          }
-          if (updatedKnowledgeCenter) {
-            try {
-              realm.write(() => {
-                realm.delete(cachedGoldClubKnowledgeCenter);
-                realm.create('GoldCludKnowledgeCenter', {
-                  _id: knowledgeCenterId,
-                  cropsList: JSON.stringify(updatedKnowledgeCenter),
-                  timestamp: new Date(),
-                });
-              });
-              console.log('Successfully created goldclub with _id:', knowledgeCenterId);
-            } catch (realmError) {
-              console.error('Error creating KnowledgeCenter object in Realm:', realmError);
-            }
-          }
-
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        // setLoaderApi(false);
-      }
-    }
-  };
-
-  const newKnowledgeCenter = async () => {
-    if (isConnected) {
-      try {
-        const headers = await GetApiHeaders();
-        headers.authType = "JSONREQUEST";
-        const payload = { companyCode: dynamicStyles.companyCode };
-        const url = APIConfig.BASE_URL_NVM + APIConfig.masters_getAllActiveProductsForSubeejKisan
-        const response = await axios.post(url, payload, { headers });
-        if (response.data.statusCode === 200) {
-          if (response?.data?.response?.cropList) {
-            console.log("reposnecrop=-=->", response?.data?.response?.cropList)
-          }
-        }
-        console.log("sairesponse=-new=-=->", response.data.statusCode === 200)
-
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        // SimpleToast.show(translate("An_unexpected_error_occurred_Please_try_again"));
-      } finally {
-        // setLoaderApi(false);
-      }
-    } else {
-      // setLoaderApi(false);
-      // SimpleToast.show(translate("no_internet_conneccted"));
-    }
-  };
-
-  const fetchSamadhanHistory = async () => {
-    if (isConnected) {
-      try {
-        const headers = await GetApiHeaders();
-        headers.authType = "JSONREQUEST";
-        const payload = {
-          "farmerId": headers.userId,
-          'companyCode': dynamicStyles.companyCode
-        };
-        const url = APIConfig.BASE_URL_NVM + APIConfig.getRaisedComplaints_v1;
-        const response = await axios.post(url, payload, { headers });
-        if (response.data.statusCode === "200") {
-          const parseData = response.data;
-          let samadhanHistoryId;
-          const maxAttempts = 3;
-          let attempts = 0;
-          while (attempts < maxAttempts) {
-            try {
-              samadhanHistoryId = uuidv4();
-              console.log('Generated samadhanHistoryId:', samadhanHistoryId);
-              const existingKnowledgeCenter = realm.objects('SAMADHANHISTORY').filtered('_id == $0', samadhanHistoryId);
-              if (existingKnowledgeCenter.length === 0) {
-                break;
-              }
-              console.warn(`UUID collision detected for ${samadhanHistoryId}, attempt ${attempts + 1}`);
-              attempts++;
-            } catch (uuidError) {
-              console.error('Error generating UUID for samadhanHistory:', uuidError);
-              // setLoaderApi(false);
-              return;
-            }
-            if (attempts >= maxAttempts) {
-              console.error('Failed to generate unique UUID after', maxAttempts, 'attempts');
-              // setLoaderApi(false);
-              return;
-            }
-          }
-
-          // Try to download and update complaint images
-          let finalJsonToStore = parseData;
-
-          try {
-            const updatedJson = await processComplaintImages(parseData);
-            finalJsonToStore = updatedJson;
-            console.log('✅ Images processed, updated JSON ready for Realm.');
-          } catch (downloadErr) {
-            console.error('⚠️ Failed to process images, storing original JSON:', downloadErr);
-            // finalJsonToStore already points to parseData
-          }
-
-          try {
-            realm.write(() => {
-              realm.delete(cachedSamadhanHistory);
-              realm.create('SAMADHANHISTORY', {
-                _id: samadhanHistoryId,
-                ticketsHistory: JSON.stringify(finalJsonToStore),
-                timestamp: new Date(),
-              });
-            });
-            console.log('Successfully created samadhanhistory with _id:', samadhanHistoryId);
-          } catch (realmError) {
-            console.error('Error creating samadhanHistory object in Realm:', realmError);
-          }
-        }
-        else {
-          // SimpleToast.show(translate("Unable_to_fetch_issue_details"));
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        // SimpleToast.show(translate("An_unexpected_error_occurred_Please_try_again"));
-      } finally {
-        // setLoaderApi(false);
-      }
-    } else {
-      // setLoaderApi(false);
-      // SimpleToast.show(translate("no_internet_conneccted"));
-    }
-  };
+  
 
   const fetchLocation = useCallback(async () => {
     const hasPermission = await requestLocationPermission();
@@ -2351,7 +1682,6 @@ const HomeScreenEmp = ({ route }) => {
           deleteFromAsyncStorage(LASTNAME),
           deleteFromAsyncStorage(OFFLINETOTALCOUNT),
           deleteFromAsyncStorage(COMPANYCODE),
-          removeDatbaseData(),
           clearDownloadedImages()
         ]);
         dispatch(setCompanyStyle({}));
@@ -2369,34 +1699,6 @@ const HomeScreenEmp = ({ route }) => {
       // setLoaderApi(false)
 
       console.log("Logout error:", error.response?.data || error.message);
-    }
-  };
-
-  const removeDatbaseData = async () => {
-    try {
-      if (realm && !realm.isClosed) {
-        realm.write(() => {
-          realm.delete(cachedImages);
-          realm.delete(Meeting);
-          realm.delete(FABDetails);
-          realm.delete(helpDeskRaise);
-          realm.delete(YieldMaster);
-          realm.delete(SeedMaster);
-          realm.delete(FertilizerMaster);
-          realm.delete(FertilizerMaster2);
-          realm.delete(SeedCalSubmit);
-          realm.delete(YieldCalSubmit);
-          realm.delete(cachedHybridList);
-          realm.delete(cachedKnowledgeCenter);
-          realm.delete(GeoTaggingView);
-          realm.delete(cachedGeoTaggingHistory);
-          realm.delete(cachedSamadhanHistory);
-          realm.delete(goldClubKnowledgeCenter)
-        });
-        console.log("Successfully deleted all Realm data");
-      }
-    } catch (realmError) {
-      console.error('Error deleting objects from Realm:', realmError);
     }
   };
 
@@ -2418,7 +1720,6 @@ const HomeScreenEmp = ({ route }) => {
           deleteFromAsyncStorage(LASTNAME),
           deleteFromAsyncStorage(OFFLINETOTALCOUNT),
           deleteFromAsyncStorage(COMPANYCODE),
-          removeDatbaseData(),
           clearDownloadedImages()
         ]);
         dispatch(setCompanyStyle({}));
@@ -2992,43 +2293,6 @@ const HomeScreenEmp = ({ route }) => {
           </View>
         </View>
         <View style={{ flexDirection: "row", position: "absolute", right: width * 0.02, top: Platform.OS == "ios" ? height * 0.05 : height * 0.01 }}>
-          {/* <TouchableOpacity
-            onPress={() => { callApiofflineSynch(true) }}
-            style={{
-              marginRight: 10
-              // position: 'absolute',
-              //  right: width * 0.15,
-              // bottom: height * 0.2,
-            }}
-          >
-            <View style={{ position: 'relative' }}>
-              <Image
-                source={require('../../../assets/Images/upload.png')}
-                style={{ height: 30, width: 30, tintColor: dynamicStyles.secondaryColor }}
-              />
-
-              <View
-                style={{
-                  position: 'absolute',
-                  top: -6,
-                  right: -6,
-                  backgroundColor: 'red',
-                  borderRadius: 10,
-                  minWidth: 20,
-                  height: 20,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  paddingHorizontal: 4,
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{ color: 'white', fontSize: 10, textAlign: 'center', fontFamily: fonts.Bold }}>
-                  {uploadTotalCount}
-                </Text>
-              </View>
-            </View>
-          </TouchableOpacity> */}
           <TouchableOpacity onPress={() => onRefresh()} style={{
             alignSelf: "flex-start", marginLeft: 10, marginRight: 5
           }}>
@@ -3538,43 +2802,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  bottomNavigationContainer: {
-    backgroundColor: '#fff',
-    width: width,
-    height: height * 0.08,
-    marginTop: 15,
-    position: 'absolute',
-    borderTopRightRadius: 30,
-    borderTopLeftRadius: 30,
-    bottom: height * 0.04,
-    // bottom: 0,
-    left: 0,
-    right: 0,
-    elevation: 10,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingHorizontal: 10,
-    alignItems: 'center',
-  },
-  bottomNavigationIconContainer: {
-    alignItems: 'center',
-    height: height * 0.05,
-    width: '20%',
-    justifyContent: 'center',
-  },
-  bottomNavigationIcons: {
-    height: 22,
-    width: 68,
-    resizeMode: 'contain',
-  },
-  bottomNavigationIcons2: {
-    height: 22,
-    width: 68,
-  },
-  bottomIconLabels: {
-    fontSize: RFValue(11, height),
-    lineHeight: 20,
-  },
+  
+  
+  
   modalMainContainer: {
     backgroundColor: 'rgba(0,0,0,0.3)',
     flex: 1,
