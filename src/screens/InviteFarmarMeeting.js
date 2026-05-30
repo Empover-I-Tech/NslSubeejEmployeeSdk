@@ -18,7 +18,7 @@ import { Styles } from "../styles/Styles";
 import { CustomCommonModal } from '../components/CustomCommonModal';
 import SearchInput from "../components/CustomSearchTextInput";
 import SimpleToast from 'react-native-simple-toast';
-import { useRealm, useQuery } from '@realm/react';
+import realm from "./realmOffline/realmConfig";
 import { v4 as uuidv4 } from 'uuid';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import { check, request, RESULTS, PERMISSIONS,openSettings } from 'react-native-permissions';
@@ -66,8 +66,7 @@ const InviteFarmerMeeting = ({ route }) => {
     const [alertModal, setAlertModal] = useState(false)
     const [alertTextContent, setAlertTextContent] = useState("")
     const isConnected = useSelector(state => state.network.isConnected);
-    const realm = useRealm();
-    const cachedHybridList = useQuery('hybridMaster');
+    const cachedHybridList = realm.objects('hybridMaster');
     const [coordinates, setCoordinates] = useState({});
     const [mapZoomingLevel, setMapZoomingLevel] = useState(20)
     const [coordinatesCopy,setCoordinatesCopy]=useState({})

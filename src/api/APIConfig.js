@@ -101,7 +101,7 @@ export default configs = {
         SIGNUPFORM: 'http://3.110.159.82:8080/subeejkisan/rest/fluxForms/getFluxForms?formType=Registration',
         VALIDATEOTP: 'validateOTP_v2',
         SIGNUP: 'registerFarmer',
-        UPDATEPROFILE: 'profileUpdateForFarmer',
+        UPDATEPROFILE: 'profileUpdateForFarmer_V1',
         CHART: "mandiPrices/getMandiPricesAnalysisReport",
         CHART_V1: "mandiPrices/getMandiPricesAnalysisReport_V1",
         REWARDS: "scan/getScanHistory",

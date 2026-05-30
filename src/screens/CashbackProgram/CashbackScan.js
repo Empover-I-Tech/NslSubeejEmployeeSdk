@@ -21,7 +21,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { MOBILENUMBER, REFERRALCODE, USER_ID, USERNAME, USER_IMG, STATE_ID, DISTRICT_ID, STATE_NAME, DISTRICT_NAME, LANGUAGEID, OFFLINETOTALCOUNT, FIRSTNAME, LASTNAME, COMPANYCODE, ROLDID, SCREENNAME, EMP_DASHBOARD_SCREEN } from '../../utils';
 import { setCompanyStyle } from "../../state/actions/companyStyles";
-import { useRealm, useQuery } from '@realm/react';
+import realm from "../realmOffline/realmConfig";
 import RNFS from 'react-native-fs';
 import axios from 'axios';
 
@@ -43,24 +43,23 @@ const CashBackScan=({ route })=> {
   const [loaderApi, setLoaderApi] = useState(false)
   const dispatch=useDispatch()
 
-  const realm = useRealm();
-  const cachedImages = useQuery('Image');
-  const Meeting = useQuery('Meeting');
-  const FABDetails = useQuery('FABDetails')
-  const helpDeskRaise = useQuery('helpDeskRaise')
-  const YieldMaster = useQuery('YieldMaster');
-  const SeedMaster = useQuery('SeedMaster');
-  const FertilizerMaster = useQuery('FertilizerMaster');
-  const FertilizerMaster2 = useQuery('FertilizerMaster2')
-  const SeedCalSubmit = useQuery('SeedCalSubmit')
-  const YieldCalSubmit = useQuery('YieldCalSubmit')
-  const cachedHybridList = useQuery('hybridMaster');
-  const cachedKnowledgeCenter = useQuery('KnowledgeCenter');
-  const GeoTaggingView = useQuery('GeoTaggingView');
-  const cachedGeoTaggingHistory = useQuery('GEOTAGGINGHISTORY');
-  const cachedSamadhanHistory = useQuery('SAMADHANHISTORY');
-  const cachedGoldClubKnowledgeCenter = useQuery('GoldCludKnowledgeCenter')
-  const goldClubKnowledgeCenter = useQuery('GoldCludKnowledgeCenter')
+  const cachedImages = realm.objects('Image');
+  const Meeting = realm.objects('Meeting');
+  const FABDetails = realm.objects('FABDetails')
+  const helpDeskRaise = realm.objects('helpDeskRaise')
+  const YieldMaster = realm.objects('YieldMaster');
+  const SeedMaster = realm.objects('SeedMaster');
+  const FertilizerMaster = realm.objects('FertilizerMaster');
+  const FertilizerMaster2 = realm.objects('FertilizerMaster2')
+  const SeedCalSubmit = realm.objects('SeedCalSubmit')
+  const YieldCalSubmit = realm.objects('YieldCalSubmit')
+  const cachedHybridList = realm.objects('hybridMaster');
+  const cachedKnowledgeCenter = realm.objects('KnowledgeCenter');
+  const GeoTaggingView = realm.objects('GeoTaggingView');
+  const cachedGeoTaggingHistory = realm.objects('GEOTAGGINGHISTORY');
+  const cachedSamadhanHistory = realm.objects('SAMADHANHISTORY');
+  const cachedGoldClubKnowledgeCenter = realm.objects('GoldCludKnowledgeCenter')
+  const goldClubKnowledgeCenter = realm.objects('GoldCludKnowledgeCenter')
   const locationCheck = useSelector(state => state.selectLocationReducer?.locationStyles)
   console.log("locationCheck-=-=>",locationCheck)
 

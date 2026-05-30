@@ -41,7 +41,7 @@ import firestore from '@react-native-firebase/firestore';
 import SimpleToast from 'react-native-simple-toast';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import { setLocationActions } from '../state/actions/locationActions';
-import { useRealm, useQuery } from '@realm/react';
+import realm from './realmOffline/realmConfig';
 import { v4 as uuidv4 } from 'uuid';
 import RNFS from 'react-native-fs';
 
@@ -135,26 +135,25 @@ const HomeScreenRn = ({ route }) => {
   const [uploadTotalCount, setUploadTotalCount] = useState(0)
   const { fetchData } = useGetRequestWithJwt();
   const [langId, setLangId] = useState(null)
-  const realm = useRealm();
 
-  const cachedImages = useQuery('Image');
-  const cachedGeoTaggingHistory = useQuery('GEOTAGGINGHISTORY');
-  const cachedKnowledgeCenter = useQuery('KnowledgeCenter');
-  const cachedGoldClubKnowledgeCenter = useQuery('GoldCludKnowledgeCenter')
-  const cachedSamadhanHistory = useQuery('SAMADHANHISTORY');
+  const cachedImages = realm.objects('Image');
+  const cachedGeoTaggingHistory = realm.objects('GEOTAGGINGHISTORY');
+  const cachedKnowledgeCenter = realm.objects('KnowledgeCenter');
+  const cachedGoldClubKnowledgeCenter = realm.objects('GoldCludKnowledgeCenter')
+  const cachedSamadhanHistory = realm.objects('SAMADHANHISTORY');
 
-  const Meeting = useQuery('Meeting');
-  const GeoTaggingView = useQuery('GeoTaggingView');
-  const cachedHybridList = useQuery('hybridMaster');
-  const FABDetails = useQuery('FABDetails')
-  const helpDeskRaise = useQuery('helpDeskRaise')
-  const YieldMaster = useQuery('YieldMaster');
-  const SeedMaster = useQuery('SeedMaster');
-  const FertilizerMaster = useQuery('FertilizerMaster');
-  const FertilizerMaster2 = useQuery('FertilizerMaster2')
-  const SeedCalSubmit = useQuery('SeedCalSubmit')
-  const YieldCalSubmit = useQuery('YieldCalSubmit')
-  const goldClubKnowledgeCenter = useQuery('GoldCludKnowledgeCenter')
+  const Meeting = realm.objects('Meeting');
+  const GeoTaggingView = realm.objects('GeoTaggingView');
+  const cachedHybridList = realm.objects('hybridMaster');
+  const FABDetails = realm.objects('FABDetails')
+  const helpDeskRaise = realm.objects('helpDeskRaise')
+  const YieldMaster = realm.objects('YieldMaster');
+  const SeedMaster = realm.objects('SeedMaster');
+  const FertilizerMaster = realm.objects('FertilizerMaster');
+  const FertilizerMaster2 = realm.objects('FertilizerMaster2')
+  const SeedCalSubmit = realm.objects('SeedCalSubmit')
+  const YieldCalSubmit = realm.objects('YieldCalSubmit')
+  const goldClubKnowledgeCenter = realm.objects('GoldCludKnowledgeCenter')
   const [marketPricesList, setMarketPricesList] = useState({})
   const [marketPriceFlatList, setMarketPriceList] = useState([])
   const [weatherTwo, setWeatherTwo] = useState("")

@@ -11,7 +11,6 @@ import { Provider, useDispatch, useSelector } from 'react-redux';
 import { setOfflineCount } from "../state/actions/offlineCountAction";
 import { helpDeskRaiseCRUD } from "../screens/realmOffline/helpDeskRaiseCRUD";
 import { createHelpDeskFormData, storeData } from "../assets/Utils/Utils";
-import { OFFLINETOTALCOUNT } from ".";
 
 export const useOfflineSync = () => {
     const offlineCount = useSelector((state) => state.offlineCountReducer.offlineCount);

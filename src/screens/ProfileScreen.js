@@ -4,8 +4,7 @@ import {
   ScrollView,
   Linking,
   Alert,
-  PermissionsAndroid,
-  KeyboardAvoidingView
+  PermissionsAndroid
 } from "react-native";
 import React, { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -582,7 +581,7 @@ const ProfileScreen = ({ route }) => {
         });
 
         const jsonData = await response.json();
-        console.log("Raw Response Data:=-=->", jsonData.response);
+        console.log("Raw Response Data:=-=->", JSON.stringify(jsonData));
         if (jsonData.statusCode === HTTP_OK) {
           console.log("Parsed JSON Response:", jsonData);
           await saveLocalAsynchStorage(jsonData?.response);
@@ -608,7 +607,7 @@ const ProfileScreen = ({ route }) => {
           setAlertModal(true);
         } else {
           setLoader(false);
-          SimpleToast.show(translate("Unable_to_fetch_issue_details"));
+          SimpleToast.show(jsonData?.message || translate("Unable_to_fetch_issue_details"));
         }
       } catch (error) {
         console.error("Error fetching data:", error);

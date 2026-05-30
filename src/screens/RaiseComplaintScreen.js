@@ -13,7 +13,7 @@ import { RFValue } from "react-native-responsive-fontsize";
 import { translate } from "../Localization/Localisation";
 import SimpleToast from 'react-native-simple-toast';
 import { CustomCommonModal } from '../components/CustomCommonModal';
-import { useQuery, useRealm } from "@realm/react";
+import realm from "./realmOffline/realmConfig";
 import { helpDeskRaiseCRUD } from "./realmOffline/helpDeskRaiseCRUD";
 import { createHelpDeskFormData, getFormattedDateTime } from "../assets/Utils/Utils";
 import { useOfflineSync } from "../utils/syncUtils";
@@ -89,7 +89,7 @@ const RaiseComplaintScreen = () => {
     const [couponValidationContent, setCouponValidationContent] = useState("")
     const [alertModal, setAlertModal] = useState(false)
     const [alertTextContent, setAlertTextContent] = useState("")
-    const cachedSamadhanHistory = useQuery('SAMADHANHISTORY');
+    const cachedSamadhanHistory = realm.objects('SAMADHANHISTORY');
     const navigation = useNavigation();
 
     const [btnEnabled, setBtnEnabled] = useState(true)

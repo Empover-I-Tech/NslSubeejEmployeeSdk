@@ -87,6 +87,7 @@ import CompletedPaymentActivity from '../screens/CashbackProgram/CompletedPaymen
 import TransactionDetailsActivity from '../screens/CashbackProgram/TransactionDetailsActivity';
 import BottomTabsNavigatorEmp from './BottomTabsEmp';
 import KnowledgeCenterDocsList from '../screens/KnowledgeCenterDocsList';
+import LoaderScreen from '../screens/LoaderScreen';
 
 
 const Stack = createStackNavigator();
@@ -188,6 +189,7 @@ const StackNavigator = () => {
             <Stack.Screen name='CompletedPaymentActivity' component={CompletedPaymentActivity} options={{ headerShown: false }} />
             <Stack.Screen name='TransactionDetailsActivity' component={TransactionDetailsActivity} options={{ headerShown: false }} />
             <Stack.Screen name='BottomTabsNavigatorEmp' component={BottomTabsNavigatorEmp} options={{ headerShown: false }} />
+            <Stack.Screen name='LoaderScreen' component={LoaderScreen} options={{ headerShown: false }} />
         </Stack.Navigator>
     );
 };

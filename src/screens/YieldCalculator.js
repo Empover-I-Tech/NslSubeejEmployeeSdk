@@ -34,8 +34,7 @@ import PreLoginCustomLoader from '../components/PreLoginCustomLoader';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { translate } from '../Localization/Localisation';
 import { CustomCommonModal } from '../components/CustomCommonModal';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRealm, useQuery } from '@realm/react';
+import realm from './realmOffline/realmConfig';
 import { v4 as uuidv4 } from 'uuid';
 import { useOfflineCalculatorsCRUD } from './realmOffline/useOfflineCalculatorsCRUD';
 import { useOfflineSync } from '../utils/syncUtils';
@@ -55,7 +54,6 @@ const YieldCalculator = () => {
     } = useOfflineCalculatorsCRUD();
     const fonts=useFontStyles()
     const { incrementOfflineCount, decrementOfflineCount, updateOfflineCount } = useOfflineSync();
-    const realm = useRealm();
     const viewShotRef = useRef();
     const dynamicStyles = useSelector(state => state.companyStyles.companyStyles);
     const isConnected = useSelector(state => state.network.isConnected);

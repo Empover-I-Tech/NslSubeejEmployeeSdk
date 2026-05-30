@@ -114,6 +114,7 @@ const BookSeeds = () => {
             SimpleToast.show(translate("no_internet_conneccted"));
             return;
         }
+        setButtonDisable(true);
         try {
             setLoaderApi(true);
             const headers = await GetApiHeaders();
@@ -146,6 +147,7 @@ const BookSeeds = () => {
             setAlertTextContent(translate("An_unexpected_error_occurred_Please_try_again"));
         } finally {
             setLoaderApi(false);
+            setButtonDisable(false);
         }
     };
 
@@ -165,7 +167,7 @@ const BookSeeds = () => {
                     {/* Header */}
                     <View style={[RnStyles.headerMainContainer, { backgroundColor: dynamicStyles.primaryColor }]}>
                         <View style={RnStyles.headerContentContainer}>
-                            <TouchableOpacity disabled={buttonDisable} onPress={() => navigation.goBack()}>
+                            <TouchableOpacity onPress={() => navigation.goBack()}>
                                 <Image source={require('../../assets/Images/BackIcon.png')} style={[RnStyles.backArrowImg, { tintColor: dynamicStyles.secondaryColor }]} />
                             </TouchableOpacity>
                             <Text style={[RnStyles.bookSeedsText, { color: dynamicStyles.secondaryColor, fontFamily: fonts.SemiBold }]}>{translate("book_seeds")}</Text>
@@ -251,7 +253,7 @@ const BookSeeds = () => {
                             {requiredByValidations && <Text style={{ color: "#ED3237", fontSize: RFValue(14, height), fontFamily: fonts.Medium }}>{translate("Please_select_date")}</Text>}
                         </View>
 
-                        <TouchableOpacity onPress={handleBookNowBtn} style={[RnStyles.bookNowButtonContainer, { backgroundColor: dynamicStyles.primaryColor }]}>
+                        <TouchableOpacity disabled={buttonDisable} onPress={handleBookNowBtn} style={[RnStyles.bookNowButtonContainer, { backgroundColor: dynamicStyles.primaryColor }]}>
                             <Text style={[RnStyles.bookNowButtonText, { color: dynamicStyles.secondaryColor, fontFamily: fonts.SemiBold }]}>{translate("Book_now")}</Text>
                         </TouchableOpacity>
                     </View>

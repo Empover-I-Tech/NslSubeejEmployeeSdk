@@ -11,7 +11,7 @@ import PreLoginCustomLoader from '../components/PreLoginCustomLoader';
 import { WebView } from 'react-native-webview';
 import SimpleToast from 'react-native-simple-toast';
 import axios from "axios";
-import { useRealm, useQuery } from '@realm/react';
+import realm from "./realmOffline/realmConfig";
 import { v4 as uuidv4 } from 'uuid';
 import RNFS from 'react-native-fs';
 import Share from 'react-native-share';
@@ -46,8 +46,7 @@ const KnowledgeCenterRn = () => {
   const [hydImg, setHydImg] = useState("");
   const [backBtnDisable, setBackBtnDisable] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const realm = useRealm();
-  const cachedGoldClubKnowledgeCenter=useQuery('GoldCludKnowledgeCenter') 
+  const cachedGoldClubKnowledgeCenter = realm.objects('GoldCludKnowledgeCenter') 
   const [hybridName,setHybridName]=useState("")
   const [hybridImgsObj,setHybridImgsObj]=useState({})
   const DOWNLOAD_TIMEOUT = 30000; // 30 seconds

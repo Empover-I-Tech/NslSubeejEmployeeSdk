@@ -34,9 +34,8 @@ import MapScreen from "../components/MapScreen";
 import RenderHTML from 'react-native-render-html';
 import axios from 'axios';
 import SimpleToast from "react-native-simple-toast"
-import { useRealm, useQuery } from '@realm/react';
+import realm from "./realmOffline/realmConfig";
 import { useGeoTaggingCRUD } from "./realmOffline/useGeoTaggingCRUD";
-import { SafeAreaView } from "react-native-safe-area-context";
 import Geolocation from "react-native-geolocation-service";
 import { CustomCommonModal } from "../components/CustomCommonModal";
 import { useOfflineSync } from "../utils/syncUtils";
@@ -49,7 +48,6 @@ const { width, height } = Dimensions.get('window');
 const GeoTaggingViewScreen = ({ route }) => {
   console.log("routes=-=->", route?.params?.geoLocationType)
   const fonts = useFontStyles()
-  const realm = useRealm();
   const { updateOfflineCount } = useOfflineSync();
   const {
     getAllGeoTags,
@@ -102,7 +100,7 @@ const GeoTaggingViewScreen = ({ route }) => {
   const [coordinates, setCoordinates] = useState({});
   const [alertModal, setAlertModal] = useState(false)
   const [alertModalContent, setAlertModalContent] = useState("")
-  const cachedKnowledgeCenter = useQuery('KnowledgeCenter');
+  const cachedKnowledgeCenter = realm.objects('KnowledgeCenter');
   const [btnSubmitEnbled, setBtnSubmitEnbled] = useState(true)
   const [addressValidation, setAddressValidation] = useState(false)
   const [mapZoomingLevel, setMapZoomingLevel] = useState(20)

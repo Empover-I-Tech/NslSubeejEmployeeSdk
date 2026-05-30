@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { use, useCallback, useEffect, useRef, useState } from 'react';
 import {
   TextInput,
   StatusBar,
@@ -20,7 +20,6 @@ import {
 } from 'react-native';
 import { useDispatch, useSelector, } from 'react-redux';
 import axios from 'axios';
-import { strings } from '../../Localization/StringsCopy';
 import {
   deleteFromAsyncStorage,
   getFromAsyncStorage,
@@ -30,24 +29,24 @@ import { MOBILENUMBER, REFERRALCODE, USER_ID, USERNAME, USER_IMG, STATE_ID, DIST
 import { GetApiHeaders, getGreetingMessage, normalizeText, getBuildNumber, getAppVersion, downloadFileToLocal } from '../../utils/helpers';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import APIConfig, { HTTP_601, HTTP_OK, FIREBASE_VERSION_COLLECTION_NAME, FIREBASE_VERSION_DOC_ID, APP_ENV_PROD } from '../../api/APIConfig';
-import CustomAlert from '../../components/CustomAlert';
-import DeviceInfo from 'react-native-device-info';
 import { RefreshControl } from 'react-native-gesture-handler';
 import { translate } from '../../Localization/Localisation';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { check, request, PERMISSIONS, RESULTS, openSettings } from 'react-native-permissions';
 import { setCompanyStyle } from '../../state/actions/companyStyles';
 import Geolocation from 'react-native-geolocation-service';
-import firestore from '@react-native-firebase/firestore';
 import SimpleToast from 'react-native-simple-toast';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import { setLocationActions } from '../../state/actions/locationActions';
+import realm from '../realmOffline/realmConfig';
 import { v4 as uuidv4 } from 'uuid';
 import RNFS from 'react-native-fs';
-
-
+import { useGeoTaggingCRUD } from '../realmOffline/useGeoTaggingCRUD';
 import useGetRequestWithJwt from '../../api/useGetRequestWithJwt';
 import { CASHBACK, CASHBACKSCAN, CASHBACKSCAN2, DOWNLOAD_FOLDER_PATH, FIELDACTIVITYQR, REWARDS, USERMENUCONTROL, compareVersions, processComplaintImages, retrieveData, storeData } from '../../assets/Utils/Utils';
+import { useOfflineSync } from '../../utils/syncUtils';
+import { useOfflineCalculatorsCRUD } from '../realmOffline/useOfflineCalculatorsCRUD';
+import { helpDeskRaiseCRUD } from '../realmOffline/helpDeskRaiseCRUD';
 import { useFontStyles } from '../../hooks/useFontStyles';
 import { setWeatherTitle } from '../../state/actions/weatherTitleActions';
 import { setMarketpriceData } from '../../state/actions/marketPricesList';
@@ -57,11 +56,7 @@ import { setCashBackModal } from '../../state/actions/cashBackModal';
 import { setCashBackSuccessModal } from '../../state/actions/cashBackSuccessModal';
 import GenuinityModal from '../CashbackProgram/GenuinityModalComponent';
 import DateRangePickerModal from '../../components/DateRangePickerModal';
-
 const { width, height } = Dimensions.get('window');
-const playStore = 'https://play.google.com/store/apps/details?id=com.nsl.subeejkisan';
-const appStoreLink = 'https://apps.apple.com/us/app/subeej/id6748138745'
-
 const defaultImage = require('../../../assets/Images/farmerIconImg.png');
 import { setCashBackSuccessGenuineModal } from '../../state/actions/cashBackSuccessGenuineModal';
 import { CustomCommonModal } from '../../components/CustomCommonModal';
@@ -75,6 +70,22 @@ const RETRY_ATTEMPTS = 2;
 const HomeScreenEmp = ({ route }) => {
   // const route = useRoute();
   const fonts = useFontStyles()
+  const { uploadOfflineGeoTagDataToServer, uploadOfflineHelpDesk, uploadOfflineSeedCalc, uploadOfflineYieldCalc, incrementOfflineCount, decrementOfflineCount, updateOfflineCount } = useOfflineSync();
+  const { saveSeedMasterList, saveYieldMasterList, saveSeedCalc, fertilizerMasterList, fertilizerMasterList2 } = useOfflineCalculatorsCRUD();
+
+  const {
+    getOfflineGeoTagCount
+  } = useGeoTaggingCRUD();
+
+  const {
+    getOfflineHelpDeskCount,
+  } = helpDeskRaiseCRUD();
+
+  const {
+    hasSeedCalc,
+    hasYieldCalc,
+    getSeedCalc
+  } = useOfflineCalculatorsCRUD();
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const currentTheme = useSelector(state => state.theme.theme);
@@ -89,15 +100,6 @@ const HomeScreenEmp = ({ route }) => {
   const [menuControler, setMenuControler] = useState([]);
   const [dashboardMaster, setDashboardMaster] = useState({});
   const [weatherInfo, setWeatherInfo] = useState({});
-  const [isAlertVisible, setAlertVisible] = useState(false);
-  const [alertTitle, setAlertTitle] = useState('');
-  const [showAlertHeader, setShowAlertHeader] = useState(false);
-  const [showAlertHeaderText, setShowAlertHeaderText] = useState(false);
-  const [alertMessage, setAlertMessage] = useState('');
-  const [showAlertYesButton, setShowAlertYesButton] = useState(false);
-  const [showAlertNoButton, setShowAlertNoButton] = useState(false);
-  const [showAlertYesButtonText, setShowAlertYesButtonText] = useState('');
-  const [showAlertNoButtonText, setShowAlertNoButtonText] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const [latitude, setLatitude] = useState(locationCheck?.latitude || '');
   const [longitude, setLongitude] = useState(locationCheck?.longitude || '');
@@ -116,11 +118,28 @@ const HomeScreenEmp = ({ route }) => {
   const [uploadTotalCount, setUploadTotalCount] = useState(0)
   const { fetchData } = useGetRequestWithJwt();
   const [langId, setLangId] = useState(null)
-  const [marketPricesList, setMarketPricesList] = useState({})
-  const [marketPriceFlatList, setMarketPriceList] = useState([])
+  
+
+  const cachedImages = realm.objects('Image');
+  const cachedGeoTaggingHistory = realm.objects('GEOTAGGINGHISTORY');
+  const cachedKnowledgeCenter = realm.objects('KnowledgeCenter');
+  const cachedGoldClubKnowledgeCenter = realm.objects('GoldCludKnowledgeCenter');
+  const cachedSamadhanHistory = realm.objects('SAMADHANHISTORY');
+  const Meeting = realm.objects('Meeting');
+  const GeoTaggingView = realm.objects('GeoTaggingView');
+  const cachedHybridList = realm.objects('hybridMaster');
+  const FABDetails = realm.objects('FABDetails');
+  const helpDeskRaise = realm.objects('helpDeskRaise');
+  const YieldMaster = realm.objects('YieldMaster');
+  const SeedMaster = realm.objects('SeedMaster');
+  const FertilizerMaster = realm.objects('FertilizerMaster');
+  const FertilizerMaster2 = realm.objects('FertilizerMaster2');
+  const SeedCalSubmit = realm.objects('SeedCalSubmit');
+  const YieldCalSubmit = realm.objects('YieldCalSubmit');
+  const goldClubKnowledgeCenter = realm.objects('GoldCludKnowledgeCenter');
+
+
   const [weatherTwo, setWeatherTwo] = useState("")
-  const [newLat, setNewLat] = useState(null)
-  const [newLong, setNewLong] = useState(null)
   const [advanceKnVisible, setAdvanceKnVisible] = useState(true)
   const isSyncInProgress = useRef(false);
   const [showGenunityModal, setShowGenunityModal] = useState(false);
@@ -339,8 +358,6 @@ const HomeScreenEmp = ({ route }) => {
   const [helpDeskVisible, setHelpDeskVisible] = useState(true)
   const [rewardsVisible, setRewardsVisible] = useState(true)
   const [faqVisible, setFaqVisible] = useState(true)
-  const othersList = staticOthers.servicesList.filter((item) => item.visible)
-  const servicesList = staticServices.servicesList.filter((item) => item.visible)
   const cashbackModalOpen = useSelector((state) => state.cashBackModalReducer.cashBackScan);
   const [cashBackSelected, setCashBackSelected] = useState("")
   const cashbackSuccessModal = useSelector((state) => state.cashBackSuccessModalReducer.cashBackSuccessScan)
@@ -358,6 +375,73 @@ const HomeScreenEmp = ({ route }) => {
   const formattedDate = String(today.getDate()).padStart(2, '0') + '-' +
     String(today.getMonth() + 1).padStart(2, '0') + '-' +
     today.getFullYear();
+  const callApiofflineSynch = async (showLoader) => {
+    if (uploadTotalCount == 0 && showLoader) {
+      SimpleToast.show(translate('no_data_to_upload'))
+      return
+    }
+
+    if (isSyncInProgress.current) {
+      // Prevent multiple calls
+      console.log("Sync already in progress...");
+      return;
+    }
+    isSyncInProgress.current = true; // Set lock
+    try {
+
+      if (isConnected) {
+        setLoaderApi(showLoader);
+        const hassOfflineSeedCalc = hasSeedCalc();
+        const hassOfflineYieldCalc = hasYieldCalc();
+
+        if (hassOfflineSeedCalc) {
+          const seedCalUpdated = await uploadOfflineSeedCalc();
+          if (seedCalUpdated) {
+            updateOfflineCount()
+          }
+        }
+        if (hassOfflineYieldCalc) {
+          const yieldCalUpdated = await uploadOfflineYieldCalc();
+          if (yieldCalUpdated) {
+            updateOfflineCount()
+          }
+        }
+        if (getOfflineGeoTagCount() > 0) {
+          const result = await uploadOfflineGeoTagDataToServer();
+          if (result.success) {
+            updateOfflineCount()
+
+            // call here transactiontablemasters data
+            getSampleGeoTaggingHistory()
+          } else {
+            SimpleToast.show("Sync failed");
+          }
+        }
+        if (getOfflineHelpDeskCount() > 0) {
+          const result = await uploadOfflineHelpDesk();
+          if (result.success) {
+            updateOfflineCount()
+            fetchSamadhanHistory()
+          } else {
+            // SimpleToast.show("Sync failed");
+          }
+          // fetchKnowledgeCenterRefresh()
+        }
+      } else {
+        if (showLoader) {
+          SimpleToast.show(translate("please_check_connection"));
+        }
+
+      }
+    } catch (e) {
+      console.error("Sync error:", e);
+    } finally {
+      setTimeout(() => {
+        // setLoaderApi(false);
+        isSyncInProgress.current = false; // Release lock
+      }, 1000);
+    }
+  }
 
   const farmerServiceHandle = () => {
     setFarmerServiceModalVisible(true)
@@ -391,6 +475,7 @@ const HomeScreenEmp = ({ route }) => {
   }, [offlineCount])
 
   useEffect(() => {
+    callApiofflineSynch(false)
     getUserMenuControl()
     getMenuController()
   }, [isConnected])
@@ -423,9 +508,9 @@ const HomeScreenEmp = ({ route }) => {
         }
       };
       getUserDetailsVersion11()
-     
+      updateOfflineCount();
       fetchUserData();
-      checkForceUpdate();
+      // checkForceUpdate();
       GetUserLocation();
       setSelectedCalculator('');
       setProductScanModalOpen(false);
@@ -436,6 +521,11 @@ const HomeScreenEmp = ({ route }) => {
       setFellowFarmerNameValidationContent('');
       setFellowFarmerMobileValidation(false);
       setFellowFarmerMobileValidationContent('');
+      fetchHybridsAndIssueTypesAndCrops()
+      fetchKnowledgeCenter()
+      goldClubFetchKnowledgeCenter()
+      fetchSamadhanHistory()
+      getSampleGeoTaggingHistory()
       fetchCurrentLocation()
       getMenuController()
       getUserMenuControl()
@@ -452,12 +542,7 @@ const HomeScreenEmp = ({ route }) => {
     }, [])
   );
 
-  // useFocusEffect(
-  //   useCallback(() => {
-  // getEmployeeDashboardapi(selectedDateRange.startDate,selectedDateRange.endDate)
-  // getMinDateEmployee()
-  //   }, [])
-  // );
+
   useEffect(() => {
     getEmployeeDashboardapi(selectedDateRange.startDate, selectedDateRange.endDate)
     getMinDateEmployee()
@@ -492,7 +577,12 @@ const HomeScreenEmp = ({ route }) => {
           dispatch(setTabEmpMenuControl(response?.data?.response?.tabsVisible || {}));
           setLoaderApi(false)
           console.log("checkingEmployeeDashboard=-=->", JSON.stringify(response.data))
-        } else {
+        }
+        else if (data?.statusCode == HTTP_601) {
+          setLoaderApi(false)
+          await logoutMethod()
+        }
+        else {
           setLoaderApi(false)
           SimpleToast.show(data?.message || translate("Something_went_wrong"))
         }
@@ -534,7 +624,6 @@ const HomeScreenEmp = ({ route }) => {
     if (cashbackModalOpen) {
       setProductScanModalOpen(false)
       setShowGenunityModal(false)
-      setAlertVisible(false);
       setListCalculatorsVisible(false)
     }
   }, [cashbackModalOpen])
@@ -545,9 +634,6 @@ const HomeScreenEmp = ({ route }) => {
     Geolocation.getCurrentPosition(
       position => {
         const { latitude, longitude } = position.coords;
-        // dispatch(setLocationActions({ latitude, longitude }));
-        setNewLat(latitude);
-        setNewLong(longitude);
         getWeatherDetailsTest(latitude, longitude)
       },
       error => {
@@ -821,7 +907,558 @@ const HomeScreenEmp = ({ route }) => {
   }
 
 
-  
+  const fetchHybridsAndIssueTypesAndCrops = async () => {
+    if (isConnected) {
+      try {
+        const headers = await GetApiHeaders();
+        headers.authType = "JSONREQUEST"
+        const payload = { companyCode: dynamicStyles.companyCode };
+        const url = APIConfig.BASE_URL + APIConfig.mastersgetHybridsDropdownList;
+        const response = await axios.post(url, payload, { headers });
+        if (response.data.statusCode === HTTP_OK) {
+          const parseData = response.data.response.hybridList
+          let hybridListId;
+          const maxAttempts = 3;
+          let attempts = 0;
+          while (attempts < maxAttempts) {
+            try {
+              hybridListId = uuidv4();
+              const existinghybridMaster = realm.objects('hybridMaster').filtered('_id == $0', hybridListId);
+              if (existinghybridMaster.length === 0) {
+                break;
+              }
+              console.warn(`UUID collision detected for ${hybridListId}, attempt ${attempts + 1}`);
+              attempts++;
+            } catch (uuidError) {
+              console.error('Error generating UUID for hybridMaster:', uuidError);
+              // setLoaderApi(false);
+              return;
+            }
+            if (attempts >= maxAttempts) {
+              console.error('Failed to generate unique UUID after', maxAttempts, 'attempts');
+              // setLoaderApi(false);
+              return;
+            }
+          }
+          try {
+            realm.write(() => {
+              realm.create('hybridMaster', {
+                _id: hybridListId,
+                hybridsList: JSON.stringify(parseData || []),
+                timestamp: new Date(),
+              });
+            });
+          } catch (realmError) {
+            console.error('Error creating hybridList object in Realm:', realmError);
+            // setLoaderApi(false);
+            return;
+          }
+        } else {
+          // setLoaderApi(false)
+          // setAlertModal(true)
+          // setAlertTextContent(translate("Unable_to_fetch_issue_details"))
+        }
+      } catch (error) {
+        // setLoaderApi(false)
+      }
+    }
+  };
+
+  const getSampleGeoTaggingHistory = async () => {
+    if (isConnected) {
+      try {
+        const url = APIConfig.BASE_URL + APIConfig.geoTagging_getScanHistory
+        const headers = await GetApiHeaders();
+        const response = await fetchData(url, headers);
+        if (response && response?.data) {
+          if (response?.data?.scanHistoryList) {
+            const uploadedGeotaggingData = await processSampleGeoTaggingData(response?.data?.scanHistoryList)
+            const imageUrls = new Set();
+            let scanMssgOffline
+            if (langId === "2") {
+              scanMssgOffline = response.data.scanTeluguMessage
+            } else if (langId === "3") {
+              scanMssgOffline = response.data.scanHindiMessage
+            } else if (langId === "1") {
+              scanMssgOffline = response.data.scanMessage
+            }
+            let geoTaggingHistoryId;
+            const maxAttempts = 3;
+            let attempts = 0;
+            while (attempts < maxAttempts) {
+              try {
+                geoTaggingHistoryId = uuidv4();
+                const existingDashboard = realm.objects('GEOTAGGINGHISTORY').filtered('_id == $0', geoTaggingHistoryId);
+                if (existingDashboard.length === 0) {
+                  break;
+                }
+                attempts++;
+              } catch (uuidError) {
+                return;
+              }
+              if (attempts >= maxAttempts) {
+                return;
+              }
+            }
+            if (uploadedGeotaggingData) {
+              try {
+                realm.write(() => {
+                  realm.delete(cachedGeoTaggingHistory);
+                  realm.create('GEOTAGGINGHISTORY', {
+                    _id: geoTaggingHistoryId,
+                    couponsHistoryList: JSON.stringify(uploadedGeotaggingData.updatedList || []),
+                    scanMssg: JSON.stringify(scanMssgOffline || ""),
+                    timestamp: new Date(),
+                  });
+                });
+              } catch (realmError) {
+                console.error('Error creating GEOTAGGINGHISTORY object in Realm:', realmError);
+                return;
+              }
+            }
+          } else {
+            console.log("API Error:", response.data.message);
+          }
+        } else {
+        }
+      } catch (error) {
+        console.error("Error fetching scan history:", error);
+      }
+    } else {
+      // setLoaderApi(false);
+    }
+
+  };
+
+  const ShowHistoryRefresh = async () => {
+
+    if (isConnected) {
+      try {
+        const url = APIConfig.BASE_URL + APIConfig.geoTagging_getScanHistory
+        const headers = await GetApiHeaders();
+        const response = await fetchData(url, headers);
+        if (response && response?.data) {
+          if (response?.data?.scanHistoryList) {
+            const uploadedGeotaggingData = await processSampleGeoTaggingData(response?.data?.scanHistoryList)
+            const imageUrls = new Set();
+            let scanMssgOffline
+            if (langId === "2") {
+              scanMssgOffline = response.data.scanTeluguMessage
+            } else if (langId === "3") {
+              scanMssgOffline = response.data.scanHindiMessage
+            } else if (langId === "1") {
+              scanMssgOffline = response.data.scanMessage
+            }
+            let geoTaggingHistoryId;
+            const maxAttempts = 3;
+            let attempts = 0;
+            while (attempts < maxAttempts) {
+              try {
+                geoTaggingHistoryId = uuidv4();
+                const existingDashboard = realm.objects('GEOTAGGINGHISTORY').filtered('_id == $0', geoTaggingHistoryId);
+                if (existingDashboard.length === 0) {
+                  break;
+                }
+                attempts++;
+              } catch (uuidError) {
+                return;
+              }
+              if (attempts >= maxAttempts) {
+                return;
+              }
+            }
+            if (uploadedGeotaggingData) {
+              try {
+                realm.write(() => {
+                  realm.delete(cachedGeoTaggingHistory);
+                  realm.create('GEOTAGGINGHISTORY', {
+                    _id: geoTaggingHistoryId,
+                    couponsHistoryList: JSON.stringify(uploadedGeotaggingData.updatedList || []),
+                    scanMssg: JSON.stringify(scanMssgOffline || ""),
+                    timestamp: new Date(),
+                  });
+                });
+                console.log('Successfully created GEOTAGGINGHISTORY with _id:', geoTaggingHistoryId);
+              } catch (realmError) {
+                console.error('Error creating GEOTAGGINGHISTORY object in Realm:', realmError);
+                return;
+              }
+            }
+          } else {
+            console.log("API Error:", response.data.message);
+          }
+        } else {
+        }
+      } catch (error) {
+        console.error("Error fetching scan history:", error);
+      }
+    } else {
+      // setLoaderApi(false);
+      // SimpleToast.show(translate('no_internet_conneccted'))
+
+    }
+
+  };
+
+  const fetchKnowledgeCenter = async () => {
+    if (cachedKnowledgeCenter && cachedKnowledgeCenter.length > 0) {
+      console.log("offlinecallknowledgeCenter-=0=->", cachedKnowledgeCenter)
+      return
+    }
+    else if (isConnected) {
+      try {
+        const headers = await GetApiHeaders();
+        headers.authType = "JSONREQUEST";
+        const payload = { companyCode: dynamicStyles.companyCode };
+        const url = APIConfig.BASE_URL + APIConfig.GETACTIVECROPS;
+        const response = await axios.post(url, payload, { headers });
+        if (response.data.statusCode === HTTP_OK) {
+          const parseData = response.data.response;
+          let knowledgeCenterId;
+          const maxAttempts = 3;
+          let attempts = 0;
+          while (attempts < maxAttempts) {
+            try {
+              knowledgeCenterId = uuidv4();
+              console.log('Generated knowledgeCenterId:', knowledgeCenterId);
+              const existingKnowledgeCenter = realm.objects('KnowledgeCenter').filtered('_id == $0', knowledgeCenterId);
+              if (existingKnowledgeCenter.length === 0) {
+                break;
+              }
+              console.warn(`UUID collision detected for ${knowledgeCenterId}, attempt ${attempts + 1}`);
+              attempts++;
+            } catch (uuidError) {
+              console.error('Error generating UUID for KnowledgeCenter:', uuidError);
+              // setLoaderApi(false);
+              return;
+            }
+            if (attempts >= maxAttempts) {
+              console.error('Failed to generate unique UUID after', maxAttempts, 'attempts');
+              // setLoaderApi(false);
+              return;
+            }
+          }
+          if (parseData) {
+            try {
+              realm.write(() => {
+                realm.delete(cachedKnowledgeCenter);
+                realm.create('KnowledgeCenter', {
+                  _id: knowledgeCenterId,
+                  cropsList: JSON.stringify(parseData),
+                  timestamp: new Date(),
+                });
+              });
+              console.log('Successfully created KnowledgeCenter with _id:', knowledgeCenterId);
+            } catch (realmError) {
+              console.error('Error creating KnowledgeCenter object in Realm:', realmError);
+            }
+          }
+
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        // setLoaderApi(false);
+      }
+    } else {
+      // setLoaderApi(false);
+    }
+  };
+
+  const goldClubFetchKnowledgeCenter = async () => {
+    if (cachedGoldClubKnowledgeCenter.length > 0) {
+      console.log("offlinecallknowledgeCenter-=0=->", cachedGoldClubKnowledgeCenter)
+      return
+    }
+    else if (isConnected) {
+      try {
+        const headers = await GetApiHeaders();
+        headers.authType = "JSONREQUEST";
+        const payload = { companyCode: dynamicStyles.companyCode };
+        const url = APIConfig.BASE_URL_NVM + APIConfig.masters_getAllActiveProductsForSubeejKisan;
+        const response = await axios.post(url, payload, { headers });
+        if (response.data.statusCode === HTTP_OK) {
+          const parseData = response.data.response;
+          console.log("siaLatChcek-=-=->", JSON.stringify(parseData))
+          const updatedKnowledgeCenter = await processMarketPriceData(parseData)
+          let goldClubknowledgeCenterId;
+          const maxAttempts = 3;
+          let attempts = 0;
+          while (attempts < maxAttempts) {
+            try {
+              goldClubknowledgeCenterId = uuidv4();
+              console.log('Generated goldClubknowledgeCenterId:', goldClubknowledgeCenterId);
+              const existingKnowledgeCenter = realm.objects('GoldCludKnowledgeCenter').filtered('_id == $0', goldClubknowledgeCenterId);
+              if (existingKnowledgeCenter.length === 0) {
+                break;
+              }
+              console.warn(`UUID collision detected for ${goldClubknowledgeCenterId}, attempt ${attempts + 1}`);
+              attempts++;
+            } catch (uuidError) {
+              console.error('Error generating UUID for goldClubknowledgeCenterId:', uuidError);
+              // setLoaderApi(false);
+              return;
+            }
+            if (attempts >= maxAttempts) {
+              console.error('Failed to generate unique UUID after', maxAttempts, 'attempts');
+              // setLoaderApi(false);
+              return;
+            }
+          }
+          if (updatedKnowledgeCenter) {
+            try {
+              realm.write(() => {
+                realm.delete(cachedGoldClubKnowledgeCenter);
+                realm.create('GoldCludKnowledgeCenter', {
+                  _id: goldClubknowledgeCenterId,
+                  cropsList: JSON.stringify(updatedKnowledgeCenter),
+                  timestamp: new Date(),
+                });
+              });
+              console.log('Successfully created goldclub with _id:', goldClubknowledgeCenterId);
+            } catch (realmError) {
+              console.error('Error creating KnowledgeCenter object in Realm:', realmError);
+            }
+          }
+
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        // setLoaderApi(false);
+      }
+    } else {
+      // setLoaderApi(false);
+    }
+  };
+
+  const fetchKnowledgeCenterRefresh = async () => {
+    if (isConnected) {
+      try {
+        const headers = await GetApiHeaders();
+        headers.authType = "JSONREQUEST";
+        const payload = { companyCode: dynamicStyles.companyCode };
+        const url = APIConfig.BASE_URL + APIConfig.GETACTIVECROPS;
+        const response = await axios.post(url, payload, { headers });
+        if (response.data.statusCode === HTTP_OK) {
+          const parseData = response.data.response;
+          console.log("checkingKnowledgeRefes=-=->", parseData)
+          let knowledgeCenterId;
+          const maxAttempts = 3;
+          let attempts = 0;
+          while (attempts < maxAttempts) {
+            try {
+              knowledgeCenterId = uuidv4();
+              console.log('Generated knowledgeCenterId:', knowledgeCenterId);
+              const existingKnowledgeCenter = realm.objects('KnowledgeCenter').filtered('_id == $0', knowledgeCenterId);
+              if (existingKnowledgeCenter.length === 0) {
+                break;
+              }
+              console.warn(`UUID collision detected for ${knowledgeCenterId}, attempt ${attempts + 1}`);
+              attempts++;
+            } catch (uuidError) {
+              console.error('Error generating UUID for KnowledgeCenter:', uuidError);
+              // setLoaderApi(false);
+              return;
+            }
+            if (attempts >= maxAttempts) {
+              console.error('Failed to generate unique UUID after', maxAttempts, 'attempts');
+              // setLoaderApi(false);
+              return;
+            }
+          }
+          if (parseData) {
+            try {
+              realm.write(() => {
+                realm.delete(cachedKnowledgeCenter);
+                realm.create('KnowledgeCenter', {
+                  _id: knowledgeCenterId,
+                  cropsList: JSON.stringify(parseData),
+                  timestamp: new Date(),
+                });
+              });
+              console.log('Successfully created KnowledgeCenter with _id:', knowledgeCenterId);
+            } catch (realmError) {
+              console.error('Error creating KnowledgeCenter object in Realm:', realmError);
+            }
+          }
+
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        // setLoaderApi(false);
+      }
+    }
+  };
+
+  const goldClubFetchKnowledgeCenterRefresh = async () => {
+    if (isConnected) {
+      try {
+        const headers = await GetApiHeaders();
+        headers.authType = "JSONREQUEST";
+        const payload = { companyCode: dynamicStyles.companyCode };
+        const url = APIConfig.BASE_URL_NVM + APIConfig.masters_getAllActiveProductsForSubeejKisan;
+        const response = await axios.post(url, payload, { headers });
+        console.log("two-=-=->", JSON.stringify(response.data))
+
+        if (response.data.statusCode === HTTP_OK) {
+          const parseData = response.data.response;
+          const updatedKnowledgeCenter = await processMarketPriceData(parseData)
+          let knowledgeCenterId;
+          const maxAttempts = 3;
+          let attempts = 0;
+          while (attempts < maxAttempts) {
+            try {
+              knowledgeCenterId = uuidv4();
+              console.log('Generated knowledgeCenterId:', knowledgeCenterId);
+              const existingKnowledgeCenter = realm.objects('KnowledgeCenter').filtered('_id == $0', knowledgeCenterId);
+              if (existingKnowledgeCenter.length === 0) {
+                break;
+              }
+              console.warn(`UUID collision detected for ${knowledgeCenterId}, attempt ${attempts + 1}`);
+              attempts++;
+            } catch (uuidError) {
+              console.error('Error generating UUID for KnowledgeCenter:', uuidError);
+              // setLoaderApi(false);
+              return;
+            }
+            if (attempts >= maxAttempts) {
+              console.error('Failed to generate unique UUID after', maxAttempts, 'attempts');
+              // setLoaderApi(false);
+              return;
+            }
+          }
+          if (updatedKnowledgeCenter) {
+            try {
+              realm.write(() => {
+                realm.delete(cachedGoldClubKnowledgeCenter);
+                realm.create('GoldCludKnowledgeCenter', {
+                  _id: knowledgeCenterId,
+                  cropsList: JSON.stringify(updatedKnowledgeCenter),
+                  timestamp: new Date(),
+                });
+              });
+              console.log('Successfully created goldclub with _id:', knowledgeCenterId);
+            } catch (realmError) {
+              console.error('Error creating KnowledgeCenter object in Realm:', realmError);
+            }
+          }
+
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        // setLoaderApi(false);
+      }
+    }
+  };
+
+  const newKnowledgeCenter = async () => {
+    if (isConnected) {
+      try {
+        const headers = await GetApiHeaders();
+        headers.authType = "JSONREQUEST";
+        const payload = { companyCode: dynamicStyles.companyCode };
+        const url = APIConfig.BASE_URL_NVM + APIConfig.masters_getAllActiveProductsForSubeejKisan
+        const response = await axios.post(url, payload, { headers });
+        if (response.data.statusCode === 200) {
+          if (response?.data?.response?.cropList) {
+            console.log("reposnecrop=-=->", response?.data?.response?.cropList)
+          }
+        }
+        console.log("sairesponse=-new=-=->", response.data.statusCode === 200)
+
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        // SimpleToast.show(translate("An_unexpected_error_occurred_Please_try_again"));
+      } finally {
+        // setLoaderApi(false);
+      }
+    } else {
+      // setLoaderApi(false);
+      // SimpleToast.show(translate("no_internet_conneccted"));
+    }
+  };
+
+  const fetchSamadhanHistory = async () => {
+    if (isConnected) {
+      try {
+        const headers = await GetApiHeaders();
+        headers.authType = "JSONREQUEST";
+        const payload = {
+          "farmerId": headers.userId,
+          'companyCode': dynamicStyles.companyCode
+        };
+        const url = APIConfig.BASE_URL_NVM + APIConfig.getRaisedComplaints_v1;
+        const response = await axios.post(url, payload, { headers });
+        if (response.data.statusCode === "200") {
+          const parseData = response.data;
+          let samadhanHistoryId;
+          const maxAttempts = 3;
+          let attempts = 0;
+          while (attempts < maxAttempts) {
+            try {
+              samadhanHistoryId = uuidv4();
+              console.log('Generated samadhanHistoryId:', samadhanHistoryId);
+              const existingKnowledgeCenter = realm.objects('SAMADHANHISTORY').filtered('_id == $0', samadhanHistoryId);
+              if (existingKnowledgeCenter.length === 0) {
+                break;
+              }
+              console.warn(`UUID collision detected for ${samadhanHistoryId}, attempt ${attempts + 1}`);
+              attempts++;
+            } catch (uuidError) {
+              console.error('Error generating UUID for samadhanHistory:', uuidError);
+              // setLoaderApi(false);
+              return;
+            }
+            if (attempts >= maxAttempts) {
+              console.error('Failed to generate unique UUID after', maxAttempts, 'attempts');
+              // setLoaderApi(false);
+              return;
+            }
+          }
+
+          // Try to download and update complaint images
+          let finalJsonToStore = parseData;
+
+          try {
+            const updatedJson = await processComplaintImages(parseData);
+            finalJsonToStore = updatedJson;
+            console.log('✅ Images processed, updated JSON ready for Realm.');
+          } catch (downloadErr) {
+            console.error('⚠️ Failed to process images, storing original JSON:', downloadErr);
+            // finalJsonToStore already points to parseData
+          }
+
+          try {
+            realm.write(() => {
+              realm.delete(cachedSamadhanHistory);
+              realm.create('SAMADHANHISTORY', {
+                _id: samadhanHistoryId,
+                ticketsHistory: JSON.stringify(finalJsonToStore),
+                timestamp: new Date(),
+              });
+            });
+            console.log('Successfully created samadhanhistory with _id:', samadhanHistoryId);
+          } catch (realmError) {
+            console.error('Error creating samadhanHistory object in Realm:', realmError);
+          }
+        }
+        else {
+          // SimpleToast.show(translate("Unable_to_fetch_issue_details"));
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        // SimpleToast.show(translate("An_unexpected_error_occurred_Please_try_again"));
+      } finally {
+        // setLoaderApi(false);
+      }
+    } else {
+      // setLoaderApi(false);
+      // SimpleToast.show(translate("no_internet_conneccted"));
+    }
+  };
 
   const fetchLocation = useCallback(async () => {
     const hasPermission = await requestLocationPermission();
@@ -1072,9 +1709,6 @@ const HomeScreenEmp = ({ route }) => {
           newDynamicStyles.profilePic = (data?.profilePic != undefined && data?.profilePic != "" && data?.profilePic != null) ? data?.profilePic : "";
           dispatch(setCompanyStyle(newDynamicStyles));
           console.log("newDynamic=-=->", newDynamicStyles)
-
-          setMarketPricesList(data?.userMenuControl[0])
-          setMarketPriceList(data?.userMenuControl[0].marketPricesList)
           setMenuControler(data?.userMenuControl || []);
           dispatch(setMarketpriceData(data?.userMenuControl || []));
           console.log('refref', data?.userMenuControl);
@@ -1088,32 +1722,13 @@ const HomeScreenEmp = ({ route }) => {
             storeInAsyncStorage(DISTRICT_NAME, `${data?.district}`),
           ]);
         } else if (response.data.statusCode === HTTP_601) {
-          handleForceLogout()
-          // showAlertWithMessage(
-          //   translate('alert'),
-          //   true,
-          //   true,
-          //   translate('alreadyLoggedMessage'),
-          //   true,
-          //   false,
-          //   translate('logout'),
-          //   translate('cancel')
-          // );
-          // setLoaderApi(false)
-
-        } else {
-          // setLoaderApi(false)
+          await logoutMethod()
         }
       } catch (error) {
         console.error('Error fetching user details:', error);
       } finally {
         // setLoaderApi(false);
       }
-
-    } else {
-      // setLoaderApi(false)
-
-      // SimpleToast.show(translate("no_internet_conneccted"))
     }
   }
 
@@ -1140,16 +1755,6 @@ const HomeScreenEmp = ({ route }) => {
 
     } else {
       // SimpleToast.show(translate("no_internet_conneccted"))
-    }
-  }
-
-
-  const handleForceLogout = async () => {
-    try {
-      logoutMethod()
-    } catch (error) {
-      console.error('Error during logout:', error);
-      SimpleToast.show(translate('logout_error') || 'Failed to log out');
     }
   }
 
@@ -1270,6 +1875,9 @@ const HomeScreenEmp = ({ route }) => {
           }
           setMarketPriceVisible(response?.data?.response?.userMenuControl["Market Prices"]?.visible)
         }
+        else if (response.data.statusCode === HTTP_601) {
+          await logoutMethod()
+        }
       } catch (error) {
         console.error('Error fetching user details:', error);
       } finally {
@@ -1313,9 +1921,13 @@ const HomeScreenEmp = ({ route }) => {
           setWeatherInfo(response?.data?.response?.dailyBaseWeatherInfo?.forecast[0] || {});
         }
         setWeatherVisible(response?.data?.response?.isVisible)
-      } if (response.data.statusCode == 403) {
+      }
+      else if (response.data.statusCode == 403) {
         // setWeatherInfo({});
         setWeatherVisible(response?.data?.response?.isVisible)
+      }
+      else if (response.data.statusCode === HTTP_601) {
+        await logoutMethod()
       }
     } catch (error) {
       console.error('Error fetching weather details:', error);
@@ -1335,134 +1947,6 @@ const HomeScreenEmp = ({ route }) => {
     setFellowFarmerMobileValidation(false);
     setFellowFarmerMobileValidationContent('');
   }, []);
-
-
-  const requestCameraPermission = async (value) => {
-    if (Platform.OS == 'android') {
-      const permission = PermissionsAndroid.PERMISSIONS.CAMERA;
-      const result = await PermissionsAndroid.request(permission);
-      console.log("checakRe-0-0-9>", result)
-      if (result === PermissionsAndroid.RESULTS.GRANTED) {
-        if (isConnected) {
-          navigationProductScan(value)
-        } else {
-          SimpleToast.show(translate('no_internet_conneccted'))
-        }
-      } else if (result === PermissionsAndroid.RESULTS.DENIED) {
-        Alert.alert(
-          translate("Camera_Permission_Required"),
-          translate("Please_enable_camera_access_QR_codes"),
-          [
-            { text: translate("cancel"), style: 'cancel' },
-            { text: translate("open_settings"), onPress: () => Linking.openSettings() },
-          ]
-        );
-      } else if (result === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN) {
-        Alert.alert(
-          translate("Camera_Permission_Required"),
-          translate("Please_enable_camera_access_QR_codes"),
-          [
-            { text: translate("cancel"), style: 'cancel' },
-            { text: translate("open_settings"), onPress: () => Linking.openSettings() },
-          ]
-        );
-      }
-    } else if (Platform.OS == 'ios') {
-      const status = await request(PERMISSIONS.IOS.CAMERA);
-      if (status === RESULTS.GRANTED || status === RESULTS.LIMITED) {
-        if (isConnected) {
-          navigationProductScan(value)
-
-        } else {
-          SimpleToast.show(translate('no_internet_conneccted'))
-
-        }
-      } else if (status === RESULTS.BLOCKED) {
-        Alert.alert(
-          translate("Camera_Permission_Required"),
-          translate("Please_enable_camera_access_QR_codes"),
-          [
-            { text: translate("cancel"), style: 'cancel' },
-            { text: translate("open_settings"), onPress: () => Linking.openSettings() },
-          ]
-        );
-      } else {
-        Alert.alert(
-          translate("Camera_Permission_Required"),
-          translate("Please_enable_camera_access_QR_codes"),
-          [
-            { text: translate("cancel"), style: 'cancel' },
-            { text: translate("open_settings"), onPress: () => Linking.openSettings() },
-          ]
-        );
-      }
-    }
-  };
-
-  const cashbackScanBothLocationandCameraHandle = async (value) => {
-    // LOCATION PERMISSION
-    const locationPermission = await requestLocationPermission();
-    if (locationPermission !== "granted") {
-      return;
-    }
-    // GPS ENABLE CHECK
-    const isGpsEnable = await checkIfGpsEnabled();
-    if (!isGpsEnable) {
-      return;
-    }
-
-    // CAMERA PERMISSION
-    let cameraPermissionGranted = false;
-
-    if (Platform.OS === "android") {
-      const result = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.CAMERA
-      );
-
-      if (result === PermissionsAndroid.RESULTS.GRANTED) {
-        cameraPermissionGranted = true;
-      } else {
-        Alert.alert(
-          translate("Camera_Permission_Required"),
-          translate("Please_enable_camera_access_QR_codes"),
-          [
-            { text: translate("cancel"), style: "cancel" },
-            { text: translate("open_settings"), onPress: () => Linking.openSettings() }
-          ]
-        );
-        return;
-      }
-
-    } else {
-
-      const status = await request(PERMISSIONS.IOS.CAMERA);
-
-      if (status === RESULTS.GRANTED || status === RESULTS.LIMITED) {
-        cameraPermissionGranted = true;
-      } else {
-        Alert.alert(
-          translate("Camera_Permission_Required"),
-          translate("Please_enable_camera_access_QR_codes"),
-          [
-            { text: translate("cancel"), style: "cancel" },
-            { text: translate("open_settings"), onPress: () => Linking.openSettings() }
-          ]
-        );
-        return;
-      }
-    }
-
-    // FINAL CHECK (BOTH)
-    if (locationPermission === "granted" && cameraPermissionGranted) {
-
-      if (isConnected) {
-        navigation.navigate("CashBackScan", { screenName: value });
-      } else {
-        SimpleToast.show(translate("no_internet_conneccted"));
-      }
-
-    }
-  };
 
   const fromProductScancashbackScanBothLocationandCameraHandle = async (value) => {
     // LOCATION PERMISSION
@@ -1530,17 +2014,6 @@ const HomeScreenEmp = ({ route }) => {
     setProductScanModalOpen(false);
 
   };
-
-
-  const navigationProductScan = useCallback(async (value) => {
-
-    navigation.navigate('QRScannerRn', {
-      type: value,
-      fellowFarmerName: '',
-      fellowFarmerMobileNumber: '',
-    });
-    setProductScanModalOpen(false);
-  }, [navigation]);
 
   const fellowFarmersSubmitHandle = useCallback(() => {
     if (!fellowFarmerName) {
@@ -1652,7 +2125,6 @@ const HomeScreenEmp = ({ route }) => {
       setLoaderApi(false)
       return;
     }
-
     try {
       setLoaderApi(true);
       const ForcedLougoutUrl = APIConfig.BASE_URL + APIConfig.AUTH.LOGOUT
@@ -1682,150 +2154,135 @@ const HomeScreenEmp = ({ route }) => {
           deleteFromAsyncStorage(LASTNAME),
           deleteFromAsyncStorage(OFFLINETOTALCOUNT),
           deleteFromAsyncStorage(COMPANYCODE),
+          removeDatbaseData(),
           clearDownloadedImages()
         ]);
         dispatch(setCompanyStyle({}));
         navigation.replace('LoginScreenRn');
-        // setLoaderApi(false)
-
-
       } else {
-        // setLoaderApi(false)
-
         SimpleToast.show(apiCallLogout.data.message)
       }
 
     } catch (error) {
-      // setLoaderApi(false)
-
       console.log("Logout error:", error.response?.data || error.message);
     }
   };
 
-  const handleOkPress = useCallback(async () => {
-    if (alertMessage === translate('alreadyLoggedMessage')) {
-      try {
-        logoutMethod()
-        await Promise.all([
-          deleteFromAsyncStorage(USER_ID),
-          deleteFromAsyncStorage(MOBILENUMBER),
-          deleteFromAsyncStorage(USERNAME),
-          deleteFromAsyncStorage(REFERRALCODE),
-          deleteFromAsyncStorage(USER_IMG),
-          deleteFromAsyncStorage(STATE_ID),
-          deleteFromAsyncStorage(STATE_NAME),
-          deleteFromAsyncStorage(DISTRICT_ID),
-          deleteFromAsyncStorage(DISTRICT_NAME),
-          deleteFromAsyncStorage(FIRSTNAME),
-          deleteFromAsyncStorage(LASTNAME),
-          deleteFromAsyncStorage(OFFLINETOTALCOUNT),
-          deleteFromAsyncStorage(COMPANYCODE),
-          clearDownloadedImages()
-        ]);
-        dispatch(setCompanyStyle({}));
-        navigation.replace('LoginScreenRn');
-      } catch (error) {
-        console.error('Error during logout:', error);
-        SimpleToast.show(translate('logout_error') || 'Failed to log out');
-      }
-    } else if (alertMessage === strings.update_message) {
-      Linking.openURL(Platform.OS === 'ios' ? appStoreLink : playStore);
-    }
-    setAlertVisible(false);
-  }, [alertMessage, dispatch, navigation]);
-
-  const handleNoPress = useCallback(() => {
-    setAlertVisible(false);
-  }, []);
-
-  const showAlertWithMessage = useCallback((title, header, headerText, message, yesBtn, noBtn, yesText, noText) => {
-    setAlertTitle(title);
-    setShowAlertHeader(header);
-    setShowAlertHeaderText(headerText);
-    setAlertMessage(message);
-    setShowAlertYesButton(yesBtn);
-    setShowAlertNoButton(noBtn);
-    setShowAlertYesButtonText(yesText);
-    setShowAlertNoButtonText(noText);
-    setAlertVisible(true);
-  }, []);
-
-  const checkForceUpdate = useCallback(() => {
-    const subscriber = firestore()
-      .collection(FIREBASE_VERSION_COLLECTION_NAME)
-      .doc(FIREBASE_VERSION_DOC_ID)
-      .onSnapshot(
-        documentSnapshot => {
-          if (documentSnapshot?.exists) {
-            const data = documentSnapshot.data();
-            if (data) {
-              setTimeout(() => {
-                if (Platform.OS == "android") {
-                  checkAppversionUpdate(data);
-                } else {
-                  checkAppversionUpdateIOS(data);
-                }
-              }, 500);
-
-            }
-          }
-        },
-        error => {
-          console.error('Error fetching Firestore document:', error);
-        }
-      );
-    return () => subscriber();
-  }, []);
-
-  const checkAppversionUpdate = useCallback(async documentSnapshot => {
+  const removeDatbaseData = async () => {
     try {
-      const appVersionCode = await getBuildNumber();
-      const appVersion = Platform.OS === 'ios' ? documentSnapshot.iosAppVersion : documentSnapshot.androidAppVersion;
-      const isUAT = !APP_ENV_PROD;
-      const targetVersion = isUAT ? Platform.OS == "ios" ? documentSnapshot?.iosAppVersionUAT : documentSnapshot?.androidAppVersionUAT : appVersion;
-
-
-      if (targetVersion && targetVersion > appVersionCode) {
-        const isMandatory = Platform.OS === 'android' ? documentSnapshot.isMandatoryForAndroid : documentSnapshot.isMandatoryForIos;
-
+      if (realm && !realm.isClosed) {
+        realm.write(() => {
+          realm.delete(cachedImages);
+          realm.delete(Meeting);
+          realm.delete(FABDetails);
+          realm.delete(helpDeskRaise);
+          realm.delete(YieldMaster);
+          realm.delete(SeedMaster);
+          realm.delete(FertilizerMaster);
+          realm.delete(FertilizerMaster2);
+          realm.delete(SeedCalSubmit);
+          realm.delete(YieldCalSubmit);
+          realm.delete(cachedHybridList);
+          realm.delete(cachedKnowledgeCenter);
+          realm.delete(GeoTaggingView);
+          realm.delete(cachedGeoTaggingHistory);
+          realm.delete(cachedSamadhanHistory);
+          realm.delete(goldClubKnowledgeCenter)
+        });
+        console.log("Successfully deleted all Realm data");
       }
-    } catch (error) {
-      console.error('Error in checkAppversionUpdate:', error);
+    } catch (realmError) {
+      console.error('Error deleting objects from Realm:', realmError);
     }
-  }, []);
-  async function checkAppversionUpdateIOS(documentSnapshot) {
-    // const localVersion = DeviceInfo.getVersion(); // Need to change for Android in future
-    const localVersion = await getAppVersion();
-    let remoteVersion = '';
+  };
 
-    if (APP_ENV_PROD) {
-      if (Platform.OS === 'android') {
-        remoteVersion = documentSnapshot.androidAppVersion;
-      } else {
-        remoteVersion = documentSnapshot.iosAppVersion;
-      }
-    } else {
-      if (Platform.OS === 'android') {
-        remoteVersion = documentSnapshot.androidAppVersionUAT;
-      } else {
-        remoteVersion = documentSnapshot.iosAppVersionUAT;
-      }
-    }
-    let showForceUpdate = Platform.OS == 'ios' ? documentSnapshot?.showForceUpdateIOS : documentSnapshot?.showForceUpdate;
-    let isMandatory = Platform.OS == 'ios' ? documentSnapshot.isMandatoryForIos : documentSnapshot.isMandatoryForAndroid;
 
-    console.log(`Local: ${localVersion} | Remote: ${remoteVersion}`);
-    if (compareVersions(localVersion, remoteVersion) < 0) {
-      // showAlertWithMessage(strings.alert, true, true, documentSnapshot.message || strings.update_message, true, !isMandatory, strings.update, strings.cancel);
-    }
-  }
+
+  
+
+  // const checkForceUpdate = useCallback(() => {
+  //   const subscriber = firestore()
+  //     .collection(FIREBASE_VERSION_COLLECTION_NAME)
+  //     .doc(FIREBASE_VERSION_DOC_ID)
+  //     .onSnapshot(
+  //       documentSnapshot => {
+  //         if (documentSnapshot?.exists) {
+  //           const data = documentSnapshot.data();
+  //           if (data) {
+  //             setTimeout(() => {
+  //               if (Platform.OS == "android") {
+  //                 checkAppversionUpdate(data);
+  //               } else {
+  //                 checkAppversionUpdateIOS(data);
+  //               }
+  //             }, 500);
+
+  //           }
+  //         }
+  //       },
+  //       error => {
+  //         console.error('Error fetching Firestore document:', error);
+  //       }
+  //     );
+  //   return () => subscriber();
+  // }, []);
+
+  // const checkAppversionUpdate = useCallback(async documentSnapshot => {
+  //   try {
+  //     const appVersionCode = await getBuildNumber();
+  //     const appVersion = Platform.OS === 'ios' ? documentSnapshot.iosAppVersion : documentSnapshot.androidAppVersion;
+  //     const isUAT = !APP_ENV_PROD;
+  //     const targetVersion = isUAT ? Platform.OS == "ios" ? documentSnapshot?.iosAppVersionUAT : documentSnapshot?.androidAppVersionUAT : appVersion;
+
+
+  //     if (targetVersion && targetVersion > appVersionCode) {
+  //       const isMandatory = Platform.OS === 'android' ? documentSnapshot.isMandatoryForAndroid : documentSnapshot.isMandatoryForIos;
+
+  //     }
+  //   } catch (error) {
+  //     console.error('Error in checkAppversionUpdate:', error);
+  //   }
+  // }, []);
+  // async function checkAppversionUpdateIOS(documentSnapshot) {
+  //   // const localVersion = DeviceInfo.getVersion(); // Need to change for Android in future
+  //   const localVersion = await getAppVersion();
+  //   let remoteVersion = '';
+
+  //   if (APP_ENV_PROD) {
+  //     if (Platform.OS === 'android') {
+  //       remoteVersion = documentSnapshot.androidAppVersion;
+  //     } else {
+  //       remoteVersion = documentSnapshot.iosAppVersion;
+  //     }
+  //   } else {
+  //     if (Platform.OS === 'android') {
+  //       remoteVersion = documentSnapshot.androidAppVersionUAT;
+  //     } else {
+  //       remoteVersion = documentSnapshot.iosAppVersionUAT;
+  //     }
+  //   }
+  //   let showForceUpdate = Platform.OS == 'ios' ? documentSnapshot?.showForceUpdateIOS : documentSnapshot?.showForceUpdate;
+  //   let isMandatory = Platform.OS == 'ios' ? documentSnapshot.isMandatoryForIos : documentSnapshot.isMandatoryForAndroid;
+
+  //   console.log(`Local: ${localVersion} | Remote: ${remoteVersion}`);
+  //   if (compareVersions(localVersion, remoteVersion) < 0) {
+  //     // showAlertWithMessage(strings.alert, true, true, documentSnapshot.message || strings.update_message, true, !isMandatory, strings.update, strings.cancel);
+  //   }
+  // }
+
+  useEffect(() => {
+    getEmployeeDashboardapi(
+      selectedDateRange.startDate || '',
+      selectedDateRange.endDate || ''
+    );
+  }, [selectedDateRange]);
 
 
 
   const onRefresh = async () => {
     if (isConnected) {
       // setRefreshing(true);
-      await getEmployeeDashboardapi(selectedDateRange?.startDate, selectedDateRange?.endDate)
+      setSelectedDateRange({ startDate: '', endDate: '' });
       await getMinDateEmployee()
       await newKnowledgeCenter()
       await getUserMenuControl()
@@ -1851,13 +2308,6 @@ const HomeScreenEmp = ({ route }) => {
     }
   }
 
-  const handleMandiNavigations = () => {
-    if (isConnected) {
-      navigation.navigate('MandiPricesScreen', { productList: menuControler.find(item => item.layout === 'Market Prices')?.marketPricesList || [] });
-    } else {
-      SimpleToast.show(translate("no_internet_conneccted"))
-    }
-  }
   const navigationNearBy = async () => {
     const hasPermission = await requestLocationPermission()
     const isGpsEnable = await checkIfGpsEnabled()
@@ -1891,9 +2341,6 @@ const HomeScreenEmp = ({ route }) => {
     } else if (title === "Nearby") {
       navigationNearBy()
     }
-    // else if (id === 0) {
-    //   navigation.navigate('GeoTaggingScreen')
-    // } 
     else if (title === "Diagnostic") {
       if (isConnected) {
         navigation.navigate('CropDiagonstic')
@@ -1907,29 +2354,11 @@ const HomeScreenEmp = ({ route }) => {
         SimpleToast.show(translate('no_internet_conneccted'))
       }
     } else if (title === "Scan") {
-              fromProductScancashbackScanBothLocationandCameraHandle('self')
+      fromProductScancashbackScanBothLocationandCameraHandle('self')
 
       // setProductScanModalOpen(true)
       // setFellowFarmerVisible(true)
     }
-    // else if (id === 0) {
-    //   navigation.navigate('ReferralScreen')
-    // } 
-    // else if (id === 0) {
-    //   if (isConnected) {
-    //     navigation.navigate('DipstickSurveyRn')
-    //   } else {
-    //     SimpleToast.show(translate('no_internet_conneccted'))
-    //   }
-    // } 
-    // else if (id === 0) {
-    //   navigation.navigate('BookSeeds')
-    // } 
-    // else if (id === 0) {
-    //   navigation.navigate('MeetFellowFarmer')
-    // } else if (id === 0) {
-    //   navigation.navigate('InviteFarmerMeeting')
-    // } 
     else if (title === "Pest Forecast") {
       navigationPest()
 
@@ -1940,22 +2369,6 @@ const HomeScreenEmp = ({ route }) => {
         SimpleToast.show(translate('no_internet_conneccted'))
       }
     }
-    // else if (id === 0) {
-    //   if (isConnected) {
-    //     requestCameraPermission(FIELDACTIVITYQR)
-    //   } else {
-    //     SimpleToast.show(translate('no_internet_conneccted'))
-    //   }
-    // } else if (id === 0) {
-    //   cashbackScanBothLocationandCameraHandle(id)
-    //   // cashBackScanRequestCameraPermission(title)
-    // }
-    // else if (id === 0) {
-    //   dispatch(setCashBackModal(false))
-    //   setCashBackSelected("")
-    //   navigation.navigate("CashFreeTransactionsActivity");
-    // }
-
   }
 
   const yieldScreenNavigation = () => {
@@ -2032,7 +2445,6 @@ const HomeScreenEmp = ({ route }) => {
       );
     } catch (err) {
       console.error('Unexpected error:', err);
-      // SimpleToast.show(translate('An_unexpected_error_occurred_Please_try_again'));
     }
   }, [isConnected]);
 
@@ -2077,68 +2489,6 @@ const HomeScreenEmp = ({ route }) => {
       </TouchableOpacity>
     );
   }
-
-  const renderMarketPricesItem = ({ item }) => {
-    return (
-      <TouchableOpacity
-        onPress={() => {
-          navigation.navigate('CropDetailsScreen', {
-            minPrice: item.minPrice,
-            maxPrice: item.maxPrice,
-            name: item.productName,
-            marketName: item.marketName,
-            productImage: item.productImage,
-            origin: 'Home',
-          });
-        }}
-        style={styles.marketPriceMainContainer}
-      >
-        <Image source={{ uri: item.productImage }} style={styles.marketPriceImg} />
-        <View style={styles.marketPriceContentContainer}>
-          <Text style={[styles.marketProductName, { fontFamily: fonts.SemiBold }]}>{item.productName}</Text>
-          <Text style={[styles.marketPriceName, { fontFamily: fonts.Regular }]}>{item.marketName}</Text>
-          <View style={styles.marketImgContainer}>
-            <Image source={require('../../../assets/Images/downPrice.png')} style={styles.downPriceIcon} />
-            <Text style={[styles.marketPriceText, { fontFamily: fonts.SemiBold }]}>{`${item.priceUnit}${item.productPrice}/${item.productUnit}`}</Text>
-          </View>
-        </View>
-      </TouchableOpacity>
-    )
-  }
-
-  // const servicesStatic = () => (
-  //   <View style={styles.servicesStaticContainer}>
-  //     <View style={styles.headerFlatList}>
-  //       <Image source={staticServices.layoutIcon} style={styles.layoutIcon} />
-  //       <Text style={[styles.serviceText, { fontFamily: fonts.SemiBold }]}>{translate(staticServices.displayName)}</Text>
-  //     </View>
-  //     <FlatList
-  //       // ListEmptyComponent={() => <Text style={styles.noDataText}>{translate('No_data_available')}</Text>}
-  //       numColumns={4}
-  //       data={staticServices.servicesList.filter((item) => item.visible)}
-  //       renderItem={renderServiceItems}
-  //       keyExtractor={item => item.id.toString()}
-  //       initialNumToRender={4}
-  //     />
-  //   </View>
-  // );
-
-  // const servicesOthers = () => (
-  //   <View style={styles.servicesStaticContainer}>
-  //     <View style={styles.headerFlatList}>
-  //       <Image source={staticOthers.layoutIcon} style={styles.layoutIcon} />
-  //       <Text style={[styles.serviceText, { fontFamily: fonts.SemiBold }]}>{translate(staticOthers.displayName)}</Text>
-  //     </View>
-  //     <FlatList
-  //       // ListEmptyComponent={() => <Text style={styles.noDataText}>{translate('No_data_available')}</Text>}
-  //       numColumns={4}
-  //       data={staticOthers.servicesList.filter((item) => item.visible)}
-  //       renderItem={renderServiceItems}
-  //       keyExtractor={item => item.id.toString()}
-  //       initialNumToRender={4}
-  //     />
-  //   </View>
-  // );
 
   const navigationPest = async () => {
     const hasPermission = await requestLocationPermission()
@@ -2293,6 +2643,7 @@ const HomeScreenEmp = ({ route }) => {
           </View>
         </View>
         <View style={{ flexDirection: "row", position: "absolute", right: width * 0.02, top: Platform.OS == "ios" ? height * 0.05 : height * 0.01 }}>
+
           <TouchableOpacity onPress={() => onRefresh()} style={{
             alignSelf: "flex-start", marginLeft: 10, marginRight: 5
           }}>
@@ -2444,22 +2795,7 @@ const HomeScreenEmp = ({ route }) => {
         </TouchableWithoutFeedback>
       </Modal>
 
-      {isAlertVisible && (
-        <CustomAlert
-          visible={isAlertVisible}
-          onPressClose={() => setAlertVisible(false)}
-          title={alertTitle}
-          showHeader={showAlertHeader}
-          showHeaderText={showAlertHeaderText}
-          message={alertMessage}
-          onPressOkButton={handleOkPress}
-          onPressNoButton={handleNoPress}
-          showYesButton={showAlertYesButton}
-          showNoButton={showAlertNoButton}
-          yesButtonText={showAlertYesButtonText}
-          noButtonText={showAlertNoButtonText}
-        />
-      )}
+      
       <Modal animationType="slide" transparent visible={productScanModalOpen}>
         <TouchableWithoutFeedback>
           <View style={styles.modalOverlay}>
@@ -2802,9 +3138,43 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  
-  
-  
+  bottomNavigationContainer: {
+    backgroundColor: '#fff',
+    width: width,
+    height: height * 0.08,
+    marginTop: 15,
+    position: 'absolute',
+    borderTopRightRadius: 30,
+    borderTopLeftRadius: 30,
+    bottom: height * 0.04,
+    // bottom: 0,
+    left: 0,
+    right: 0,
+    elevation: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingHorizontal: 10,
+    alignItems: 'center',
+  },
+  bottomNavigationIconContainer: {
+    alignItems: 'center',
+    height: height * 0.05,
+    width: '20%',
+    justifyContent: 'center',
+  },
+  bottomNavigationIcons: {
+    height: 22,
+    width: 68,
+    resizeMode: 'contain',
+  },
+  bottomNavigationIcons2: {
+    height: 22,
+    width: 68,
+  },
+  bottomIconLabels: {
+    fontSize: RFValue(11, height),
+    lineHeight: 20,
+  },
   modalMainContainer: {
     backgroundColor: 'rgba(0,0,0,0.3)',
     flex: 1,

@@ -38,9 +38,7 @@ import PreLoginCustomLoader from '../components/PreLoginCustomLoader';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { translate } from '../Localization/Localisation';
 import { CustomCommonModal } from '../components/CustomCommonModal';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { v4 as uuidv4 } from 'uuid';
-import { useRealm, useQuery } from '@realm/react';
+import realm from './realmOffline/realmConfig';
 import { useOfflineCalculatorsCRUD } from './realmOffline/useOfflineCalculatorsCRUD';
 import { useOfflineSync } from '../utils/syncUtils';
 import { useFontStyles } from '../hooks/useFontStyles';
@@ -54,7 +52,6 @@ const SeedCalculator = ({ route }) => {
     const fonts = useFontStyles()
     const { saveSeedMasterList, saveSeedCalc } = useOfflineCalculatorsCRUD();
     const { incrementOfflineCount, decrementOfflineCount, updateOfflineCount } = useOfflineSync();
-    const realm = useRealm();
     //   const calcType = route?.params?.calcType;
     const dynamicStyles = useSelector(state => state.companyStyles.companyStyles);
     const currentTheme = useSelector(state => state.theme.theme);
@@ -137,6 +134,8 @@ const SeedCalculator = ({ route }) => {
     const [alertTextContent, setAlertTextContent] = useState("")
     const [roleId, setRoleId] = useState("")
     const roundToNearestInteger = (value) => Math.round(value).toString();
+    const sharingRef = useRef(false);
+    const [isSharing, setIsSharing] = useState(false);
 
     const navigation = useNavigation()
     const roundAndFormat = (value) => {
@@ -1426,17 +1425,37 @@ const SeedCalculator = ({ route }) => {
     };
 
     const takeScreenshot = async () => {
+        if (sharingRef.current) return;
+
+        sharingRef.current = true;
+        setIsSharing(true);
+
         try {
             const uri = await viewShotRef.current.capture();
+
             const shareOptions = {
                 title: 'Share via',
                 message: `${translate("Note")} ${translate("noteDesc")}`,
                 url: uri,
-                // social: Share.Social.WHATSAPP,
             };
-            Share.open(shareOptions);
+
+            await Share.open(shareOptions);
+
         } catch (error) {
-            console.error('Failed to capture screenshot:', error);
+
+            // User cancelled share popup
+            if (
+                error?.message?.includes('User did not share') ||
+                error?.message?.includes('User cancelled')
+            ) {
+                console.log('Share cancelled');
+            } else {
+                console.error('Failed to capture screenshot:', error);
+            }
+
+        } finally {
+            sharingRef.current = false;
+            setIsSharing(false);
         }
     };
     const commonSchema = {
@@ -1956,24 +1975,24 @@ const SeedCalculator = ({ route }) => {
                     </ViewShot>
                 </ScrollView>
                 {/* {roleId != 1 && */}
-                    <View style={styles.container}>
-                        <TouchableOpacity disabled={selectedCrop === ''} onPress={() => {
-                            resetValues()
-                            setSelectedCrop('')
-                        }} style={[styles.button, { backgroundColor: selectedCrop === '' ? 'rgba(255, 255, 255, 1)' : dynamicStyles.secondaryColor, borderColor: selectedCrop === '' ? "grey" : dynamicStyles.primaryColor }]}>
-                            <Text style={[styles.buttonText, { color: selectedCrop === '' ? "grey" : dynamicStyles.primaryColor, fontFamily: fonts.Regular }]}>{translate("Clear")}</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={() => saveAPI()}
+                <View style={styles.container}>
+                    <TouchableOpacity disabled={selectedCrop === ''} onPress={() => {
+                        resetValues()
+                        setSelectedCrop('')
+                    }} style={[styles.button, { backgroundColor: selectedCrop === '' ? 'rgba(255, 255, 255, 1)' : dynamicStyles.secondaryColor, borderColor: selectedCrop === '' ? "grey" : dynamicStyles.primaryColor }]}>
+                        <Text style={[styles.buttonText, { color: selectedCrop === '' ? "grey" : dynamicStyles.primaryColor, fontFamily: fonts.Regular }]}>{translate("Clear")}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() => saveAPI()}
 
-                            disabled={!showStatus()} style={[styles.button, styles.saveButton, { borderColor: !showStatus() ? "grey" : dynamicStyles.primaryColor, backgroundColor: !showStatus() ? "grey" : dynamicStyles.primaryColor, }]}>
-                            <Text style={[styles.buttonText, { color: !showStatus() ? "#fff" : dynamicStyles.secondaryColor, fontFamily: fonts.Regular }]}>{translate("save")}</Text>
-                        </TouchableOpacity>
-                    </View>
+                        disabled={!showStatus()} style={[styles.button, styles.saveButton, { borderColor: !showStatus() ? "grey" : dynamicStyles.primaryColor, backgroundColor: !showStatus() ? "grey" : dynamicStyles.primaryColor, }]}>
+                        <Text style={[styles.buttonText, { color: !showStatus() ? "#fff" : dynamicStyles.secondaryColor, fontFamily: fonts.Regular }]}>{translate("save")}</Text>
+                    </TouchableOpacity>
+                </View>
                 {/* } */}
 
 
-                <TouchableOpacity disabled={!showStatus()} onPress={() => takeScreenshot()}
+                <TouchableOpacity disabled={!showStatus() || isSharing} onPress={() => takeScreenshot()}
                     style={{ marginVertical: 10, borderRadius: 8, marginBottom: 20, alignItems: "center", justifyContent: "center", alignSelf: "center", height: 50, backgroundColor: !showStatus() ? "#D6D6D6" : dynamicStyles.primaryColor, width: "85%" }}>
                     <Text style={{ textAlign: "center", color: !showStatus() ? "#000" : dynamicStyles.secondaryColor, fontSize: RFValue(14, 680), fontFamily: fonts.Bold }}>{translate("Share")}</Text>
                     <Image source={require("../../assets/Images/whatsAppImgIcon.png")} style={styles.whatsAppIcon} />

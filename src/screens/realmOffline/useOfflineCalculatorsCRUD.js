@@ -1,19 +1,17 @@
-import { useRealm, useQuery } from '@realm/react';
+import Realm from 'realm';
+import realm from './realmConfig'; // Adjust path
 import { v4 as uuidv4 } from 'uuid';
-import { useOfflineSync } from '../../utils/syncUtils';
-export const useOfflineCalculatorsCRUD = () => {
-   
-    const realm = useRealm();
-    const SeedCalc = useQuery('SeedCalSubmit');
-    const YieldCalc = useQuery('YieldCalSubmit');
 
-    //save seed masters
+export const useOfflineCalculatorsCRUD = () => {
+
+    // Save Seed Master
     const saveSeedMasterList = (masterResp) => {
-       
         const SeedMastersId = uuidv4();
+
         try {
             realm.write(() => {
-                realm.delete(realm.objects('SeedMaster')); // Ensure only one copy
+                realm.delete(realm.objects('SeedMaster'));
+
                 realm.create('SeedMaster', {
                     _id: SeedMastersId,
                     SeedMastersList: JSON.stringify(masterResp),
@@ -21,7 +19,7 @@ export const useOfflineCalculatorsCRUD = () => {
                 });
             });
 
-            console.log("Seed master list saved.");
+            console.log('Seed master list saved.');
             return true;
         } catch (error) {
             console.error('Failed to save seed master list:', error);
@@ -29,88 +27,109 @@ export const useOfflineCalculatorsCRUD = () => {
         }
     };
 
+    // Save Yield Master
     const saveYieldMasterList = (masterResp) => {
-
         const YieldMastersId = uuidv4();
+
         try {
             realm.write(() => {
-                realm.delete(realm.objects('YieldMaster')); // Ensure only one copy
+                realm.delete(realm.objects('YieldMaster'));
+
                 realm.create('YieldMaster', {
                     _id: YieldMastersId,
                     YieldMastersList: JSON.stringify(masterResp),
                     timestamp: new Date(),
                 });
-               
             });
-            console.log("Seed master list saved.");
+
+            console.log('Yield master list saved.');
             return true;
         } catch (error) {
-            console.error('Failed to save seed master list:', error);
+            console.error('Failed to save yield master list:', error);
             return false;
         }
     };
 
+    // Save Fertilizer Master
     const fertilizerMasterList = (masterResp) => {
-       
-        const SeedMastersId = uuidv4();
+        const id = uuidv4();
+
         try {
             realm.write(() => {
-                realm.delete(realm.objects('FertilizerMaster')); // Ensure only one copy
+                realm.delete(realm.objects('FertilizerMaster'));
+
                 realm.create('FertilizerMaster', {
-                    _id: SeedMastersId,
+                    _id: id,
                     FertilizerMastersList: JSON.stringify(masterResp),
                     timestamp: new Date(),
                 });
             });
 
-            console.log("fertilizer master list saved.");
+            console.log('Fertilizer master list saved.');
             return true;
         } catch (error) {
-            console.error('Failed to save seed master list:', error);
+            console.error('Failed to save fertilizer master list:', error);
             return false;
         }
     };
+
+    // Save Fertilizer Master 2
     const fertilizerMasterList2 = (masterResp) => {
-       
-        const SeedMastersId = uuidv4();
+        const id = uuidv4();
+
         try {
             realm.write(() => {
-                realm.delete(realm.objects('FertilizerMaster2')); // Ensure only one copy
+                realm.delete(realm.objects('FertilizerMaster2'));
+
                 realm.create('FertilizerMaster2', {
-                    _id: SeedMastersId,
+                    _id: id,
                     FertilizerMastersList2: JSON.stringify(masterResp),
                     timestamp: new Date(),
                 });
             });
 
-            console.log("fertilizer master list saved.");
+            console.log('Fertilizer master list 2 saved.');
             return true;
         } catch (error) {
-            console.error('Failed to save seed master list:', error);
+            console.error('Failed to save fertilizer master list 2:', error);
             return false;
         }
     };
+
+    // Save Fertilizer Calc Update Master
     const fertilizerMasterCalUpdateList = (masterResp) => {
-       
-        const SeedMastersId = uuidv4();
+        const id = uuidv4();
+
         try {
             realm.write(() => {
-                realm.delete(realm.objects('FertilizerCalcUpdateMaster')); // Ensure only one copy
+                realm.delete(
+                    realm.objects('FertilizerCalcUpdateMaster')
+                );
+
                 realm.create('FertilizerCalcUpdateMaster', {
-                    _id: SeedMastersId,
-                    FertilizercalUpdateMastersList: JSON.stringify(masterResp),
+                    _id: id,
+                    FertilizercalUpdateMastersList:
+                        JSON.stringify(masterResp),
                     timestamp: new Date(),
                 });
             });
 
-            console.log("fertilizer master list saved.");
+            console.log(
+                'Fertilizer Calc Update Master saved.'
+            );
+
             return true;
         } catch (error) {
-            console.error('Failed to save seed master list:', error);
+            console.error(
+                'Failed to save Fertilizer Calc Update Master:',
+                error
+            );
+
             return false;
         }
     };
-    // Save or update a single SeedCalc object
+
+    // Save Seed Calculator
     const saveSeedCalc = (payloadObj) => {
         try {
             realm.write(() => {
@@ -118,20 +137,29 @@ export const useOfflineCalculatorsCRUD = () => {
                     'SeedCalSubmit',
                     {
                         _id: 'SeedCalcSingleRecord',
-                        data: JSON.stringify(payloadObj)
+                        data: JSON.stringify(payloadObj),
                     },
                     Realm.UpdateMode.Modified
                 );
             });
-           // incrementOfflineCount(1);
-            console.log('Saved/Updated SeedCalc:', payloadObj);
+
+            console.log(
+                'Saved/Updated SeedCalc:',
+                payloadObj
+            );
+
             return true;
         } catch (error) {
-            console.error('Failed to save SeedCalc:', error);
+            console.error(
+                'Failed to save SeedCalc:',
+                error
+            );
+
             return false;
         }
     };
 
+    // Save Yield Calculator
     const saveYieldCalc = (payloadObj) => {
         try {
             realm.write(() => {
@@ -139,112 +167,184 @@ export const useOfflineCalculatorsCRUD = () => {
                     'YieldCalSubmit',
                     {
                         _id: 'YieldCalcSingleRecord',
-                        data: JSON.stringify(payloadObj)
+                        data: JSON.stringify(payloadObj),
                     },
                     Realm.UpdateMode.Modified
                 );
             });
-            console.log('Saved/Updated YieldCalc:', payloadObj);
-          //  incrementOfflineCount(1)
+
+            console.log(
+                'Saved/Updated YieldCalc:',
+                payloadObj
+            );
+
             return true;
         } catch (error) {
-            console.error('Failed to save YieldCalc:', error);
+            console.error(
+                'Failed to save YieldCalc:',
+                error
+            );
+
             return false;
         }
     };
+
+    // Save Fertilizer Calculator
     const saveFertilizerCalc = (payloadObj) => {
         try {
             realm.write(() => {
-                realm.delete(realm.objects('FertilizerCalSubmit'));
+                realm.delete(
+                    realm.objects('FertilizerCalSubmit')
+                );
+
                 realm.create(
                     'FertilizerCalSubmit',
                     {
                         _id: 'FertilizerCalcSingleRecord',
-                        data: JSON.stringify(payloadObj)
+                        data: JSON.stringify(payloadObj),
                     },
                     Realm.UpdateMode.Modified
                 );
             });
-            console.log('Saved/Updated YieldCalc:', payloadObj);
-          //  incrementOfflineCount(1)
+
+            console.log(
+                'Saved/Updated FertilizerCalc:',
+                payloadObj
+            );
+
             return true;
         } catch (error) {
-            console.error('Failed to save YieldCalc:', error);
+            console.error(
+                'Failed to save FertilizerCalc:',
+                error
+            );
+
             return false;
         }
     };
 
-    // Get object
+    // Get Seed Calculator
     const getSeedCalc = () => {
-        const record = realm.objectForPrimaryKey('SeedCalSubmit', 'SeedCalcSingleRecord');
-        return record ? JSON.parse(record.data) : null;
+        const record = realm.objectForPrimaryKey(
+            'SeedCalSubmit',
+            'SeedCalcSingleRecord'
+        );
+
+        return record
+            ? JSON.parse(record.data)
+            : null;
     };
 
+    // Get Yield Calculator
     const getYieldCalc = () => {
-        const record = realm.objectForPrimaryKey('YieldCalSubmit', 'YieldCalcSingleRecord');
-        return record ? JSON.parse(record.data) : null;
+        const record = realm.objectForPrimaryKey(
+            'YieldCalSubmit',
+            'YieldCalcSingleRecord'
+        );
+
+        return record
+            ? JSON.parse(record.data)
+            : null;
     };
 
-    // Delete
+    // Delete Seed Calculator
     const deleteSeedCalc = () => {
         try {
-            const record = realm.objectForPrimaryKey('SeedCalSubmit', 'SeedCalcSingleRecord');
+            const record =
+                realm.objectForPrimaryKey(
+                    'SeedCalSubmit',
+                    'SeedCalcSingleRecord'
+                );
+
             if (record) {
                 realm.write(() => {
                     realm.delete(record);
                 });
-                console.log('Deleted SeedCalc record');
-                // decrementOfflineCount(1)
+
+                console.log(
+                    'Deleted SeedCalc record'
+                );
+
                 return true;
             }
+
             return false;
         } catch (error) {
-            console.error('Error deleting SeedCalc:', error);
+            console.error(
+                'Error deleting SeedCalc:',
+                error
+            );
+
             return false;
         }
     };
 
+    // Delete Yield Calculator
     const deleteYieldCalc = () => {
         try {
-            const record = realm.objectForPrimaryKey('YieldCalSubmit', 'YieldCalcSingleRecord');
+            const record =
+                realm.objectForPrimaryKey(
+                    'YieldCalSubmit',
+                    'YieldCalcSingleRecord'
+                );
+
             if (record) {
                 realm.write(() => {
                     realm.delete(record);
                 });
-                console.log('Deleted YieldCalc record');
-                // decrementOfflineCount(1)
+
+                console.log(
+                    'Deleted YieldCalc record'
+                );
+
                 return true;
             }
+
             return false;
         } catch (error) {
-            console.error('Error deleting YieldCalc:', error);
+            console.error(
+                'Error deleting YieldCalc:',
+                error
+            );
+
             return false;
         }
     };
 
-    // Count / presence check
+    // Check Seed Calculator Exists
     const hasSeedCalc = () => {
-        return realm.objectForPrimaryKey('SeedCalSubmit', 'SeedCalcSingleRecord') !== null;
+        return (
+            realm.objectForPrimaryKey(
+                'SeedCalSubmit',
+                'SeedCalcSingleRecord'
+            ) !== null
+        );
     };
 
+    // Check Yield Calculator Exists
     const hasYieldCalc = () => {
-        return realm.objectForPrimaryKey('YieldCalSubmit', 'YieldCalcSingleRecord') !== null;
+        return (
+            realm.objectForPrimaryKey(
+                'YieldCalSubmit',
+                'YieldCalcSingleRecord'
+            ) !== null
+        );
     };
 
     return {
         saveSeedMasterList,
         saveYieldMasterList,
+        fertilizerMasterList,
+        fertilizerMasterList2,
+        fertilizerMasterCalUpdateList,
         saveSeedCalc,
         saveYieldCalc,
+        saveFertilizerCalc,
         getSeedCalc,
         getYieldCalc,
         deleteSeedCalc,
         deleteYieldCalc,
         hasSeedCalc,
         hasYieldCalc,
-        fertilizerMasterList,
-        saveFertilizerCalc,
-        fertilizerMasterList2
-
     };
 };

@@ -627,7 +627,6 @@ const LoginScreenRn = () => {
             body: JSON.stringify(payload),
           });
           const jsonData = await response.json();
-          console.log("Parsed response:", jsonData);
           if (jsonData.statusCode === HTTP_SWITCHING_PROTOCOLS) {
             SetRequestOtpDisable(true)
             setAlertModal(true)

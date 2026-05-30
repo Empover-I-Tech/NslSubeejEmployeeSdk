@@ -12,7 +12,7 @@ import { translate } from '../Localization/Localisation';
 import { setCompanyStyle } from '../state/actions/companyStyles';
 import { RFValue } from "react-native-responsive-fontsize";
 import { CustomCommonModalTwo } from '../components/CustomCommonModal';
-import { useRealm, useQuery } from '@realm/react';
+import realm from './realmOffline/realmConfig';
 import LogoutModal from '../components/LogoutModal';
 import SimpleToast from 'react-native-simple-toast';
 import { useOfflineSync } from '../utils/syncUtils';
@@ -48,7 +48,6 @@ const MoreScreenRn = ({ navigation, route }) => {
   console.log("offlineCountFromRedux", offlineCountFromRedux)
   const [startWatching, setStartWatching] = useState(false);
   const [localOfflineCount, setLocalOfflineCount] = useState(offlineCountFromRedux);
-  const realm = useRealm();
   const [loader, setLoader] = useState(false)
   const [loaderImage, setLoaderImage] = useState(require('../../assets/Images/SubeejLoader.gif'))
   const [loadingMessage, setLoadingMessage] = useState('')
@@ -59,7 +58,6 @@ const MoreScreenRn = ({ navigation, route }) => {
   const isConnected = useSelector(state => state.network.isConnected);
   const [alertModal, setAlertModal] = useState(false)
   const [logoutModal, setLogoutModal] = useState(false)
-  const [fallback, setFallback] = useState(false);
   const styles = Styles(currentTheme);
   const { width, height } = Dimensions.get('window');
   const { getData, getLoading, error, statusCode, fetchData } = useGetRequestWithJwt();
@@ -70,22 +68,22 @@ const MoreScreenRn = ({ navigation, route }) => {
   const programName = encodeURIComponent(dynamicStyles.programName);
   const [versionApp, setVersionApp] = useState("")
 
-  const cachedImages = useQuery('Image');
-  const Meeting = useQuery('Meeting');
-  const GeoTaggingView = useQuery('GeoTaggingView');
-  const cachedKnowledgeCenter = useQuery('KnowledgeCenter');
-  const cachedHybridList = useQuery('hybridMaster');
-  const FABDetails = useQuery('FABDetails')
-  const cachedGeoTaggingHistory = useQuery('GEOTAGGINGHISTORY');
-  const helpDeskRaise = useQuery('helpDeskRaise')
-  const cachedSamadhanHistory = useQuery('SAMADHANHISTORY');
-  const YieldMaster = useQuery('YieldMaster');
-  const SeedMaster = useQuery('SeedMaster');
-  const FertilizerMaster = useQuery('FertilizerMaster');
-  const FertilizerMaster2 = useQuery('FertilizerMaster2')
-  const SeedCalSubmit = useQuery('SeedCalSubmit')
-  const YieldCalSubmit = useQuery('YieldCalSubmit')
-  const goldClubKnowledgeCenter = useQuery('GoldCludKnowledgeCenter')
+  const cachedImages = realm.objects('Image');
+  const Meeting = realm.objects('Meeting');
+  const GeoTaggingView = realm.objects('GeoTaggingView');
+  const cachedKnowledgeCenter = realm.objects('KnowledgeCenter');
+  const cachedHybridList = realm.objects('hybridMaster');
+  const FABDetails = realm.objects('FABDetails')
+  const cachedGeoTaggingHistory = realm.objects('GEOTAGGINGHISTORY');
+  const helpDeskRaise = realm.objects('helpDeskRaise')
+  const cachedSamadhanHistory = realm.objects('SAMADHANHISTORY');
+  const YieldMaster = realm.objects('YieldMaster');
+  const SeedMaster = realm.objects('SeedMaster');
+  const FertilizerMaster = realm.objects('FertilizerMaster');
+  const FertilizerMaster2 = realm.objects('FertilizerMaster2')
+  const SeedCalSubmit = realm.objects('SeedCalSubmit')
+  const YieldCalSubmit = realm.objects('YieldCalSubmit')
+  const goldClubKnowledgeCenter = realm.objects('GoldCludKnowledgeCenter')
 
   const [isAlertVisible, setAlertVisible] = useState(false);
   const [alertTitle, setAlertTitle] = useState('');
@@ -752,7 +750,7 @@ const MoreScreenRn = ({ navigation, route }) => {
           </View>
 
         </View>
-        <Image source={require("../../assets/Images/rightArrowIconImg.png")} style={{ height: width * 0.05, width: width * 0.05, resizeMode: "contain" }} />
+        <Image source={require("../../assets/Images/rightArrowIconImg.png")} style={{ height: width * 0.05, width: width * 0.05, right:15, resizeMode: "contain" }} />
       </TouchableOpacity>
 
       <View style={{ flexDirection: "row", marginTop: height * 0.07, marginBottom: 15, width: "90%", alignSelf: "center" }}>

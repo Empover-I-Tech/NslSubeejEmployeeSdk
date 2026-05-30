@@ -1,19 +1,20 @@
-import { useRealm, useQuery } from '@realm/react';
+import Realm from 'realm';
+import realm from './realmConfig';
+
 
 export const useGeoTaggingCRUD = () => {
-    const realm = useRealm();
-    const geoTags = useQuery('GeoTaggingView');
 
-    // 🟢 Save new
+    // 🟢 Save New
     const saveGeoTag = (payloadObj) => {
         try {
             realm.write(() => {
                 realm.create('GeoTaggingView', {
                     uniquId: payloadObj.uniquId.toString(),
                     data: JSON.stringify(payloadObj),
-                    isSynced: false, // Default as unsynced
+                    isSynced: false,
                 });
             });
+
             console.log('Saved to Realm:', payloadObj);
             return true;
         } catch (error) {
@@ -22,104 +23,166 @@ export const useGeoTaggingCRUD = () => {
         }
     };
 
-    // 🟢 Get all
+    // 🟢 Get All
     const getAllGeoTags = async () => {
-        const safeCopy = Array.from(geoTags); // convert Realm Results to plain array
-        return safeCopy.map(item => ({
-            ...JSON.parse(item.data),
-            uniquId: item.uniquId,
-            isSynced: item.isSynced,
-        }));
+        try {
+            const geoTags = realm.objects('GeoTaggingView');
+
+            return Array.from(geoTags).map(item => ({
+                ...JSON.parse(item.data),
+                uniquId: item.uniquId,
+                isSynced: item.isSynced,
+            }));
+        } catch (error) {
+            console.error('Failed to fetch records:', error);
+            return [];
+        }
     };
 
-    // 🔍 Get by ID
+    // 🔍 Get By Id
     const getGeoTagById = (uniquId) => {
-        const record = realm.objectForPrimaryKey('GeoTaggingView', uniquId);
-        return record ? { ...JSON.parse(record.data), isSynced: record.isSynced } : null;
+        try {
+            const record = realm.objectForPrimaryKey(
+                'GeoTaggingView',
+                uniquId
+            );
+
+            return record
+                ? {
+                    ...JSON.parse(record.data),
+                    isSynced: record.isSynced,
+                }
+                : null;
+        } catch (error) {
+            console.error(error);
+            return null;
+        }
     };
 
     // 🟠 Update
     const updateGeoTag = (uniquId, newPayload) => {
         try {
-            const existing = realm.objectForPrimaryKey('GeoTaggingView', uniquId);
-            const existingIsSynced = existing ? existing.isSynced : false;
+            const existing = realm.objectForPrimaryKey(
+                'GeoTaggingView',
+                uniquId
+            );
+
+            const existingIsSynced =
+                existing?.isSynced || false;
 
             realm.write(() => {
                 realm.create(
                     'GeoTaggingView',
                     {
                         uniquId,
-                        data: JSON.stringify({ ...newPayload, uniquId }),
+                        data: JSON.stringify({
+                            ...newPayload,
+                            uniquId,
+                        }),
                         isSynced: existingIsSynced,
                     },
                     Realm.UpdateMode.Modified
                 );
             });
 
-            console.log(`Updated record with uniquId: ${uniquId}`);
+            console.log(
+                `Updated record with uniquId: ${uniquId}`
+            );
+
             return true;
         } catch (error) {
-            console.error('Failed to update geo tag:', error);
+            console.error(
+                'Failed to update geo tag:',
+                error
+            );
+
             return false;
         }
     };
 
-    // 🔴 Delete
+    // 🔴 Delete By Unique Id
     const deleteGeoTagByUniquId = (uniquId) => {
         try {
-            const record = realm.objectForPrimaryKey('GeoTaggingView', uniquId);
+            const record = realm.objectForPrimaryKey(
+                'GeoTaggingView',
+                uniquId
+            );
+
             if (record) {
                 realm.write(() => {
                     realm.delete(record);
                 });
-                console.log(`Deleted record with uniquId: ${uniquId}`);
+
+                console.log(
+                    `Deleted record with uniquId: ${uniquId}`
+                );
+
                 return true;
-            } else {
-                console.warn(`Record not found for uniquId: ${uniquId}`);
-                return false;
             }
+
+            console.warn(
+                `Record not found for uniquId: ${uniquId}`
+            );
+
+            return false;
         } catch (error) {
-            console.error('Error deleting record:', error);
+            console.error(
+                'Error deleting record:',
+                error
+            );
+
             return false;
         }
     };
 
+    // 🔴 Delete All
     const deleteAllGeoTags = () => {
         try {
-            const allRecords = realm.objects('GeoTaggingView');
-            if (allRecords.length > 0) {
-                realm.write(() => {
-                    realm.delete(allRecords);
-                });
-                console.log(`Deleted all ${allRecords.length} GeoTaggingView records.`);
-                return true;
-            } else {
-                console.log("No records found to delete.");
-                return false;
-            }
+            const allRecords =
+                realm.objects('GeoTaggingView');
+
+            realm.write(() => {
+                realm.delete(allRecords);
+            });
+
+            console.log(
+                `Deleted ${allRecords.length} GeoTaggingView records`
+            );
+
+            return true;
         } catch (error) {
-            console.error("Error deleting records:", error);
+            console.error(
+                'Error deleting records:',
+                error
+            );
+
             return false;
         }
     };
 
-
-    // 🟡 Save or Update by payload.id
+    // 🟡 Save Or Update
     const saveOrUpdateGeoTagById = (payloadObj) => {
         try {
-            const allTags = realm.objects('GeoTaggingView');
+            const allTags =
+                realm.objects('GeoTaggingView');
+
             let existingTag = null;
 
             for (let tag of allTags) {
                 const parsed = JSON.parse(tag.data);
+
                 if (parsed.id === payloadObj.id) {
                     existingTag = tag;
                     break;
                 }
             }
 
-            const mobileUniqueId = existingTag ? existingTag.uniquId : payloadObj.mobileUniqueId;
-            const isSynced = existingTag ? existingTag.isSynced : false;
+            const mobileUniqueId =
+                existingTag?.uniquId ||
+                payloadObj.mobileUniqueId;
+
+            const isSynced =
+                existingTag?.isSynced || false;
 
             realm.write(() => {
                 realm.create(
@@ -136,20 +199,38 @@ export const useGeoTaggingCRUD = () => {
                 );
             });
 
-            console.log(existingTag ? 'Updated existing record' : 'Inserted new record');
+            console.log(
+                existingTag
+                    ? 'Updated existing record'
+                    : 'Inserted new record'
+            );
+
             return true;
         } catch (error) {
-            console.error('Failed to save/update geo tag:', error);
+            console.error(
+                'Failed to save/update geo tag:',
+                error
+            );
+
             return false;
         }
     };
 
-    // 🆕 Count unsynced records
+    // 🆕 Offline Count
     const getOfflineGeoTagCount = () => {
         try {
-            return geoTags.filtered('isSynced == false').length;
+            const geoTags =
+                realm.objects('GeoTaggingView');
+
+            return geoTags.filtered(
+                'isSynced == false'
+            ).length;
         } catch (error) {
-            console.error('Failed to get offline count:', error);
+            console.error(
+                'Failed to get offline count:',
+                error
+            );
+
             return 0;
         }
     };
@@ -160,7 +241,8 @@ export const useGeoTaggingCRUD = () => {
         getGeoTagById,
         updateGeoTag,
         deleteGeoTagByUniquId,
+        deleteAllGeoTags,
         saveOrUpdateGeoTagById,
-        getOfflineGeoTagCount, // Expose this for badge count etc.
+        getOfflineGeoTagCount,
     };
 };

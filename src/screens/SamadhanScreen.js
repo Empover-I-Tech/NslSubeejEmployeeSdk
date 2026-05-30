@@ -8,7 +8,7 @@ import PreLoginCustomLoader from '../components/PreLoginCustomLoader';
 import { RFValue } from "react-native-responsive-fontsize";
 import { translate } from "../Localization/Localisation";
 import SimpleToast from 'react-native-simple-toast';
-import { useQuery, useRealm } from "@realm/react";
+import realm from "./realmOffline/realmConfig";
 import axios from "axios";
 import { v4 as uuidv4 } from 'uuid';
 import { mergeComplaintData, processComplaintImages } from "../assets/Utils/Utils";
@@ -32,8 +32,7 @@ const SamadhanScreen = ({ route }) => {
     const [issuesDuplicateList, setIssuesDuplicateList] = useState([])
     const [duplicateModalOpen, setDuplicateModalOpen] = useState(false)
     const navigation = useNavigation();
-    const cachedSamadhanHistory = useQuery('SAMADHANHISTORY');
-    const realm = useRealm();
+    const cachedSamadhanHistory = realm.objects('SAMADHANHISTORY');
     const [previewVisible, setPreviewVisible] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
 

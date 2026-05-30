@@ -18,12 +18,11 @@ import { check, request, PERMISSIONS, RESULTS } from "react-native-permissions";
 import { CustomCommonModal } from '../components/CustomCommonModal';
 import { LANGUAGEID } from "../utils";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { useRealm, useQuery } from '@realm/react';
+import realm from "./realmOffline/realmConfig";
 import { v4 as uuidv4 } from 'uuid';
 import RNFS from 'react-native-fs';
 import SimpleToast from 'react-native-simple-toast';
 import { useGeoTaggingCRUD } from "./realmOffline/useGeoTaggingCRUD";
-import { DOWNLOAD_FOLDER_PATH } from "../assets/Utils/Utils";
 import { processSampleGeoTaggingData } from "./ImageDownloads/GeoImageDownloadUtils";
 import { useFontStyles } from "../hooks/useFontStyles";
 const { width, height } = Dimensions.get('window');
@@ -50,10 +49,9 @@ const GeoTaggingScreen = ({ route }) => {
   const [alertTextContent, setAlertTextContent] = useState("")
   const [langId, setLangId] = useState(null)
   const [refreshListKey, setRefreshListKey] = useState(0);
-  const realm = useRealm();
-  const cachedGeoTaggingHistory = useQuery('GEOTAGGINGHISTORY');
+  const cachedGeoTaggingHistory = realm.objects('GEOTAGGINGHISTORY');
   const { getAllGeoTags } = useGeoTaggingCRUD();
-  const cachedImages = useQuery('Image');
+  const cachedImages = realm.objects('Image');
   const insect = useSafeAreaInsets()
 
 
