@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { View } from "react-native"
 import { useDispatch, useSelector } from "react-redux";
-import APIConfig, { HTTP_OK, HTTP_SWITCHING_PROTOCOLS } from "subeejnsl-sdk/src/api/APIConfig";
-import CustomLoader from "subeejnsl-sdk/src/components/CustomLoader"
-import { setCompanyStyle } from "subeejnsl-sdk/src/state/actions/companyStyles";
-import { COMPANYCODE, EMP_DASHBOARD_SCREEN, FIRSTNAME, LASTNAME, MOBILENUMBER, ROLDID, ROLENAME, SCREENNAME, USER_ID, USER_IMG, USERNAME } from "subeejnsl-sdk/src/utils";
-import { downloadFileToLocal, GetApiHeaders } from "subeejnsl-sdk/src/utils/helpers";
-import { storeInAsyncStorage } from "subeejnsl-sdk/src/utils/keychainUtils";
-import { CommonActions } from '@react-navigation/native';
-import { setIsEmployee } from "subeejnsl-sdk/src/state/actions/employeeActions";
+import { storeInAsyncStorage } from "../utils/keychainUtils";
+import { COMPANYCODE, EMP_DASHBOARD_SCREEN, FIRSTNAME, LASTNAME, MOBILENUMBER, ROLDID, ROLENAME, SCREENNAME, USER_ID, USER_IMG, USERNAME } from "../utils";
+import { setIsEmployee } from "../state/actions/employeeActions";
+import APIConfig, { HTTP_OK, HTTP_SWITCHING_PROTOCOLS } from "../api/APIConfig";
+import { downloadFileToLocal, GetApiHeaders } from "../utils/helpers";
+import { setCompanyStyle } from "../state/actions/companyStyles";
+import CustomLoader from "../components/CustomLoader";
+
 
 
 const LoaderScreen = ({ route, navigation }) => {
