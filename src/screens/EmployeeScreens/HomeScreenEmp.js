@@ -38,7 +38,7 @@ import Geolocation from 'react-native-geolocation-service';
 import SimpleToast from 'react-native-simple-toast';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import { setLocationActions } from '../../state/actions/locationActions';
-import realm from '../realmOffline/realmConfig';
+import getRealm from '../realmOffline/realmConfig';
 import { v4 as uuidv4 } from 'uuid';
 import RNFS from 'react-native-fs';
 import { useGeoTaggingCRUD } from '../realmOffline/useGeoTaggingCRUD';
@@ -118,7 +118,7 @@ const HomeScreenEmp = ({ route }) => {
   const [uploadTotalCount, setUploadTotalCount] = useState(0)
   const { fetchData } = useGetRequestWithJwt();
   const [langId, setLangId] = useState(null)
-  
+  const realm = getRealm();
 
   const cachedImages = realm.objects('Image');
   const cachedGeoTaggingHistory = realm.objects('GEOTAGGINGHISTORY');

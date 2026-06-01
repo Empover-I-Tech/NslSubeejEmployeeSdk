@@ -20,7 +20,7 @@ import { translate } from '../Localization/Localisation';
 import { CustomCommonModal } from '../components/CustomCommonModal';
 import { useOfflineCalculatorsCRUD } from './realmOffline/useOfflineCalculatorsCRUD';
 import { useFontStyles } from '../hooks/useFontStyles';
-import realm from './realmOffline/realmConfig';
+import getRealm from './realmOffline/realmConfig';
 
 const { width, height } = Dimensions.get('window');
 
@@ -146,6 +146,7 @@ const FertilizerCalculator = ({ route }) => {
 
 
     let getOtherDetails = async () => {
+        const realm = await getRealm();
         const fertiliserDataMaster = realm.objects('FertilizerMaster2');
         if (fertiliserDataMaster.length !== 0) {
             let data = fertiliserDataMaster[0];
