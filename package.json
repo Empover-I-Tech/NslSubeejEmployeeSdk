@@ -1,0 +1,19 @@
+{
+  "name": "nslsubeejemployeesdk",
+  "version": "1.0.0",
+  "description": "SubeejEmployeeSdk react native sdk",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Empover-I-Tech/NslSubeejEmployeeSdk.git"
+  },
+  "author": "Empover I Tech Pvt Ltd",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Empover-I-Tech/NslSubeejEmployeeSdk/issues"
+  },
+  "homepage": "https://github.com/Empover-I-Tech/NslSubeejEmployeeSdk#readme"
+}
