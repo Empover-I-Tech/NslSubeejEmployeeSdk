@@ -78,8 +78,7 @@
     "react-native-vision-camera": ">=4.7.3",
     "react-native-webview": ">=13.12.5",
     "react-redux": ">=9.1.2",
-    "realm": ">=12.14.2",
-    "@realm/react": ">=0.11.0",
+    "realm": ">=20.0.0",
     "redux-persist": ">=6.0.0",
     "uuid": ">=10.0.0"
   }
