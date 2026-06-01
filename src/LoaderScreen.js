@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { View, Text } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux';
-import { storeInAsyncStorage } from "../src/utils/keychainUtils";
 import { HTTP_OK, HTTP_SWITCHING_PROTOCOLS, APIConfig } from "../src/api/APIConfig";
 import CustomLoader from "../src/components/CustomLoader"
 import { setCompanyStyle } from "../src/state/actions/companyStyles";
