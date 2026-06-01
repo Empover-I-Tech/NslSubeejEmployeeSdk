@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { View, Text } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux';
-import { HTTP_OK, HTTP_SWITCHING_PROTOCOLS, APIConfig } from "../src/api/APIConfig";
+import APIConfig, { HTTP_OK, HTTP_SWITCHING_PROTOCOLS } from "../src/api/APIConfig";
 import CustomLoader from "../src/components/CustomLoader"
 import { setCompanyStyle } from "../src/state/actions/companyStyles";
 import { COMPANYCODE, EMP_DASHBOARD_SCREEN, FIRSTNAME, LASTNAME, MOBILENUMBER, ROLDID, ROLENAME, SCREENNAME, USER_ID, USER_IMG, USERNAME } from "../src/utils";
