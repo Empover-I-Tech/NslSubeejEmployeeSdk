@@ -9,3 +9,5 @@ export { default as LoaderScreen }           from './src/LoaderScreen';
 export { default as HomeScreenEmp }          from './src/screens/EmployeeScreens/HomeScreenEmp';
 export { default as BottomTabsNavigatorEmp } from './src/navigation/BottomTabsEmp';
 export { initLocalisation } from './src/Localization/Localisation';
+export { default as SamadhanScreen} from './src/screens/SamadhanScreen';
+export { default as RaiseComplaintScreen } from './src/screens/RaiseComplaintScreen';
