@@ -1,2 +1,2 @@
 
-export { default } from './src/LoaderScreen'
+export { default as LoaderScreen } from './src/LoaderScreen'
