@@ -1,0 +1,87 @@
+{
+    "formName": "SubeejKisan Registration",
+    "fields": [
+        {
+            "fieldName": "Farmer Details",
+            "fieldType": "Group",
+            "fields": [
+                {
+                    "fieldType": "TextInput",
+                    "keyName": "firstName",
+                    "fieldName": "First Name",
+                    "minLength": "5",
+                    "maxLength": "25",
+                    "isMandatory": true,
+                    "validation": "^[A-Za-z\\\\s.]*$",
+                    "keyBoardType": "default"
+                },
+                {
+                    "fieldType": "TextInput",
+                    "keyName": "lastName",
+                    "fieldName": "Last Name",
+                    "isMandatory": true,
+                    "minLength": "5",
+                    "maxLength": "25",
+                    "validation": "^[A-Za-z\\\\s.]*$",
+                    "keyBoardType": "default"
+                },
+                {
+                    "fieldType": "TextInput",
+                    "keyName": "mobileNumber",
+                    "fieldName": "Mobile Number",
+                    "minLength": "10",
+                    "maxLength": "10",
+                    "isMandatory": true,
+                    "validation": "^[0-9]*$",
+                    "keyBoardType": "numeric"
+                },
+                {
+                    "fieldType": "TextInput",
+                    "keyName": "villageLocation",
+                    "fieldName": "Village Location",
+                    "minLength": "5",
+                    "maxLength": "30",
+                    "isMandatory": true,
+                    "validation": "^[A-Za-z0-9!@#$%^&*(),.?\":{}|<>]*$",
+                    "keyBoardType": "default"
+                },
+                {
+                    "fieldType": "Dropdown",
+                    "keyName": "crop",
+                    "fieldName": "Crop ",
+                    "isMandatory": true,
+                    "options": [
+                        {
+                            "label": "Rice",
+                            "value": "rice",
+                            "name": "Rice",
+                            "code": "rice"
+                        },
+                        {
+                            "label": "Maize",
+                            "value": "maize",
+                            "name": "Maize",
+                            "code": "maize"
+                        },
+                        {
+                            "label": "Corn",
+                            "value": "corn",
+                            "name": "Corn",
+                            "code": "corn"
+                        }
+                    ]
+                },
+                {
+                    "fieldType": "TextInput",
+                    "keyName": "totalAcres",
+                    "fieldName": "Total Acres",
+                    "minLength": "1",
+                    "maxLength": "100",
+                    "isMandatory": true,
+                    "validation": "^[0-9]*$",
+                    "keyBoardType": "numeric"
+                }
+            ]
+        }
+    ]
+}
