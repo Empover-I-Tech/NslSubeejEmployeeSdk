@@ -192,7 +192,7 @@ export async function GetApiHeaders() {
         // 'languageId': 1,
         'authType': JWTAUTHENTICATION,
         'referralCode': await getFromAsyncStorage(REFERRALCODE),
-        'applicationName' : "subeej",
+        'applicationName' : "subeej sdk",
         "companyCode":await getFromAsyncStorage(COMPANYCODE)
 
     };
