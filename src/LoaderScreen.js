@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View, Text } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux';
 import { HTTP_OK, HTTP_SWITCHING_PROTOCOLS, APIConfig } from "../src/api/APIConfig";
