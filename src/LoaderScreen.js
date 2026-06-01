@@ -7,7 +7,7 @@ import { setCompanyStyle } from "../src/state/actions/companyStyles";
 import { COMPANYCODE, EMP_DASHBOARD_SCREEN, FIRSTNAME, LASTNAME, MOBILENUMBER, ROLDID, ROLENAME, SCREENNAME, USER_ID, USER_IMG, USERNAME } from "../src/utils";
 import { downloadFileToLocal, GetApiHeaders } from "../src/utils/helpers";
 import { storeInAsyncStorage } from "../src/utils/keychainUtils";
-import { CommonActions } from '@react-navigation/native';
+import { CommonActions , useNavigation} from '@react-navigation/native';
 import { setIsEmployee } from "../src/state/actions/employeeActions";
 
 
@@ -15,6 +15,7 @@ const LoaderScreen = ({ route }) => {
     console.log("LoaderScreen route params:", route?.params);
     const jsonData = route?.params?.navigateItem?.mobileNumber
     console.log("jjjjjjjj", JSON.stringify(route?.params?.navigateItem?.mobileNumber))
+    const navigation = useNavigation();
 
     const isConnected = useSelector((state) => state.network.isConnected);
     const selectedCompanyData = useSelector(state => state.selectedCompnayAct.selectedCompanyAct)
