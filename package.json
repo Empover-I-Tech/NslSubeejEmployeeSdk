@@ -21,6 +21,9 @@
     "url": "https://github.com/Empover-I-Tech/NslSubeejEmployeeSdk/issues"
   },
   "homepage": "https://github.com/Empover-I-Tech/NslSubeejEmployeeSdk#readme",
+  "dependencies": {
+    "realm": "^20.1.0"
+  },
   "peerDependencies": {
     "react": ">=19.1.0",
     "react-native": ">=0.80.3",
@@ -85,7 +88,6 @@
     "react-native-vision-camera": ">=4.7.3",
     "react-native-webview": ">=13.12.5",
     "react-redux": ">=9.1.2",
-    "realm": ">=20.1.0",
     "redux-persist": ">=6.0.0",
     "uuid": ">=10.0.0"
   }
