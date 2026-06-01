@@ -24,23 +24,22 @@ const MeetingSchema = {
     },
     primaryKey: '_id',
 };
-
 const geoTaggingViewSchema = {
     name: 'GeoTaggingView',
     primaryKey: 'uniquId',
     properties: {
         uniquId: 'string',
-        data: 'string',
-        isSynced: { type: 'bool', default: false },
+        data: 'string', // stringified JSON payload
+        isSynced: { type: 'bool', default: false }, // false = offline
     },
 };
 
 const KnowledgeCenterSchema = {
     name: 'KnowledgeCenter',
     properties: {
-        _id: 'string',
-        timestamp: 'date',
-        cropsList: 'string',
+        _id: 'string', // Unique ID for the cache entry
+        timestamp: 'date', // Store when data was cached
+        cropsList: 'string', // Store JSON-stringified cropsList
     },
     primaryKey: '_id',
 };
@@ -48,9 +47,9 @@ const KnowledgeCenterSchema = {
 const goldClubKnowledgeCenterSchema = {
     name: 'GoldCludKnowledgeCenter',
     properties: {
-        _id: 'string',
-        timestamp: 'date',
-        cropsList: 'string',
+        _id: 'string', // Unique ID for the cache entry
+        timestamp: 'date', // Store when data was cached
+        cropsList: 'string', // Store JSON-stringified cropsList
     },
     primaryKey: '_id',
 };
@@ -58,8 +57,8 @@ const goldClubKnowledgeCenterSchema = {
 const hybridsMasterSchema = {
     name: 'hybridMaster',
     properties: {
-        _id: 'string',
-        hybridsList: 'string',
+        _id: 'string', // Unique ID for the cache entry
+        hybridsList: 'string', // Store JSON-stringified cropsList
         timestamp: 'date',
     },
     primaryKey: '_id',
@@ -94,26 +93,25 @@ const helpDeskRaiseSchema = {
     primaryKey: 'uniquId',
     properties: {
         uniquId: 'string',
-        data: 'string',
-        isSynced: { type: 'bool', default: false },
+        data: 'string', // stringified JSON payload
+        isSynced: { type: 'bool', default: false }, // false = offline
     },
 };
 
 const YieldCalculatorSchema = {
     name: 'YieldMaster',
     properties: {
-        _id: 'string',
-        YieldMastersList: 'string',
+        _id: 'string', // Unique ID for the cache entry
+        YieldMastersList: 'string', // Store JSON-stringified cropsList
         timestamp: 'date',
     },
     primaryKey: '_id',
 };
-
 const SeedCalculatorSchema = {
     name: 'SeedMaster',
     properties: {
-        _id: 'string',
-        SeedMastersList: 'string',
+        _id: 'string', // Unique ID for the cache entry
+        SeedMastersList: 'string', // Store JSON-stringified cropsList
         timestamp: 'date',
     },
     primaryKey: '_id',
@@ -122,8 +120,8 @@ const SeedCalculatorSchema = {
 const fertilizerCalculatorSchema = {
     name: 'FertilizerMaster',
     properties: {
-        _id: 'string',
-        FertilizerMastersList: 'string',
+        _id: 'string', // Unique ID for the cache entry
+        FertilizerMastersList: 'string', // Store JSON-stringified cropsList
         timestamp: 'date',
     },
     primaryKey: '_id',
@@ -132,8 +130,8 @@ const fertilizerCalculatorSchema = {
 const fertilizerCalculatorSchema2 = {
     name: 'FertilizerMaster2',
     properties: {
-        _id: 'string',
-        FertilizerMastersList2: 'string',
+        _id: 'string', // Unique ID for the cache entry
+        FertilizerMastersList2: 'string', // Store JSON-stringified cropsList
         timestamp: 'date',
     },
     primaryKey: '_id',
@@ -143,28 +141,27 @@ const SeedCalSubmitSchema = {
     name: 'SeedCalSubmit',
     primaryKey: '_id',
     properties: {
-        _id: 'string',
-        data: 'string',
-    },
-};
+        _id: 'string', // fixed primary key
+        data: 'string'
+    }
+}
 
 const YieldCalSubmitSchema = {
     name: 'YieldCalSubmit',
     primaryKey: '_id',
     properties: {
-        _id: 'string',
-        data: 'string',
-    },
-};
-
+        _id: 'string', // fixed primary key
+        data: 'string'
+    }
+}
 const FertilizerCalSubmitSchema = {
     name: 'FertilizerCalSubmit',
     primaryKey: '_id',
     properties: {
-        _id: 'string',
-        data: 'string',
-    },
-};
+        _id: 'string', // fixed primary key
+        data: 'string'
+    }
+}
 
 const samadhanSchema = {
     name: 'SAMADHANHISTORY',
@@ -176,52 +173,46 @@ const samadhanSchema = {
     primaryKey: '_id',
 };
 
-// ✅ Realm 20.x — use Realm.open() instead of new Realm()
-let realm = null;
+const realm = new Realm({
+  schema: [
+    ImageSchema,
+    MeetingSchema,
+    KnowledgeCenterSchema,
+    hybridsMasterSchema,
+    FABDetailsSchema,
+    geoTaggingViewSchema,
+    geoTaggingHistorySchema,
+    samadhanSchema,
+    YieldCalculatorSchema,
+    SeedCalculatorSchema,
+    SeedCalSubmitSchema,
+    YieldCalSubmitSchema,
+    FertilizerCalSubmitSchema,
+    helpDeskRaiseSchema,
+    fertilizerCalculatorSchema,
+    fertilizerCalculatorSchema2,
+    goldClubKnowledgeCenterSchema,
+  ],
+  schemaVersion: 1,
+  onMigration: (oldRealm, newRealm) => {
+    if (oldRealm.schemaVersion < 1) {
+      const meetings = newRealm.objects('Meeting');
 
-export const getRealm = async () => {
-    if (realm && !realm.isClosed) {
-        return realm;
+      for (let i = 0; i < meetings.length; i++) {
+        const meeting = meetings[i];
+
+        if (
+          meeting.meetingVenue &&
+          !meeting.meetingVenue.latitude
+        ) {
+          meeting.meetingVenue = {
+            latitude: 0,
+            longitude: 0,
+          };
+        }
+      }
     }
+  },
+});
 
-    realm = await Realm.open({
-        schema: [
-            ImageSchema,
-            MeetingSchema,
-            KnowledgeCenterSchema,
-            hybridsMasterSchema,
-            FABDetailsSchema,
-            geoTaggingViewSchema,
-            geoTaggingHistorySchema,
-            samadhanSchema,
-            YieldCalculatorSchema,
-            SeedCalculatorSchema,
-            SeedCalSubmitSchema,
-            YieldCalSubmitSchema,
-            FertilizerCalSubmitSchema,
-            helpDeskRaiseSchema,
-            fertilizerCalculatorSchema,
-            fertilizerCalculatorSchema2,
-            goldClubKnowledgeCenterSchema,
-        ],
-        schemaVersion: 2,         // ← bumped from 1 to 2
-        migration: (oldRealm, newRealm) => {
-            if (oldRealm.schemaVersion < 1) {
-                const meetings = newRealm.objects('Meeting');
-                for (let i = 0; i < meetings.length; i++) {
-                    const meeting = meetings[i];
-                    if (meeting.meetingVenue && !meeting.meetingVenue.latitude) {
-                        meeting.meetingVenue = JSON.stringify({
-                            latitude: 0,
-                            longitude: 0,
-                        });
-                    }
-                }
-            }
-        },
-    });
-
-    return realm;
-};
-
-export default getRealm;
+export default realm;
