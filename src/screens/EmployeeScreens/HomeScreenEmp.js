@@ -2606,7 +2606,7 @@ const HomeScreenEmp = ({ route }) => {
   }
 
   return (
-    <View style={[styles.homeMainContainer, { paddingTop: insets.top }]}>
+    <View style={[styles.homeMainContainer, { paddingTop: insets.top, paddingBottom: insets.bottom, backgroundColor: dynamicStyles.backgroundColor }]}>
       {Platform.OS === 'android' && <StatusBar backgroundColor={dynamicStyles.primaryColor} barStyle={currentTheme.statusBar} />}
       <View style={[styles.headerMainContainer, { backgroundColor: dynamicStyles.primaryColor }]}>
         <View style={{ backgroundColor: dynamicStyles.primaryColor }} edges={['top']}>
