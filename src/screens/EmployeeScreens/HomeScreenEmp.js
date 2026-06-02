@@ -63,11 +63,13 @@ import { CustomCommonModal } from '../../components/CustomCommonModal';
 import PreLoginCustomLoader from '../../components/PreLoginCustomLoader';
 import { setNearBy } from '../../state/actions/nearByAction';
 import { setTabEmpMenuControl } from '../../state/actions/tabempmenuControl';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const DOWNLOAD_TIMEOUT = 30000; // 30 seconds
 const RETRY_ATTEMPTS = 2;
 
 const HomeScreenEmp = ({ route }) => {
+  const insets = useSafeAreaInsets();
   // const route = useRoute();
   const fonts = useFontStyles()
   const { uploadOfflineGeoTagDataToServer, uploadOfflineHelpDesk, uploadOfflineSeedCalc, uploadOfflineYieldCalc, incrementOfflineCount, decrementOfflineCount, updateOfflineCount } = useOfflineSync();
@@ -2604,7 +2606,7 @@ const HomeScreenEmp = ({ route }) => {
   }
 
   return (
-    <View style={styles.homeMainContainer}>
+    <View style={[styles.homeMainContainer, { paddingTop: insets.top }]}>
       {Platform.OS === 'android' && <StatusBar backgroundColor={dynamicStyles.primaryColor} barStyle={currentTheme.statusBar} />}
       <View style={[styles.headerMainContainer, { backgroundColor: dynamicStyles.primaryColor }]}>
         <View style={{ backgroundColor: dynamicStyles.primaryColor }} edges={['top']}>
