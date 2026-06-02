@@ -266,7 +266,6 @@ const RaiseComplaintScreen = () => {
                 const url = APIConfig.BASE_URL_NVM + APIConfig.GETMASTERFORCUSTOMERSUPPORT
 
                 const headers = await GetApiHeaders();
-                headers.applicationName = "subeej"
                 const response = await fetchData(url, headers);
                 if (response && response.statusCode === HTTP_OK) {
                     setCatagoryList(response.data.categoryList)
@@ -328,7 +327,6 @@ const RaiseComplaintScreen = () => {
 
         const headers = await GetApiHeaders();
         headers['Content-Type'] = APIConfig.MULTIPARTFORMDATA
-        headers.applicationName = "subeej"
         const submissionTime = await getFormattedDateTime();
         const couponsName = {
             couponName: coupons

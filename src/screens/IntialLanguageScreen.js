@@ -25,6 +25,7 @@ import { stringToBoolean } from '../utils/helpers';
 import { setSelectedCompanyAct } from '../state/actions/selectedCompanyActions';
 import SimpleToast from 'react-native-simple-toast';
 import { useFontStyles } from '../hooks/useFontStyles';
+import { SUBEEJ_SDK_APP_NAME } from '../assets/Utils/Utils';
 
 const { height } = Dimensions.get('window');
 
@@ -51,7 +52,7 @@ const IntialLanguageScreenRn = ({ route }) => {
     try {
       setIsLoading(true);
       const response = await axios.get(url, {
-        headers: { 'Content-Type': 'application/json', applicationName: "subeej", },
+        headers: { 'Content-Type': 'application/json', applicationName: SUBEEJ_SDK_APP_NAME, },
       });
       if (response.data.statusCode === HTTP_OK) {
         chooseLanguageHandle(response.data.response);

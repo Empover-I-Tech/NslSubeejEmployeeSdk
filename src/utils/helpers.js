@@ -5,6 +5,7 @@ import { getFromAsyncStorage } from "./keychainUtils";
 import { JWTAUTHENTICATION, LANGUAGECODE, LANGUAGEID, MOBILENUMBER, ROLDID, USER_ID, USERNAME, REFERRALCODE, COMPANYCODE, ROLENAME } from ".";
 import RNFetchBlob from "react-native-blob-util";
 import { translate } from "../Localization/Localisation";
+import { SUBEEJ_SDK_APP_NAME } from "../assets/Utils/Utils";
  
 
 
@@ -192,7 +193,7 @@ export async function GetApiHeaders() {
         // 'languageId': 1,
         'authType': JWTAUTHENTICATION,
         'referralCode': await getFromAsyncStorage(REFERRALCODE),
-        'applicationName' : "subeej sdk",
+        'applicationName' : SUBEEJ_SDK_APP_NAME,
         "companyCode":await getFromAsyncStorage(COMPANYCODE)
 
     };

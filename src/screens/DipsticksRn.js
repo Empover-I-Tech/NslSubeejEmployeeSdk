@@ -17,6 +17,7 @@ import { CustomCommonModal } from '../components/CustomCommonModal';
 import usePostRequestWithJwt from '../api/usePostRequestWithJwt';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFontStyles } from '../hooks/useFontStyles';
+import { SUBEEJ_SDK_APP_NAME } from '../assets/Utils/Utils';
 const { width, height } = Dimensions.get('window');
 
 const DipstickSurveyRn = ({ route }) => {
@@ -204,7 +205,7 @@ ListEmptyComponent={() => <Text style={{ color: "#000", fontFamily:fonts.Bold, f
                         </View>
                         <View style={{ flex: 1, width: "100%" }}>
                             <WebView
-                                source={{ uri: `${selectedSurvey?.pageLink}?retailerId=${saveUserID}&mobileNumber=${saveMobileNumber}&buttonColor=${hexToRgbA(dynamicStyles.primaryColor)}&applicationName=${"subeej"}&companyCode=${dynamicStyles.companyCode}&productName=${selectedSurvey?.productName}&surveyId=${selectedSurvey?.id}&languageId=${langId}` }}
+                                source={{ uri: `${selectedSurvey?.pageLink}?retailerId=${saveUserID}&mobileNumber=${saveMobileNumber}&buttonColor=${hexToRgbA(dynamicStyles.primaryColor)}&applicationName=${SUBEEJ_SDK_APP_NAME}&companyCode=${dynamicStyles.companyCode}&productName=${selectedSurvey?.productName}&surveyId=${selectedSurvey?.id}&languageId=${langId}` }}
                                 style={{ width: '100%', height: '100%', flex: 1, alignItems: "center", justifyContent: "center" }}
                                 javaScriptEnabled={true}
                                 startInLoadingState={true}

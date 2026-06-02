@@ -844,7 +844,6 @@ const YieldCalculator = () => {
                 var headers = await GetApiHeaders();
                 headers['Content-Type'] = 'multipart/form-data'
                 delete headers.authType
-                headers.applicationName = "subeej"
                 var getUserID = headers.userId
                 console.log(typeof Number.parseInt(getUserID), "finfkjlsk;sl;sdl=-=-=-=-=>", getUserID)
 
@@ -1076,7 +1075,6 @@ const YieldCalculator = () => {
                 setLoadingMessage(translate("please_wait_getting_data"))
                 var url = APIConfig.BASE_URL_NVM + APIConfig.CALCULATOR.GETEXPECTEDYIELDQTL;
                 var headers = await GetApiHeaders();
-                headers.applicationName = "subeej"
                 var payload = bodyDetails;
                 // var APIResponse = await sendData(url, headers, body);
                 var APIResponse = await sendData(url, payload, headers, false);
@@ -1148,7 +1146,6 @@ const YieldCalculator = () => {
                 setLoadingMessage(translate("please_wait_getting_data"))
                 var url = APIConfig.BASE_URL_NVM + APIConfig.CALCULATOR.GETTOTALSEEDREQUIREDKGPERPKT;
                 var headers = await GetApiHeaders();
-                headers.applicationName = "subeej"
                 var payload = selectedCrop === 'Cotton' ? {
                     "crop": selectedCrop,
                     'actualCottonSeedRatePktsPerAcre': actualSeedRateKgPerAcre,
@@ -1226,7 +1223,6 @@ const YieldCalculator = () => {
                 var url = APIConfig.BASE_URL_NVM + APIConfig.CALCULATOR.GETYIELDANDSEEDRATES;
 
                 var headers = await GetApiHeaders();
-                headers.applicationName = "subeej"
                 var payload = {
                     "crop": selectedCrop,
                     "selectRowToRowSpacingCm": rowSpacing,
@@ -1296,7 +1292,6 @@ const YieldCalculator = () => {
 
                 var url = APIConfig.BASE_URL_NVM + APIConfig.CALCULATOR.GETYIELDCALCULATOR;
                 var headers = await GetApiHeaders()
-                headers.applicationName = "subeej"
 
                 var APIResponse = await fetchData(url, headers);
                 console.log("CALLED=-=-=-=-=--=->", APIResponse)

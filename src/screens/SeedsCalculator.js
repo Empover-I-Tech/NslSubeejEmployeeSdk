@@ -808,7 +808,6 @@ const SeedsCalculator = ({ route }) => {
                 var url = APIConfig.BASE_URL_NVM + APIConfig.CALCULATOR.getIdealPlantPopulationSeedRate;
                 var headers = await GetApiHeaders();
                 delete headers.authType
-                headers.applicationName = "subeej"
                 // var payload = {
                 //     "areaPlantedAcre": areaToPlanted,
                 //     "actualSeedRateKgPerAcre": actualSeedRateKgPerAcre
@@ -889,7 +888,6 @@ const SeedsCalculator = ({ route }) => {
                 var url = APIConfig.BASE_URL_NVM + APIConfig.CALCULATOR.getIdealPlantpopulationAndSeedRateKgPerAcreBySelectedData;
                 var headers = await GetApiHeaders();
                 delete headers.authType
-                headers.applicationName = "subeej"
                 // var payload = {
                 //     "crop": selectedCrop,
                 //     "seasonOrSoilType": selectedSoil,
@@ -965,7 +963,6 @@ const SeedsCalculator = ({ route }) => {
 
                 const getYeildCalcURL = APIConfig.BASE_URL_NVM + APIConfig.CALCULATOR.geSeedAndPopulationCaculator;
                 const getHeaders = await GetApiHeaders()
-                getHeaders.applicationName = "subeej"
                 const APIResponse = await fetchData(getYeildCalcURL, getHeaders);
                 if (APIResponse != undefined && APIResponse != null) {
                     setTimeout(() => {
@@ -1524,7 +1521,6 @@ const SeedsCalculator = ({ route }) => {
                 var headers = await GetApiHeaders();
                 headers['Content-Type'] = 'multipart/form-data'
                 delete headers.authType
-                headers.applicationName = "subeej"
 
                 // var getUserID = (await retrieveData(USER_ID))
                 var getUserID = headers.userId

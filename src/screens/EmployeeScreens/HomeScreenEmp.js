@@ -827,7 +827,6 @@ const HomeScreenEmp = ({ route }) => {
       try {
         const getYeildCalcURL = APIConfig.BASE_URL_NVM + APIConfig.CALCULATOR.geSeedAndPopulationCaculator;
         const getHeaders = await GetApiHeaders()
-        getHeaders.applicationName = "subeej"
         const APIResponse = await fetchData(getYeildCalcURL, getHeaders);
         if (APIResponse != undefined && APIResponse != null) {
           if (APIResponse.statusCode == HTTP_OK) {
@@ -847,7 +846,6 @@ const HomeScreenEmp = ({ route }) => {
       try {
         var url = APIConfig.BASE_URL_NVM + APIConfig.CALCULATOR.GETYIELDCALCULATOR;
         var headers = await GetApiHeaders()
-        headers.applicationName = "subeej"
         var APIResponse = await fetchData(url, headers);
 
         if (APIResponse != undefined && APIResponse != null) {

@@ -204,7 +204,6 @@ const FertilizerSeeds = ({ route }) => {
                 var url = APIConfig.BASE_URL_NVM + APIConfig.CALCULATOR.getFertilizerDropdownValuesBySelectedData;
                 var headers = await GetApiHeaders();
                 // delete headers.authType
-                headers.applicationName = "subeej"
 
                 var payload = {
                     "crop": selectedCrop,

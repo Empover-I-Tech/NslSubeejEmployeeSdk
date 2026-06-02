@@ -103,7 +103,6 @@ export const useOfflineSync = () => {
                 var headers = await GetApiHeaders();
                 headers['Content-Type'] = 'multipart/form-data'
                 delete headers.authType
-                headers.applicationName = "subeej"
 
                 const data = getSeedCalc();
                 const formData = new FormData();
@@ -139,7 +138,6 @@ export const useOfflineSync = () => {
                 var headers = await GetApiHeaders();
                 headers['Content-Type'] = 'multipart/form-data'
                 delete headers.authType
-                headers.applicationName = "subeej"
 
                 const data = getYieldCalc()
                 const formData = new FormData();
@@ -181,7 +179,6 @@ export const useOfflineSync = () => {
 
         const headers = await GetApiHeaders();
         headers['Content-Type'] = APIConfig.MULTIPARTFORMDATA
-        headers.applicationName = "subeej"
 
         const url = APIConfig.BASE_URL_NVM + APIConfig.RAISECOMPLAINTS;
 

@@ -106,7 +106,6 @@ const CropDiagonstic = ({ route }) => {
         var getHistoryUrl = APIConfig.BASE_URL_NVM + APIConfig.CROPDIAGNOSTIC.CROPDIAGNOSTICHISTORY;
 
         const getHeaders = await GetApiHeaders()
-        getHeaders.applicationName = "subeej"
 
         console.log('headersInCropDiagnosis', getHeaders);
         const APIResponse = await fetchData(getHistoryUrl, getHeaders);
@@ -213,7 +212,6 @@ const CropDiagonstic = ({ route }) => {
 
         var cropDiseaseNotification = APIConfig.BASE_URL_NVM + APIConfig.CROPDIAGNOSTIC.CROPDISEASEIDENTIFICATION;
         const getHeaders = await GetApiHeaders()
-        getHeaders.applicationName = "subeej"
         getHeaders['Content-Type'] = APIConfig.MULTIPARTFORMDATA;
         getHeaders.authType = "JSONREQUEST";
 
