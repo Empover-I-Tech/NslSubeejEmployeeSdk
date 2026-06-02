@@ -50,10 +50,10 @@ import MeetFellowFarmer from '../screens/MeetFellowFarmers';
 import AddressScreen from '../screens/AddressScreen';
 import SamadhanScreen from '../screens/SamadhanScreen';
 import RegistrationRn from '../screens/RegistrationRn';
-import SeedCalculator from '../screens/SeedsCalculator';
+import SeedsCalculator from '../screens/SeedsCalculator';
 // import CropDiagnosticScreen from '../screens/CropDiagnosticScreen';
 // import DipsticSurveys from '../screens/DipsticSurveys';
-import FertilizerCalculator from '../screens/FertilizerSeeds';
+import FertilizerSeeds from '../screens/FertilizerSeeds';
 import KnowledgeCenterRn from '../screens/KnowledgeCenterRn';
 import HomeScreenRn from '../screens/HomeScreenRn';
 // import ProductInfo from '../screens/ProductInfo';
@@ -159,11 +159,11 @@ const StackNavigator = () => {
             <Stack.Screen name='SamadhanScreen' component={SamadhanScreen} options={{ headerShown: false }} />
             <Stack.Screen name='RegistrationRn' component={RegistrationRn} options={{ headerShown: false }} />
             <Stack.Screen name='RaiseComplaintScreen' component={RaiseComplaintScreen} options={{ headerShown: false }} />
-            <Stack.Screen name='SeedCalculator' component={SeedCalculator} options={{ headerShown: false }} />
+            <Stack.Screen name='SeedsCalculator' component={SeedsCalculator} options={{ headerShown: false }} />
             {/* <Stack.Screen name='CropDiagnosticScreen' component={CropDiagnosticScreen} options={{ headerShown: false }} /> */}
             {/* <Stack.Screen name='DipsticSurveys' component={DipsticSurveys} options={{ headerShown: false }} /> */}
             <Stack.Screen name='MandiPricesScreen' component={MandiPricesScreen} options={{ headerShown: false }} />
-            <Stack.Screen name='FertilizerCalculator' component={FertilizerCalculator} options={{ headerShown: false }} />
+            <Stack.Screen name='FertilizerSeeds' component={FertilizerSeeds} options={{ headerShown: false }} />
             <Stack.Screen name='KnowledgeCenterRn' component={KnowledgeCenterRn} options={{ headerShown: false }} />
             <Stack.Screen name="HomeScreenRn" component={HomeScreenRn} options={{ headerShown: false }} />
             {/* <Stack.Screen name="AgronomyTranplantingScreen" component={AgronomyTranplantingScreen} options={{ headerShown: false }} /> */}

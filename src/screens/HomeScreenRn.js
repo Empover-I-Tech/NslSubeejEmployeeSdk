@@ -2677,7 +2677,7 @@ const HomeScreenRn = ({ route }) => {
     setSelectedCalculator('fertilizer');
     setTimeout(() => {
       setListCalculatorsVisible(false);
-      navigation.navigate('FertilizerCalculator');
+      navigation.navigate('FertilizerSeeds');
     }, 1000);
   }
 
@@ -2685,7 +2685,7 @@ const HomeScreenRn = ({ route }) => {
     setSelectedCalculator('Seed');
     setTimeout(() => {
       setListCalculatorsVisible(false);
-      navigation.navigate('SeedCalculator');
+      navigation.navigate('SeedsCalculator');
     }, 1000);
   }
 

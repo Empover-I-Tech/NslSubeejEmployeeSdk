@@ -48,7 +48,7 @@ import { getFromAsyncStorage } from '../utils/keychainUtils';
 
 const { width, height } = Dimensions.get('window');
 
-const SeedCalculator = ({ route }) => {
+const SeedsCalculator = ({ route }) => {
     const fonts = useFontStyles()
     const { saveSeedMasterList, saveSeedCalc } = useOfflineCalculatorsCRUD();
     const { incrementOfflineCount, decrementOfflineCount, updateOfflineCount } = useOfflineSync();
@@ -2113,4 +2113,4 @@ const styles = StyleSheet.create({
 
 });
 
-export default SeedCalculator;
+export default SeedsCalculator;

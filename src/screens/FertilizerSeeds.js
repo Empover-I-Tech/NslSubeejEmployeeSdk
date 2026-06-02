@@ -24,7 +24,7 @@ import getRealm from './realmOffline/realmConfig';
 
 const { width, height } = Dimensions.get('window');
 
-const FertilizerCalculator = ({ route }) => {
+const FertilizerSeeds = ({ route }) => {
     const fonts=useFontStyles()
     const {fertilizerMasterList,fertilizerMasterList2,saveFertilizerCalc} = useOfflineCalculatorsCRUD();
     const viewShotRef = useRef();
@@ -1088,4 +1088,4 @@ const styles = StyleSheet.create({
 
 });
 
-export default FertilizerCalculator;
+export default FertilizerSeeds;

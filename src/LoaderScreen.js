@@ -7,7 +7,7 @@ import { setCompanyStyle } from "../src/state/actions/companyStyles";
 import { COMPANYCODE, EMP_DASHBOARD_SCREEN, FIRSTNAME, LASTNAME, MOBILENUMBER, ROLDID, ROLENAME, SCREENNAME, USER_ID, USER_IMG, USERNAME } from "../src/utils";
 import { downloadFileToLocal, GetApiHeaders } from "../src/utils/helpers";
 import { storeInAsyncStorage } from "../src/utils/keychainUtils";
-import { CommonActions , useNavigation} from '@react-navigation/native';
+import { CommonActions, useNavigation } from '@react-navigation/native';
 import { setIsEmployee } from "../src/state/actions/employeeActions";
 
 
@@ -68,20 +68,24 @@ const LoaderScreen = ({ route }) => {
                     name: 'MainTabs',
                     screen: 'HomeScreenRn',
                 };
-            navigation.dispatch(
-                CommonActions.reset({
-                    index: 0,
-                    routes: [
-                        {
-                            name: routeConfig.name,
-                            params: {
-                                screen: routeConfig.screen,
-                                params: { languageId: selectedCompanyData?.languageId || 0 },
-                            },
-                        },
-                    ],
-                })
-            );
+            navigation.navigate(routeConfig.name, {
+                screen: routeConfig.screen,
+                params: { languageId: selectedCompanyData?.languageId || 0 },
+            });
+            // navigation.dispatch(
+            //     CommonActions.reset({
+            //         index: 0,
+            //         routes: [
+            //             {
+            //                 name: routeConfig.name,
+            //                 params: {
+            //                     screen: routeConfig.screen,
+            //                     params: { languageId: selectedCompanyData?.languageId || 0 },
+            //                 },
+            //             },
+            //         ],
+            //     })
+            // );
         } catch (error) {
             console.error("Failed to store user data in keychain:", error);
         } finally {
