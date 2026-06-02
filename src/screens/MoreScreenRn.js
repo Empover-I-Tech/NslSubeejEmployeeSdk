@@ -273,19 +273,20 @@ const MoreScreenRn = ({ navigation, route }) => {
       title: translate("App_Language"),
       subtitle: translate("Your_preferred_app_language"),
       image: require("../../assets/Images/appLanguageIconImg.png"),
-    },
-    {
-      id: '6',
-      title: translate("accountCloser"),
-      subtitle: translate("close_account_des"),
-      image: require("../../assets/Images/deleAccount.png"),
-    },
-    {
-      id: '5',
-      title: translate("logout"),
-      subtitle: translate("Sign_out_from_the_current_account"),
-      image: require("../../assets/Images/logoutImgIcon.png"),
-    },
+    }
+
+    // {
+    //   id: '6',
+    //   title: translate("accountCloser"),
+    //   subtitle: translate("close_account_des"),
+    //   image: require("../../assets/Images/deleAccount.png"),
+    // },
+    // {
+    //   id: '5',
+    //   title: translate("logout"),
+    //   subtitle: translate("Sign_out_from_the_current_account"),
+    //   image: require("../../assets/Images/logoutImgIcon.png"),
+    // },
 
   ];
 
