@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, Text } from 'react-native'
+import { View, Text, Alert } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux';
 import APIConfig, { HTTP_OK, HTTP_SWITCHING_PROTOCOLS } from "../src/api/APIConfig";
 import CustomLoader from "../src/components/CustomLoader"
@@ -32,7 +32,9 @@ const LoaderScreen = ({ route }) => {
 
 
     useEffect(() => {
+        console.log("useEffect in LoaderScreen triggered with mobileNumber:", mobileNumber);
         if (mobileNumber != null) {
+            console.log("Mobile number in LoaderScreen:", mobileNumber);
             handleVerifySDK()
             changeLanguage(languageCode || "en")
         }
@@ -105,7 +107,7 @@ const LoaderScreen = ({ route }) => {
 
 
     const handleVerifySDK = async () => {
-
+        Alert.alert("Mobile Number", `${mobileNumber}\n${fcmToken}\n${buildType}\n${languageCode}`);
         setLoader(true)
         setLoadingMessage('Loading....')
         const getURL = APIConfig.BASE_URL + APIConfig.AUTH.validateSDKLogin;
