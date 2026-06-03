@@ -11,6 +11,7 @@ import { useNavigation } from '@react-navigation/native';
 import { setIsEmployee } from "../src/state/actions/employeeActions";
 import { FCM_TOKEN } from './assets/Utils/Utils';
 import { changeLanguage } from './Localization/Localisation';
+import SimpleToast from 'react-native-simple-toast';
 
 
 const LoaderScreen = ({ route }) => {
@@ -115,7 +116,7 @@ const LoaderScreen = ({ route }) => {
         getHeaders.authType = "JSONREQUEST";
         getHeaders["Content-Type"] = "application/json";
         const payload = {
-            mobileNumber: jsonData,
+            mobileNumber: mobileNumber,
         }
         if (isConnected) {
             try {
@@ -126,9 +127,7 @@ const LoaderScreen = ({ route }) => {
                 });
                 const jsonData = await response.json();
                 console.log("Parsed response:", jsonData);
-                if (jsonData.statusCode === HTTP_SWITCHING_PROTOCOLS) {
-                    setLoader(false)
-                } else if (jsonData.statusCode === HTTP_OK) {
+                if (jsonData.statusCode === HTTP_OK) {
                     const data = jsonData.response
                     const dynamicStyles = {};
                     console.log("datacheking=-=-=>", JSON.stringify(data))
@@ -168,13 +167,10 @@ const LoaderScreen = ({ route }) => {
 
                     dispatch(setCompanyStyle(dynamicStyles));
                     await storeUserData(data);
-                } else if (jsonData.statusCode === 500) {
-
-                } else if (jsonData.statusCode === 900) {
-
                 } else {
                     setLoader(false);
                     setLoadingMessage('')
+                    SimpleToast.show(jsonData.message || translate("something_went_wrong"))
                 }
             } catch (error) {
                 console.error("Network or parsing error:", error);
