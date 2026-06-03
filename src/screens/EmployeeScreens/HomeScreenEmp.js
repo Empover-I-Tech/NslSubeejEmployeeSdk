@@ -64,6 +64,7 @@ import PreLoginCustomLoader from '../../components/PreLoginCustomLoader';
 import { setNearBy } from '../../state/actions/nearByAction';
 import { setTabEmpMenuControl } from '../../state/actions/tabempmenuControl';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import 'react-native-get-random-values';
 
 const DOWNLOAD_TIMEOUT = 30000; // 30 seconds
 const RETRY_ATTEMPTS = 2;
