@@ -4,16 +4,21 @@ import { useDispatch, useSelector } from 'react-redux';
 import APIConfig, { HTTP_OK, HTTP_SWITCHING_PROTOCOLS } from "../src/api/APIConfig";
 import CustomLoader from "../src/components/CustomLoader"
 import { setCompanyStyle } from "../src/state/actions/companyStyles";
-import { COMPANYCODE, EMP_DASHBOARD_SCREEN, FIRSTNAME, LASTNAME, MOBILENUMBER, ROLDID, ROLENAME, SCREENNAME, USER_ID, USER_IMG, USERNAME } from "../src/utils";
+import { COMPANYCODE, EMP_DASHBOARD_SCREEN, FIRSTNAME, LANGUAGECODE, LASTNAME, MOBILENUMBER, ROLDID, ROLENAME, SCREENNAME, USER_ID, USER_IMG, USERNAME } from "../src/utils";
 import { downloadFileToLocal, GetApiHeaders } from "../src/utils/helpers";
 import { storeInAsyncStorage } from "../src/utils/keychainUtils";
-import { CommonActions, useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { setIsEmployee } from "../src/state/actions/employeeActions";
+import { FCM_TOKEN } from './assets/Utils/Utils';
 
 
 const LoaderScreen = ({ route }) => {
     console.log("LoaderScreen route params:", route?.params);
-    const jsonData = route?.params?.navigateItem?.mobileNumber
+    const mobileNumber = route?.params?.navigateItem?.mobileNumber
+    const fcmToken = route?.params?.navigateItem?.fcmToken
+    const buildType = route?.params?.navigateItem?.buildType
+    const languageCode = route?.params?.navigateItem?.languageCode
+
     console.log("jjjjjjjj", JSON.stringify(route?.params?.navigateItem?.mobileNumber))
     const navigation = useNavigation();
 
@@ -26,15 +31,17 @@ const LoaderScreen = ({ route }) => {
 
 
     useEffect(() => {
-        if (jsonData != null) {
+        if (mobileNumber != null) {
             handleVerifySDK()
         }
-    }, [jsonData])
+    }, [mobileNumber])
 
 
     const storeUserData = async (data) => {
         try {
-            await storeInAsyncStorage(MOBILENUMBER, `${jsonData}`);
+            await storeInAsyncStorage(MOBILENUMBER, `${mobileNumber}`);
+            await storeInAsyncStorage(FCM_TOKEN, `${fcmToken}`);
+            await storeInAsyncStorage(LANGUAGECODE, `${languageCode}`);
             console.log("DATA_FROM_SERVER", data);
 
             if (data?.id) await storeInAsyncStorage(USER_ID, `${data.id}`);

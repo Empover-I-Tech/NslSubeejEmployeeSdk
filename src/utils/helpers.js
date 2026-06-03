@@ -5,7 +5,7 @@ import { getFromAsyncStorage } from "./keychainUtils";
 import { JWTAUTHENTICATION, LANGUAGECODE, LANGUAGEID, MOBILENUMBER, ROLDID, USER_ID, USERNAME, REFERRALCODE, COMPANYCODE, ROLENAME } from ".";
 import RNFetchBlob from "react-native-blob-util";
 import { translate } from "../Localization/Localisation";
-import { SUBEEJ_SDK_APP_NAME } from "../assets/Utils/Utils";
+import { FCM_TOKEN, SUBEEJ_SDK_APP_NAME } from "../assets/Utils/Utils";
 
 
 
@@ -191,9 +191,7 @@ export async function GetApiHeaders() {
         'deviceId': await getDeviceId(),
         'clientAppName': await getClientAppName(),
         'clientPKGName': await getClientPKGName(),
-        'fcmToken': await getFromAsyncStorage("fcmToken"),
-        // 'appVersionCode': await getAppVersion(), // previous code
-        // 'appVersionName': await getAppName(),
+        'fcmToken': await getFromAsyncStorage(FCM_TOKEN),
         'appVersionCode': await getBuildNumber(),
         'appVersionName': await getAppVersion(),
         'deviceToken': "",
