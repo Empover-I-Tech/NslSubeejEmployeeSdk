@@ -107,6 +107,16 @@ export async function getScale() {
     return deviceId;
 }
 
+export async function getClientAppName() {
+    let clientAppName = await DeviceInfo.getApplicationName()
+    return clientAppName;
+}
+
+export async function getClientPKGName() {
+    let clientPKGName = await DeviceInfo.getBundleId()
+    return clientPKGName;
+}
+
 export async function getNotchHeight() {
     let deviceId = DeviceInfo.hasNotch()
     if (deviceId) {
@@ -179,8 +189,8 @@ export async function GetApiHeaders() {
         "userId": await getFromAsyncStorage(USER_ID),
         'mobileNumber': await getFromAsyncStorage(MOBILENUMBER),
         'deviceId': await getDeviceId(),
-        'clientAppName': DeviceInfo.getApplicationName(),
-        'clientPKGName': DeviceInfo.getBundleId(),
+        'clientAppName': await getClientAppName(),
+        'clientPKGName': await getClientPKGName(),
         'fcmToken': await getFromAsyncStorage("fcmToken"),
         // 'appVersionCode': await getAppVersion(), // previous code
         // 'appVersionName': await getAppName(),
