@@ -10,6 +10,7 @@ import { storeInAsyncStorage } from "../src/utils/keychainUtils";
 import { useNavigation } from '@react-navigation/native';
 import { setIsEmployee } from "../src/state/actions/employeeActions";
 import { FCM_TOKEN } from './assets/Utils/Utils';
+import { changeLanguage } from './Localization/Localisation';
 
 
 const LoaderScreen = ({ route }) => {
@@ -33,6 +34,7 @@ const LoaderScreen = ({ route }) => {
     useEffect(() => {
         if (mobileNumber != null) {
             handleVerifySDK()
+            changeLanguage(languageCode || "en")
         }
     }, [mobileNumber])
 
