@@ -27,7 +27,7 @@ const LoaderScreen = ({ route }) => {
 
     const isConnected = useSelector((state) => state.network.isConnected);
     const selectedCompanyData = useSelector(state => state.selectedCompnayAct.selectedCompanyAct)
-    const [loaderImage, setLoaderImage] = useState(require('../assets/Images/SubeejLoader.gif'))
+    const [loaderImage, setLoaderImage] = useState(require('../../assets/Images/SubeejLoader.gif'))
     const [loader, setLoader] = useState(false)
     const [loadingMessage, setLoadingMessage] = useState('')
     const dispatch = useDispatch()
