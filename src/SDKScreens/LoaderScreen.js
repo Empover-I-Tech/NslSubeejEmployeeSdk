@@ -183,7 +183,19 @@ const LoaderScreen = ({ route }) => {
                 } else {
                     setLoader(false);
                     setLoadingMessage('')
-                    SimpleToast.show(jsonData.message || translate("something_went_wrong"))
+                     Alert.alert(
+                        "Alert",
+                        jsonData.message || translate("something_went_wrong"),
+                        [
+                            {
+                                text: translate('ok'),
+                                onPress: () => { navigation.goBack()}
+                            }
+                        ],
+                        { cancelable: false }
+                    );
+ 
+                    // SimpleToast.show(jsonData.message || translate("something_went_wrong"))
                 }
             } catch (error) {
                 console.error("Network or parsing error:", error);
