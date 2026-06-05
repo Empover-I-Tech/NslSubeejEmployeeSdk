@@ -25,7 +25,7 @@ import {
   getFromAsyncStorage,
   storeInAsyncStorage,
 } from '../../utils/keychainUtils';
-import firestore from '@react-native-firebase/firestore';
+// import firestore from '@react-native-firebase/firestore';
 import { MOBILENUMBER, REFERRALCODE, USER_ID, USERNAME, USER_IMG, STATE_ID, DISTRICT_ID, STATE_NAME, DISTRICT_NAME, LANGUAGEID, OFFLINETOTALCOUNT, FIRSTNAME, LASTNAME, COMPANYCODE } from '../../utils';
 import { GetApiHeaders, getGreetingMessage, normalizeText, getBuildNumber, getAppVersion, downloadFileToLocal } from '../../utils/helpers';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
@@ -516,7 +516,7 @@ const HomeScreenEmp = ({ route }) => {
       getUserDetailsVersion11()
       updateOfflineCount();
       fetchUserData();
-      checkForceUpdate();
+      // checkForceUpdate();
       GetUserLocation();
       setSelectedCalculator('');
       setProductScanModalOpen(false);
@@ -2287,32 +2287,32 @@ useFocusEffect(
 
   
 
-  const checkForceUpdate = useCallback(() => {
-    const subscriber = firestore()
-      .collection(FIREBASE_VERSION_COLLECTION_NAME)
-      .doc(FIREBASE_VERSION_DOC_ID)
-      .onSnapshot(
-        documentSnapshot => {
-          if (documentSnapshot?.exists) {
-            const data = documentSnapshot.data();
-            if (data) {
-              setTimeout(() => {
-                if (Platform.OS == "android") {
-                  checkAppversionUpdate(data);
-                } else {
-                  checkAppversionUpdateIOS(data);
-                }
-              }, 500);
+  // const checkForceUpdate = useCallback(() => {
+  //   const subscriber = firestore()
+  //     .collection(FIREBASE_VERSION_COLLECTION_NAME)
+  //     .doc(FIREBASE_VERSION_DOC_ID)
+  //     .onSnapshot(
+  //       documentSnapshot => {
+  //         if (documentSnapshot?.exists) {
+  //           const data = documentSnapshot.data();
+  //           if (data) {
+  //             setTimeout(() => {
+  //               if (Platform.OS == "android") {
+  //                 checkAppversionUpdate(data);
+  //               } else {
+  //                 checkAppversionUpdateIOS(data);
+  //               }
+  //             }, 500);
 
-            }
-          }
-        },
-        error => {
-          console.error('Error fetching Firestore document:', error);
-        }
-      );
-    return () => subscriber();
-  }, []);
+  //           }
+  //         }
+  //       },
+  //       error => {
+  //         console.error('Error fetching Firestore document:', error);
+  //       }
+  //     );
+  //   return () => subscriber();
+  // }, []);
 
   const checkAppversionUpdate = useCallback(async documentSnapshot => {
     try {
