@@ -25,3 +25,9 @@ export { default as LanguageScreenRn} from './src/screens/LanguageScreenRn';
 export { default as Agronomy } from './src/screens/Agronomy'
 export { default as WeatherScreen } from './src/screens/Weather/WeatherScreen'
 export { default as Remedyrecommendation } from './src/screens/Remedyrecommendation'
+
+export { default as NearByRetailersScreen} from './src/screens/NearByRetailersScreen'
+export { default as AdvancedKnowledgeCenter} from './src/screens/AdvancedKnowledgeCenter'
+export { default as KnowledgeCenterDocsList} from './src/screens/KnowledgeCenterDocsList'
+export { default as KnowledgeCenterPDFView} from './src/screens/KnowledgeCenterPDFView'
+export { default as Location} from './src/components/Location'
