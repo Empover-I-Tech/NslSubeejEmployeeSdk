@@ -30,4 +30,4 @@ export { default as NearByRetailersScreen} from './src/screens/NearByRetailersSc
 export { default as AdvancedKnowledgeCenter} from './src/screens/AdvancedKnowledgeCenter'
 export { default as KnowledgeCenterDocsList} from './src/screens/KnowledgeCenterDocsList'
 export { default as KnowledgeCenterPDFView} from './src/screens/KnowledgeCenterPDFView'
-export { default as Location} from './src/components/Location'
+// export { default as Location} from './src/components/Location'
