@@ -102,7 +102,7 @@ export default configs = {
         // SIGNUPFORM: 'http://123.176.45.62:8080/FluxsensForms/api/forms/46fe2dd1-1831-47d7-afe2-bc560150ef90',
         SIGNUPFORM: 'http://3.110.159.82:8080/subeejkisan/rest/fluxForms/getFluxForms?formType=Registration',
         VALIDATEOTP: 'validateOTP_v2',
-        validateSDKLogin: 'validateSDKLogin',
+        validateSDKLogin: 'validateSubeejSDKAuthentication',
         SIGNUP: 'registerFarmer',
         UPDATEPROFILE: 'profileUpdateForFarmer_V1',
         CHART: "mandiPrices/getMandiPricesAnalysisReport",

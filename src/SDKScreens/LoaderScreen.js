@@ -9,7 +9,7 @@ import { downloadFileToLocal, GetApiHeaders } from "../../src/utils/helpers";
 import { storeInAsyncStorage } from "../../src/utils/keychainUtils";
 import { useNavigation } from '@react-navigation/native';
 import { setIsEmployee } from "../../src/state/actions/employeeActions";
-import { changeLanguage } from '../Localization/Localisation';
+import { changeLanguage, translate } from '../Localization/Localisation';
 import SimpleToast from 'react-native-simple-toast';
 import { FCM_TOKEN } from '../assets/Utils/Utils';
 
@@ -124,6 +124,7 @@ const LoaderScreen = ({ route }) => {
         setLoader(true)
         setLoadingMessage('Loading....')
         const getURL = APIConfig.BASE_URL + APIConfig.AUTH.validateSDKLogin;
+        console.log("getURL====",getURL)
         const getHeaders = await GetApiHeaders();
         getHeaders.authType = "JSONREQUEST";
         getHeaders["Content-Type"] = "application/json";
