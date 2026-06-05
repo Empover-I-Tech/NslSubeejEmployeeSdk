@@ -511,7 +511,7 @@ const ProfileScreen = ({ route }) => {
           deleteFromAsyncStorage(STATE_ID),
           deleteFromAsyncStorage(STATE_NAME),
           storeInAsyncStorage(STATE_ID, `${response?.stateId}`),
-          storeInAsyncStorage(STATE_NAME, `${response?.state}`),
+          storeInAsyncStorage(STATE_NAME, `${response?.state ?? ""}`),
         ]);
       }
       if (response?.district) {
@@ -687,6 +687,7 @@ const ProfileScreen = ({ route }) => {
           <TouchableOpacity
             disabled={editEnable}
             onPress={() => setImageSelectionModal(true)}
+            hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
             style={[styles.white_bg, { borderRadius: 50, right: 35, bottom: -25, position: 'absolute' }]}
           >
             {imagePic ? (

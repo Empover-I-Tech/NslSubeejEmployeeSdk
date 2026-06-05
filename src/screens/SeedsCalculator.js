@@ -1,37 +1,16 @@
 import { Platform, Text, Dimensions, StatusBar, View, Alert, StyleSheet, Image, TouchableOpacity, ScrollView, ToastAndroid } from 'react-native';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useSelector } from 'react-redux';
-// import CustomListViewModal from '../Modals/CustomListViewModal';
-import CustomSeedListViewModal from '../components/CustomSeedListViewModal';
-// import CustomFertilizerCalListViewModal from '../components/CustomFertilizerCalListViewModal';
 import CustomYieldCalListViewModal from '../components/CustomYieldCalListViewModal';
-
-// import CustomTextInput from '../Components/CustomTextInput';
-import CustomSeedTextInput from '../components/CustomSeedTextInput';
 import CustomYieldTextInput from '../components/CustomYieldCalTextInput';
-
-import { strings } from '../Localization/StringsCopy';
 import SimpleToast from 'react-native-simple-toast';
-// import CustomLoader from '../Components/CustomLoader';
-// import CustomSuccessLoader from '../Components/CustomSuccessLoader';
-// import CustomErrorLoader from '../Components/CustomErrorLoader';
 import { GetApiHeaders } from '../utils/helpers'
-
-// import {getNetworkStatus, uploadFormData } from '../NetworkUtils/NetworkUtils';
 import APIConfig, { HTTP_OK } from '../api/APIConfig'
-
-// import { Colors } from '../assets/Utils/Color';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-// import { getCompanyStyles } from '../redux/store/slices/CompanyStyleSlice';
-// import CustomBorderInputDropDown from '../Components/CustomBorderInputDropDown';
-import CustomSeedsBorderInputDropDown from '../components/CustomSeedsBorderInputDropDown';
 import CustomFertilizerCalBorderInputDropDown from '../components/CustomFertilizerCalBorderInputDropDown';
-
 import { responsiveHeight } from 'react-native-responsive-dimensions';
-// import CustomButton from '../Components/CustomButton'
 import ViewShot from 'react-native-view-shot';
 import Share from 'react-native-share';
-// import { Styles } from '../styles/Styles';
 import useGetRequestWithJwt from '../api/useGetRequestWithJwt'
 import usePostRequestWithJwt from "../api/usePostRequestWithJwt"
 import PreLoginCustomLoader from '../components/PreLoginCustomLoader';
@@ -136,6 +115,7 @@ const SeedsCalculator = ({ route }) => {
     const roundToNearestInteger = (value) => Math.round(value).toString();
     const sharingRef = useRef(false);
     const [isSharing, setIsSharing] = useState(false);
+    const isSavingRef = useRef(false);
 
     const navigation = useNavigation()
     const roundAndFormat = (value) => {
@@ -1509,6 +1489,8 @@ const SeedsCalculator = ({ route }) => {
 
 
     const saveAPI = async () => {
+        if (isSavingRef.current) return;
+        isSavingRef.current = true;
         // var networkStatus = await getNetworkStatus()
         if (isConnected) {
             try {
@@ -1579,6 +1561,7 @@ const SeedsCalculator = ({ route }) => {
                             masterResp.seedAndPopulationCalHDtoExist = JSON.stringify(jsonData);
 
                             saveSeedMasterList(masterResp);
+                            isSavingRef.current = false;
                             SimpleToast.show(translate("submitted_successfully"))
                             // setAlertTextContent(translate('submitted_successfully'))
                             // setAlertModal(true)
@@ -1642,6 +1625,7 @@ const SeedsCalculator = ({ route }) => {
                             setLoadingMessage(APIResponse?.message ?? "")
                             setLoading(false)
                             setLoaderApi(false)
+                            isSavingRef.current = false;
                             // Alert.alert(APIResponse?.message)
                             setAlertModal(true)
                             setAlertTextContent(APIResponse?.message)
@@ -1653,6 +1637,7 @@ const SeedsCalculator = ({ route }) => {
                         setLoading(false)
                         setLoaderApi(false)
                         setLoadingMessage()
+                        isSavingRef.current = false;
                         if (Platform.OS == "ios") {
                             SimpleToast.show(translate("Something_went_wrong"));
                         } else {
@@ -1666,6 +1651,7 @@ const SeedsCalculator = ({ route }) => {
                     setLoading(false)
                     setLoaderApi(false)
                     setSuccessLoadingMessage(error.message)
+                    isSavingRef.current = false;
                 }, 1000);
             }
         } else {
@@ -1707,6 +1693,7 @@ const SeedsCalculator = ({ route }) => {
                 setAlertTextContent(translate('Data_saved_offline'))
                 setAlertModal(true)
             }
+            isSavingRef.current = false;
 
 
 

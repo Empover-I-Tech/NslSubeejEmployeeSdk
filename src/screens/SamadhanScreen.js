@@ -2,7 +2,7 @@ import { Linking, Platform, Dimensions, Modal, FlatList, Text, View, Image, Styl
 import React, { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { GetApiHeaders } from '../utils/helpers';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation, useNavigationState } from '@react-navigation/native';
 import APIConfig from '../api/APIConfig';
 import PreLoginCustomLoader from '../components/PreLoginCustomLoader';
 import { RFValue } from "react-native-responsive-fontsize";
@@ -14,7 +14,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { mergeComplaintData, processComplaintImages } from "../assets/Utils/Utils";
 import { helpDeskRaiseCRUD } from "./realmOffline/helpDeskRaiseCRUD";
 import { useFontStyles } from "../hooks/useFontStyles";
-import { responsiveHeight } from "react-native-responsive-dimensions";
 
 
 const { width, height } = Dimensions.get('window');
@@ -32,6 +31,10 @@ const SamadhanScreen = ({ route }) => {
     const [issuesDuplicateList, setIssuesDuplicateList] = useState([])
     const [duplicateModalOpen, setDuplicateModalOpen] = useState(false)
     const navigation = useNavigation();
+    const routeNames = useNavigationState(state => state?.routeNames ?? []);
+    // BottomTabsEmp has HomeScreenEmp; BottomTabs (farmer) does not
+    const isEmpNavigator = routeNames.includes('HomeScreenEmp');
+    const listFooterPadding = isEmpNavigator ? 90 : 65;
     const cachedSamadhanHistory = realm.objects('SAMADHANHISTORY');
     const [previewVisible, setPreviewVisible] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
@@ -272,7 +275,7 @@ const SamadhanScreen = ({ route }) => {
                         <Image source={require("../../assets/Images/RefreshIcon.png")} style={{ height: 30, width: 30, tintColor: "#000" }} />
                     </TouchableOpacity>
                 </View>
-                <View>
+                <View style={{ flex: 1 }}>
                     <Text style={[RnStyle.headerMssgText, { fontFamily: fonts.SemiBold }]}>{translate("how_can_we_help")}</Text>
                     <View style={RnStyle.line} />
                     <View style={RnStyle.supportMssgTextContainer}>
@@ -298,17 +301,20 @@ const SamadhanScreen = ({ route }) => {
                         <Text style={[RnStyle.supportTicketText, { color: dynamicStyles.secondaryColor, fontFamily: fonts.Regular }]}>{translate("Support_Tickets")}</Text>
                     </View>
 
-                    <FlatList style={{ height: Platform.OS === "ios" ? height * 0.45 : height * 0.45, }}
-                        ListEmptyComponent={() => <Text style={{ color: "#000", fontWeight: "bold", fontSize: RFValue(17, height), alignSelf: "center", marginTop: 15 }}>{translate("No_data_available")}</Text>} data={complaintList} renderItem={renderComplaintsList} ListFooterComponent={<View style={{ height: responsiveHeight(10) }} />} />
+                    <FlatList
+                        style={{ flex: 1 }}
+                        contentContainerStyle={{ flexGrow: 1 }}
+                        ListEmptyComponent={() => <Text style={{ color: "#000", fontWeight: "bold", fontSize: RFValue(17, height), alignSelf: "center", marginTop: 15 }}>{translate("No_data_available")}</Text>}
+                        data={complaintList}
+                        renderItem={renderComplaintsList}
+                        ListFooterComponent={<View style={{ height: 10 }} />}
+                    />
                 </View>
 
-
-                <View>
-                    <TouchableOpacity onPress={navigateComplaintScreen} style={[RnStyle.supportTicketBtnContainer1, { backgroundColor: dynamicStyles.primaryColor }]}>
-                        <Image style={[RnStyle.supportTicketIcon1, { tintColor: dynamicStyles.secondaryColor }]} source={require("../../assets/Images/plusIconImg.png")} />
-                        <Text style={[RnStyle.supportTicketText, { color: dynamicStyles.secondaryColor, fontFamily: fonts.Regular }]}>{translate("Raise_Complaints")} </Text>
-                    </TouchableOpacity>
-                </View>
+                <TouchableOpacity onPress={navigateComplaintScreen} style={[RnStyle.supportTicketBtnContainer1, { backgroundColor: dynamicStyles.primaryColor, marginBottom: listFooterPadding }]}>
+                    <Image style={[RnStyle.supportTicketIcon1, { tintColor: dynamicStyles.secondaryColor }]} source={require("../../assets/Images/plusIconImg.png")} />
+                    <Text style={[RnStyle.supportTicketText, { color: dynamicStyles.secondaryColor, fontFamily: fonts.Regular }]}>{translate("Raise_Complaints")} </Text>
+                </TouchableOpacity>
 
                 <Modal
                     animationType="slide"
@@ -576,16 +582,8 @@ const RnStyle = StyleSheet.create({
     },
 
     supportTicketBtnContainer1: {
-        position: 'relative',
-        bottom: height >= 700 && height <= 820
-            ? height * 0.09
-            : height >= 821 && height <= 899
-                ? height * 0.08
-                : height > 900
-                    ? height * 0.045
-                    : 0,
         height: 45,
-        // marginVertical: 15,
+        marginTop: 10,
         borderRadius: 10,
         flexDirection: "row",
         alignItems: "center",
@@ -650,11 +648,12 @@ const RnStyle = StyleSheet.create({
 
     duplicateCountBackground: {
         backgroundColor: "#DB710E",
-        height: 20,
-        width: 20,
+        minHeight: 20,
+        minWidth:30,
         justifyContent: "center",
         alignItems: "center",
-        borderRadius: 40
+        borderRadius: 40,
+        padding:5
     },
 
 

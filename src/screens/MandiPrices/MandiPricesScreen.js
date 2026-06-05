@@ -32,6 +32,7 @@ const { width, height } = Dimensions.get('window');
 const MandiPricesScreen = () => {
     const fonts = useFontStyles()
     const viewShotRef = useRef();
+    const isSharingRef = useRef(false);
     const FILTERS = [translate("this_week"), translate("this_month"), translate("this_year")];
     const [selectedFilter, setSelectedFilter] = useState(FILTERS[0]);
     let navigation = useNavigation()
@@ -73,6 +74,8 @@ const MandiPricesScreen = () => {
     const [noMarketText, setNoMarketText] = useState("")
 
     const takeScreenshot = async () => {
+        if (isSharingRef.current) return;
+        isSharingRef.current = true;
 
         const uri = await viewShotRef.current.capture();
         const shareOptions = {
@@ -88,8 +91,9 @@ const MandiPricesScreen = () => {
             if (error.message !== 'User did not share') {
                 console.error('Share Error:', error);
             }
+        } finally {
+            isSharingRef.current = false;
         }
-
     };
 
     const alertCloseHandle = () => {
@@ -163,7 +167,6 @@ const MandiPricesScreen = () => {
         let districtId = await getFromAsyncStorage(DISTRICT_ID)
         let districtName = await getFromAsyncStorage(DISTRICT_NAME)
         setLoading(false)
-        console.log("kaopsoap=-=-=->", stateID)
         if (isConnected)
             try {
                 // var stateUrl = APIConfig.BASE_URL_NVM + APIConfig.MANDRIPRICES.GETSTATEDISTRICTDETAILS;
@@ -571,15 +574,17 @@ const MandiPricesScreen = () => {
     };
 
     const viewDetailsBUtton = async (items) => {
-        const headers = await GetApiHeaders();
-        headers.authType = "JSONREQUEST";
         setSelectedCrop(items)
         setPopUp(true)
-        const url = APIConfig.BASE_URL + APIConfig.mandiPrices_saveCropViewedHistory
-        const payload = { cropName: items.commodity, farmerId: headers.userId };
-        const response = await axios.post(url, payload, { headers });
-        console.log("respTes-=->", response.data)
-
+        try {
+            const headers = await GetApiHeaders();
+            headers.authType = "JSONREQUEST";
+            const url = APIConfig.BASE_URL + APIConfig.mandiPrices_saveCropViewedHistory;
+            const payload = { cropName: items?.commodity ?? "", farmerId: headers?.userId };
+            const response = await axios.post(url, payload, { headers, timeout: 10000 });
+        } catch (error) {
+            console.log("viewDetailsBUtton error:", error?.message);
+        }
     }
 
     const renderCropItem = ({ item, marketName, action, location, commodity }) => {

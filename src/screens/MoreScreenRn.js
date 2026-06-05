@@ -25,6 +25,7 @@ import RNFS from 'react-native-fs';
 import axios from 'axios';
 import { useFontStyles } from '../hooks/useFontStyles';
 import CustomAlert from '../components/CustomAlert';
+import PreLoginCustomLoader from '../components/PreLoginCustomLoader';
 const { width, height } = Dimensions.get('window');
 
 
@@ -273,20 +274,19 @@ const MoreScreenRn = ({ navigation, route }) => {
       title: translate("App_Language"),
       subtitle: translate("Your_preferred_app_language"),
       image: require("../../assets/Images/appLanguageIconImg.png"),
-    }
-
-    // {
-    //   id: '6',
-    //   title: translate("accountCloser"),
-    //   subtitle: translate("close_account_des"),
-    //   image: require("../../assets/Images/deleAccount.png"),
-    // },
-    // {
-    //   id: '5',
-    //   title: translate("logout"),
-    //   subtitle: translate("Sign_out_from_the_current_account"),
-    //   image: require("../../assets/Images/logoutImgIcon.png"),
-    // },
+    },
+    {
+      id: '6',
+      title: translate("accountCloser"),
+      subtitle: translate("close_account_des"),
+      image: require("../../assets/Images/deleAccount.png"),
+    },
+    {
+      id: '5',
+      title: translate("logout"),
+      subtitle: translate("Sign_out_from_the_current_account"),
+      image: require("../../assets/Images/logoutImgIcon.png"),
+    },
 
   ];
 
@@ -828,7 +828,9 @@ const MoreScreenRn = ({ navigation, route }) => {
         />
       )}
 
-      {loader && <CustomLoader loading={loader} message={loadingMessage} loaderImage={loaderImage} progress={progress} />}
+      {loader && <PreLoginCustomLoader/>}
+            {/* {loader && <CustomLoader loading={loader} message={loadingMessage} loaderImage={loaderImage} progress={progress} />} */}
+
     </View>
   )
 }

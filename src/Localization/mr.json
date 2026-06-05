@@ -945,5 +945,7 @@
   "Unable_to_process_your_request_moment_Please_again_later": "सध्या तुमची विनंती प्रक्रिया करता येत नाही. कृपया नंतर पुन्हा प्रयत्न करा.",
   "Start_Date": "सुरुवातीची तारीख",
   "End_Date": "समाप्तीची तारीख",
-  "farmer_services": "शेतकरी सेवा"
+  "farmer_services": "शेतकरी सेवा",
+  "No_internet_connection": "इंटरनेट कनेक्शन नाही",
+  "Please_check_internet_connectionand_again": "कृपया तुमचे इंटरनेट कनेक्शन तपासा आणि पुन्हा प्रयत्न करा"
 }

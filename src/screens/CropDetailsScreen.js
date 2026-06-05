@@ -33,6 +33,7 @@ import { useFontStyles } from '../hooks/useFontStyles';
 const CropDetailsScreen = ({ route }) => {
   const fonts=useFontStyles()
   const viewShotRef = useRef();
+  const isSharingRef = useRef(false);
   const navigation = useNavigation()
   console.log("sap=-=-=->", route)
   const currentTheme = useSelector(state => state.theme.theme);
@@ -122,22 +123,23 @@ const CropDetailsScreen = ({ route }) => {
 
 
   const handleShare = async () => {
-    const uri = await viewShotRef.current.capture();
-    const shareOptions = {
-      title: 'Share via',
-      message: ``,
-      url: uri,
-      // social: Share.Social.WHATSAPP,
-    };
-
+    if (isSharingRef.current) return;
+    isSharingRef.current = true;
     try {
+      const uri = await viewShotRef.current.capture();
+      const shareOptions = {
+        title: 'Share via',
+        message: ``,
+        url: uri,
+      };
       await Share.open(shareOptions);
     } catch (error) {
-      if (error.message !== 'User did not share') {
+      if (error?.message !== 'User did not share') {
         console.error('Share Error:', error);
       }
+    } finally {
+      isSharingRef.current = false;
     }
-
   };
 
   return (

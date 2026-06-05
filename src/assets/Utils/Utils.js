@@ -45,7 +45,6 @@ export const WHATSAPPCHECKED = 'WhatsappChecked'
 export const LOADER_GIF = "LOADER_GIF";
 export const USERMENUCONTROL = "USERMENUCONTROL"
 export const FIELDACTIVITYQR = "FIELDACTIVITYQR"
-export const SUBEEJ_SDK_APP_NAME = 'subeej sdk'
 
 export const DOWNLOAD_FOLDER_NAME = 'GeoTaggingDownloads';
 export const DOWNLOAD_FOLDER_PATH = `${RNFS.CachesDirectoryPath}/${DOWNLOAD_FOLDER_NAME}`;

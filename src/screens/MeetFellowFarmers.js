@@ -78,6 +78,8 @@ const MeetFellowFarmer = () => {
 
     const [selectedTime, setSelectedTime] = useState(null);
     const [tempTime, setTempTime] = useState(new Date());
+    const isSavingRef = useRef(false);
+    
     const navigation = useNavigation();
     console.log("psoapoasp=-=-=>", tempTime)
 
@@ -256,6 +258,8 @@ const MeetFellowFarmer = () => {
     }
 
     const uploadMeetFarmer = async () => {
+        if (isSavingRef.current) return;
+        isSavingRef.current = true;
         if (isConnected) {
 
             try {
@@ -315,6 +319,7 @@ const MeetFellowFarmer = () => {
                     setSuccessVisible(true)
                     setLoaderApi(false)
                     setSelectedTime(null)
+                    isSavingRef.current = false;
 
                 }
                 else if (responseApi?.data?.statusCode === 201) {
@@ -331,6 +336,7 @@ const MeetFellowFarmer = () => {
                     setSelectedTime(null)
                     // setSuccessVisible(true)
                     setLoaderApi(false)
+                    isSavingRef.current = false;
                     // setSelectedTime(null);
                     setTempTime(null)
                     SimpleToast.show(responseApi?.data?.message)
@@ -351,6 +357,8 @@ const MeetFellowFarmer = () => {
                     setSelectedTime(null)
                     // setSuccessVisible(true)
                     setLoaderApi(false)
+                    isSavingRef.current = false;
+
                     // setSelectedTime(null);
                     setTempTime(null)
                     SimpleToast.show(responseApi.data.message)
@@ -360,6 +368,7 @@ const MeetFellowFarmer = () => {
                 else {
                     setLoaderApi(false)
                     setAlertModal(true);
+                    isSavingRef.current = false;
                     setAlertTextContent(responseApi.data.message ? responseApi.data.message : translate("Something_went_wrong"));
 
                 }
@@ -368,6 +377,7 @@ const MeetFellowFarmer = () => {
                 console.error('Error:', error);
                 setLoaderApi(false)
                 SimpleToast.show(translate("NetworkRequestFailed"))
+                isSavingRef.current = false;
 
                 return null;
             }

@@ -944,5 +944,7 @@
   "Unable_to_process_your_request_moment_Please_again_later": "ప్రస్తుతం మీ అభ్యర్థనను ప్రాసెస్ చేయలేము. దయచేసి కొంతసేపటి తర్వాత మళ్లీ ప్రయత్నించండి.",
   "Start_Date": "ప్రారంభ తేదీ",
   "End_Date": "ముగింపు తేదీ",
-  "farmer_services": "రైతు సేవలు"
+  "farmer_services": "రైతు సేవలు",
+  "No_internet_connection": "ఇంటర్నెట్ కనెక్షన్ లేదు",
+  "Please_check_internet_connectionand_again": "దయచేసి మీ ఇంటర్నెట్ కనెక్షన్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండ"
 }

@@ -45,6 +45,7 @@ function QRScanner({ route }) {
     const [successMssgVisible, setSuccessMssgVisible] = useState(false)
     const [navigationData, setNavigationData] = useState(null);
     const [cameraPermission, setCameraPermission] = useState(null);
+    const [isCameraInitialized, setIsCameraInitialized] = useState(false);
 
     const [alertModal, setAlertModal] = useState(false)
     const [alertTextContent, setAlertTextContent] = useState("")
@@ -316,7 +317,8 @@ function QRScanner({ route }) {
                                             photo={false}
                                             enableZoomGesture
                                             onError={onError}
-                                            codeScanner={codeScanner}
+                                            onInitialized={() => setIsCameraInitialized(true)}
+                                            codeScanner={isCameraInitialized ? codeScanner : undefined}
                                             isActive={qrActivate} />
 
 

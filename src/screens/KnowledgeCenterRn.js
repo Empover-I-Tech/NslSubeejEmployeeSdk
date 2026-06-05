@@ -674,7 +674,7 @@ const KnowledgeCenterRn = () => {
         </TouchableWithoutFeedback>
       </Modal>
       {loaderApi && <PreLoginCustomLoader />}
-      {refreshing && <CustomLoader loading={refreshing} message={""} loaderImage={""} progress={0} />}
+      {refreshing && <PreLoginCustomLoader/>}
     </View>
     </View>
   )

@@ -16,7 +16,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
 import APIConfig, { HTTP_OK } from '../api/APIConfig';
 import { getFromAsyncStorage, storeInAsyncStorage } from '../utils/keychainUtils';
-import { LANGUAGECODE, LANGUAGEID, LANGUAGENAME, SHOWONBOARDSCREENS } from '../utils';
+import { APPLICATION_NAME, LANGUAGECODE, LANGUAGEID, LANGUAGENAME, SHOWONBOARDSCREENS } from '../utils';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { changeLanguage } from '../Localization/Localisation';
 import { translate } from '../Localization/Localisation';
@@ -25,7 +25,6 @@ import { stringToBoolean } from '../utils/helpers';
 import { setSelectedCompanyAct } from '../state/actions/selectedCompanyActions';
 import SimpleToast from 'react-native-simple-toast';
 import { useFontStyles } from '../hooks/useFontStyles';
-import { SUBEEJ_SDK_APP_NAME } from '../assets/Utils/Utils';
 
 const { height } = Dimensions.get('window');
 
@@ -52,7 +51,7 @@ const IntialLanguageScreenRn = ({ route }) => {
     try {
       setIsLoading(true);
       const response = await axios.get(url, {
-        headers: { 'Content-Type': 'application/json', applicationName: SUBEEJ_SDK_APP_NAME, },
+        headers: { 'Content-Type': 'application/json', applicationName: APPLICATION_NAME, },
       });
       if (response.data.statusCode === HTTP_OK) {
         chooseLanguageHandle(response.data.response);

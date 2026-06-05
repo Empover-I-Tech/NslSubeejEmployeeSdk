@@ -2,11 +2,10 @@ import { NativeModules, Platform } from "react-native";
 import DeviceInfo from 'react-native-device-info';
 import RNFS from 'react-native-fs';
 import { getFromAsyncStorage } from "./keychainUtils";
-import { JWTAUTHENTICATION, LANGUAGECODE, LANGUAGEID, MOBILENUMBER, ROLDID, USER_ID, USERNAME, REFERRALCODE, COMPANYCODE, ROLENAME } from ".";
+import { JWTAUTHENTICATION, LANGUAGEID, MOBILENUMBER, ROLDID, USER_ID, USERNAME, REFERRALCODE, COMPANYCODE, ROLENAME, APPLICATION_NAME, EMP_HIERARCHY, SDK_AUTH_ID, SDK_AUTH_TOKEN,subeejSDK } from ".";
 import RNFetchBlob from "react-native-blob-util";
 import { translate } from "../Localization/Localisation";
-import { FCM_TOKEN, SUBEEJ_SDK_APP_NAME } from "../assets/Utils/Utils";
-
+ 
 
 
 export async function createJwtToken(req) {
@@ -93,6 +92,11 @@ export async function getAppName() {
     return appName;
 }
 
+export async function getBundleId() {
+    let bundleId = DeviceInfo.getBundleId();
+    return bundleId;
+}
+
 export async function getDeviceId() {
     let deviceId = await DeviceInfo.getUniqueId()
     return deviceId;
@@ -105,16 +109,6 @@ export async function getDeviceName() {
 export async function getScale() {
     let deviceId = await DeviceInfo.getFontScale()
     return deviceId;
-}
-
-export async function getClientAppName() {
-    let clientAppName = await DeviceInfo.getApplicationName()
-    return clientAppName;
-}
-
-export async function getClientPKGName() {
-    let clientPKGName = await DeviceInfo.getBundleId()
-    return clientPKGName;
 }
 
 export async function getNotchHeight() {
@@ -159,21 +153,21 @@ export const isValidImageUrl = async (url) => {
     if (!/^https?:\/\/.+\..+/i.test(url)) {
         return false;
     }
-
+ 
     // Check if the URL has a valid image extension
     const validExtensions = ["jpg", "jpeg", "png", "gif", "bmp", "webp"];
     const urlParts = url.split(".");
     const extension = urlParts[urlParts.length - 1].toLowerCase();
-
+ 
     if (!validExtensions.includes(extension)) {
         return false;
     }
-
+ 
     // Check if the image exists by making a HEAD request
     try {
         const response = await fetch(url, { method: "HEAD" });
         const contentType = response.headers.get("Content-Type");
-
+ 
         // Validate if response is an image
         return response.ok && contentType && contentType.startsWith("image/");
     } catch (error) {
@@ -189,9 +183,7 @@ export async function GetApiHeaders() {
         "userId": await getFromAsyncStorage(USER_ID),
         'mobileNumber': await getFromAsyncStorage(MOBILENUMBER),
         'deviceId': await getDeviceId(),
-        'clientAppName': await getClientAppName(),
-        'clientPKGName': await getClientPKGName(),
-        'fcmToken': await getFromAsyncStorage(FCM_TOKEN),
+        'fcmToken': await getFromAsyncStorage("fcmToken"),
         'appVersionCode': await getBuildNumber(),
         'appVersionName': await getAppVersion(),
         'deviceToken': "",
@@ -200,12 +192,15 @@ export async function GetApiHeaders() {
         'roleId': await getFromAsyncStorage(ROLDID),
         'roleName': await getFromAsyncStorage(ROLENAME),
         'languageId': await getFromAsyncStorage(LANGUAGEID),
-        // 'languageId': 1,
         'authType': JWTAUTHENTICATION,
         'referralCode': await getFromAsyncStorage(REFERRALCODE),
-        'applicationName': SUBEEJ_SDK_APP_NAME,
-        "companyCode": await getFromAsyncStorage(COMPANYCODE)
-
+        'applicationName' : await getFromAsyncStorage(SDK_AUTH_ID)?subeejSDK:APPLICATION_NAME,
+        "companyCode": await getFromAsyncStorage(COMPANYCODE),
+        "empHierarchy": await getFromAsyncStorage(EMP_HIERARCHY),
+        "clientAppName":await getAppName(),
+        "clientPackageName":await getBundleId(),
+        "authId": await getFromAsyncStorage(SDK_AUTH_ID),
+        "authToken": await getFromAsyncStorage(SDK_AUTH_TOKEN),
     };
 
     return headers;
@@ -251,29 +246,29 @@ export const normalizeText = (text) => {
 
 // for company logo.........
 export const downloadFileToLocal = async (shouldVisible, url, fileName) => {
-    console.log("url is here", url);
+    console.log("url is here",url);
     const { fs, config } = RNFetchBlob;
     const dirs = fs.dirs;
-
+ 
     // Define the path where the file will be saved
     const path = `${shouldVisible ? dirs.DownloadDir : dirs.CacheDir}/${fileName}`;
-
+ 
     try {
         // Check if the file already exists
         const fileExists = await fs.exists(path);
-        console.log(fileExists, "???")
+        console.log(fileExists,"???")
         if (fileExists) {
             console.log('File already exists. Skipping download.');
             return path;
         }
-
+ 
         // If the file doesn't exist, download it
         console.log('Downloading file...');
         const response = await config({
             fileCache: true,
             path: path,
         }).fetch('GET', url);
-
+ 
         console.log('File downloaded to:', response.path());
         return response.path();
     } catch (error) {

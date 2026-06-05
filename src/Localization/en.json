@@ -947,5 +947,7 @@
   "Unable_to_process_your_request_moment_Please_again_later":"Unable to process your request at the moment. Please try again later",
   "Start_Date":"Start Date",
   "End_Date":"End Date",
-  "farmer_services" : "Farmer Services"
+  "farmer_services" : "Farmer Services",
+  "No_internet_connection":"No internet connection",
+  "Please_check_internet_connectionand_again":"Please check your internet connection and try again"
 }

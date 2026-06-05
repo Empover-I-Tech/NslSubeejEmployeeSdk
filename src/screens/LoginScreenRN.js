@@ -4,7 +4,7 @@ import { strings } from '../Localization/StringsCopy';
 import usePostRequestWithJwt from '../api/usePostRequestWithJwt';
 import APIConfig, { FIREBASE_VERSION_COLLECTION_NAME, FIREBASE_VERSION_DOC_ID, APP_ENV_PROD, HTTP_OK, HTTP_SWITCHING_PROTOCOLS, SECOND_LOGIN } from '../api/APIConfig';
 import { decodeJwt, GetApiHeaders, getAppVersion, getBuildNumber, downloadFileToLocal } from '../utils/helpers';
-import { MOBILENUMBER, ROLDID, USER_ID, USERNAME, LANGUAGEID, USER_IMG, FIRSTNAME, LASTNAME, COMPANYCODE, SCREENNAME, EMP_DASHBOARD_SCREEN, ROLENAME } from '../utils';
+import { MOBILENUMBER, ROLDID, USER_ID, USERNAME, LANGUAGEID, USER_IMG, FIRSTNAME, LASTNAME, COMPANYCODE, SCREENNAME, EMP_DASHBOARD_SCREEN, ROLENAME, EMP_HIERARCHY } from '../utils';
 import CustomAlert from '../components/CustomAlert';
 import { storeInAsyncStorage, getFromAsyncStorage } from '../utils/keychainUtils';
 import PermissionManager from '../utils/PermissionManager';
@@ -377,6 +377,7 @@ const LoginScreenRn = () => {
       } else {
         await storeInAsyncStorage(COMPANYCODE, `${""}`);
       }
+      if (data?.empHierarchy) await storeInAsyncStorage(EMP_HIERARCHY, `${data?.empHierarchy ? JSON.stringify(data?.empHierarchy):""}`);
 
       await storeInAsyncStorage('isLoggedIn', 'true');
       // navigation.dispatch(

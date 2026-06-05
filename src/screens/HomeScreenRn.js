@@ -1654,9 +1654,9 @@ const HomeScreenRn = ({ route }) => {
           await Promise.all([
             storeInAsyncStorage(REFERRALCODE, `${data?.referralCode}`),
             storeInAsyncStorage(STATE_ID, `${data?.stateId}`),
-            storeInAsyncStorage(STATE_NAME, `${data?.state}`),
+            storeInAsyncStorage(STATE_NAME, `${data?.state ?? ""}`),
             storeInAsyncStorage(DISTRICT_ID, `${data?.districtId}`),
-            storeInAsyncStorage(DISTRICT_NAME, `${data?.district}`),
+            storeInAsyncStorage(DISTRICT_NAME, `${data?.district ?? ""}`),
           ]);
         } else if (response.data.statusCode === HTTP_601) {
           handleForceLogout()

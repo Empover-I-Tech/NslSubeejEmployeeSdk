@@ -8,7 +8,6 @@ const ScreenWrapper = ({ children, style }) => {
   const dynamicStyles = useSelector(state => state.companyStyles.companyStyles);
   const isConnected = useSelector(state => state.network.isConnected);
   const isEmployee = useSelector(state => state.employeeRole.isEmployee);
-  console.log("isemppo=--=>",isEmployee)
 
   return (
     <View style={{ flex: 1, backgroundColor: '#fff' }}>

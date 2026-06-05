@@ -4,8 +4,8 @@
 export { store, persistor } from './src/state/store';
 export { initLocalisation } from './src/Localization/Localisation';
 // ✅ Screens
-export { default as LoaderScreen } from './src/LoaderScreen';
-export { default as HomeScreenEmp } from './src/screens/EmployeeScreens/HomeScreenEmp';
+export { default as LoaderScreen } from './src/SDKScreens/LoaderScreen';
+export { default as HomeScreenEmpSDK } from './src/SDKScreens/HomeScreenEmpSDK';
 export { default as BottomTabsNavigatorEmp } from './src/navigation/BottomTabsEmp';
 // calculators
 export { default as FertilizerSeeds } from './src/screens/FertilizerSeeds';

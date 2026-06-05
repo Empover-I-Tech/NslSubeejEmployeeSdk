@@ -2229,18 +2229,33 @@ const YieldCalculator = () => {
         }
     };
 
+    const sharingRef = useRef(false);
+    const [isSharing, setIsSharing] = useState(false);
+
     const takeScreenshot = async () => {
+        if (sharingRef.current) return;
+        sharingRef.current = true;
+        setIsSharing(true);
         try {
             const uri = await viewShotRef.current.capture();
             const shareOptions = {
                 title: 'Share via',
                 message: `${translate("Note")} ${translate("noteDesc")}`,
                 url: uri,
-                // social: Share.Social.WHATSAPP,
             };
-            Share.open(shareOptions);
+            await Share.open(shareOptions);
         } catch (error) {
-            console.error('Failed to capture screenshot:', error);
+            if (
+                error?.message?.includes('User did not share') ||
+                error?.message?.includes('User cancelled')
+            ) {
+                console.log('Share cancelled');
+            } else {
+                console.error('Failed to capture screenshot:', error);
+            }
+        } finally {
+            sharingRef.current = false;
+            setIsSharing(false);
         }
     };
 
@@ -2668,7 +2683,7 @@ const YieldCalculator = () => {
                 {/* <TouchableOpacity style={{borderRadius:10,justifyContent:"center",alignItems:"center",width:"85%",height:45,alignSelf:"center",marginVertical:10,backgroundColor:!showStatus()?"grey":dynamicStyles.primaryColor}} disabled={!showStatus()} onPress={() => { takeScreenshot() }}>
                 <Text style={{fontSize:RFValue(14,680),color:!showStatus() ? "#fff" : dynamicStyles.secondaryColor,textAlign:"center"}}>{strings.Share}</Text>
             </TouchableOpacity> */}
-                <TouchableOpacity disabled={!showStatus()} onPress={() => takeScreenshot()}
+                <TouchableOpacity disabled={!showStatus() || isSharing} onPress={() => takeScreenshot()}
                     style={{ marginVertical: 10, borderRadius: 8, marginBottom: 20, alignItems: "center", justifyContent: "center", alignSelf: "center", height: 50, backgroundColor: !showStatus() ? "#D6D6D6" : dynamicStyles.primaryColor, width: "85%" }}>
                     <Text style={{ textAlign: "center", color: !showStatus() ? "#000" : dynamicStyles.secondaryColor, fontSize: RFValue(14, 680), fontFamily:fonts.Bold }}>{translate("Share")}</Text>
                     <Image source={require("../../assets/Images/whatsAppImgIcon.png")} style={styles.whatsAppIcon} />

@@ -1,7 +1,7 @@
 
 export const FIREBASE_LOG = true;
 // export const APP_ENV_PROD = true;
-export const APP_ENV_PROD = false;
+export let APP_ENV_PROD = false;
 export const LOCAL_SERVER = '';
 
 
@@ -92,6 +92,8 @@ export default configs = {
         const url = `${baseUrl}accountClosure?mobileNumber=${mobileNumber}&languageId=${languageId}&buttonColor=${encodeURIComponent(buttonColor)}`;
         return url;
     },
+
+ 
 
     AUTH: {
         GETONBOARDING: 'referral/getSplashScreens',
@@ -233,5 +235,11 @@ export default configs = {
 
     //EMPLOYEE DASHBOARD API
     USERGETEMPLOYEEDASHBOARDDETAILS: "users/getEmployeeDashBoardDetailes",
-    USERSGETMINDATEFROMUSERINFO: "users/getMinDateFromUserInfo"
+    USERSGETMINDATEFROMUSERINFO: "users/getMinDateFromUserInfo",
+  
+}
+//This is for SDK Purpose
+export const setEnvironment=(buildType) => {
+    APP_ENV_PROD = buildType === 'PROD';
+    console.log('APP_ENV_PROD:', APP_ENV_PROD);
 }

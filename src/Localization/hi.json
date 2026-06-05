@@ -945,5 +945,7 @@
   "Unable_to_process_your_request_moment_Please_again_later": "इस समय आपके अनुरोध को संसाधित करने में असमर्थ हैं। कृपया बाद में पुनः प्रयास करें।",
   "Start_Date": "प्रारंभ तिथि",
   "End_Date": "समाप्ति तिथि",
-  "farmer_services": "किसान सेवाएं"
+  "farmer_services": "किसान सेवाएं",
+  "No_internet_connection": "कोई इंटरनेट कनेक्शन नहीं है",
+  "Please_check_internet_connectionand_again": "कृपया अपना इंटरनेट कनेक्शन जांचें और फिर से प्रयास करें"
 }

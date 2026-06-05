@@ -8,7 +8,7 @@ import { getWindowHeight, getWindowWidth } from "../components/Upgrade/helpers";
 import usePostRequestWithJwt from "../api/usePostRequestWithJwt";
 import APIConfig, { HTTP_ACCEPTED, HTTP_CREATED, HTTP_OK } from "../api/APIConfig";
 import { GetApiHeaders } from "../utils/helpers";
-import { getUserLocation } from "../utils/keychainUtils";
+import { getFromAsyncStorage, getUserLocation } from "../utils/keychainUtils";
 import { RFValue } from "react-native-responsive-fontsize";
 import PreLoginCustomLoader from '../components/PreLoginCustomLoader';
 import { translate } from "../Localization/Localisation";

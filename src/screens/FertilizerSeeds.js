@@ -20,7 +20,7 @@ import { translate } from '../Localization/Localisation';
 import { CustomCommonModal } from '../components/CustomCommonModal';
 import { useOfflineCalculatorsCRUD } from './realmOffline/useOfflineCalculatorsCRUD';
 import { useFontStyles } from '../hooks/useFontStyles';
-import getRealm from './realmOffline/realmConfig';
+import realm from './realmOffline/realmConfig';
 
 const { width, height } = Dimensions.get('window');
 
@@ -28,6 +28,7 @@ const FertilizerSeeds = ({ route }) => {
     const fonts=useFontStyles()
     const {fertilizerMasterList,fertilizerMasterList2,saveFertilizerCalc} = useOfflineCalculatorsCRUD();
     const viewShotRef = useRef();
+    const isSharingRef = useRef(false);
     const dynamicStyles = useSelector(state => state.companyStyles.companyStyles);
     const isConnected = useSelector(state => state.network.isConnected);
     const { fetchData } = useGetRequestWithJwt();
@@ -146,7 +147,6 @@ const FertilizerSeeds = ({ route }) => {
 
 
     let getOtherDetails = async () => {
-        const realm = await getRealm();
         const fertiliserDataMaster = realm.objects('FertilizerMaster2');
         if (fertiliserDataMaster.length !== 0) {
             let data = fertiliserDataMaster[0];
@@ -531,6 +531,8 @@ const FertilizerSeeds = ({ route }) => {
     };
 
     const takeScreenshot = async () => {
+        if (isSharingRef.current) return;
+        isSharingRef.current = true;
         try {
             const uri = await viewShotRef.current.capture();
             const shareOptions = {
@@ -538,9 +540,13 @@ const FertilizerSeeds = ({ route }) => {
                 message: `${translate("Note")} ${translate("noteDescTwo")}`,
                 url: uri,
             };
-            Share.open(shareOptions);
+            await Share.open(shareOptions);
         } catch (error) {
-            console.error('Failed to capture screenshot:', error);
+            if (error?.message !== 'User did not share') {
+                console.error('Failed to capture screenshot:', error);
+            }
+        } finally {
+            isSharingRef.current = false;
         }
     };
 

@@ -1,26 +1,27 @@
 import { useEffect, useState } from 'react';
 import { View, Text, Alert } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux';
-import APIConfig, { HTTP_OK, HTTP_SWITCHING_PROTOCOLS } from "../src/api/APIConfig";
-import CustomLoader from "../src/components/CustomLoader"
-import { setCompanyStyle } from "../src/state/actions/companyStyles";
-import { COMPANYCODE, EMP_DASHBOARD_SCREEN, FIRSTNAME, LANGUAGECODE, LASTNAME, MOBILENUMBER, ROLDID, ROLENAME, SCREENNAME, USER_ID, USER_IMG, USERNAME } from "../src/utils";
-import { downloadFileToLocal, GetApiHeaders } from "../src/utils/helpers";
-import { storeInAsyncStorage } from "../src/utils/keychainUtils";
+import APIConfig, { HTTP_OK, HTTP_SWITCHING_PROTOCOLS, setEnvironment } from "../../src/api/APIConfig";
+import CustomLoader from "../../src/components/CustomLoader"
+import { setCompanyStyle } from "../../src/state/actions/companyStyles";
+import { COMPANYCODE, EMP_DASHBOARD_SCREEN, FIRSTNAME, LANGUAGECODE, LASTNAME, MOBILENUMBER, ROLDID, ROLENAME, SCREENNAME, SDK_AUTH_ID, SDK_AUTH_TOKEN, USER_ID, USER_IMG, USERNAME } from "../../src/utils";
+import { downloadFileToLocal, GetApiHeaders } from "../../src/utils/helpers";
+import { storeInAsyncStorage } from "../../src/utils/keychainUtils";
 import { useNavigation } from '@react-navigation/native';
-import { setIsEmployee } from "../src/state/actions/employeeActions";
-import { FCM_TOKEN } from './assets/Utils/Utils';
-import { changeLanguage } from './Localization/Localisation';
+import { setIsEmployee } from "../../src/state/actions/employeeActions";
+import { changeLanguage } from '../Localization/Localisation';
 import SimpleToast from 'react-native-simple-toast';
+import { FCM_TOKEN } from '../assets/Utils/Utils';
 
 
 const LoaderScreen = ({ route }) => {
     console.log("LoaderScreen route params:", route?.params);
     const mobileNumber = route?.params?.navigateItem?.mobileNumber
     const fcmToken = route?.params?.navigateItem?.fcmToken
-    const buildType = route?.params?.navigateItem?.buildType
+    const buildEnvironment = route?.params?.navigateItem?.buildEnvironment
     const languageCode = route?.params?.navigateItem?.languageCode
-
+    const authId = route?.params?.navigateItem?.authId
+    const authToken = route?.params?.navigateItem?.authToken
     console.log("jjjjjjjj", JSON.stringify(route?.params?.navigateItem?.mobileNumber))
     const navigation = useNavigation();
 
@@ -34,12 +35,24 @@ const LoaderScreen = ({ route }) => {
 
     useEffect(() => {
         console.log("useEffect in LoaderScreen triggered with mobileNumber:", mobileNumber);
+        storeAuthData()
         if (mobileNumber != null) {
             console.log("Mobile number in LoaderScreen:", mobileNumber);
             handleVerifySDK()
             changeLanguage(languageCode || "en")
+            setEnvironment(buildEnvironment || 'PROD');
         }
     }, [mobileNumber])
+
+    const storeAuthData = async () => {
+        try {
+            await storeInAsyncStorage(SDK_AUTH_TOKEN, authToken || '');
+            await storeInAsyncStorage(SDK_AUTH_ID, authId || '');
+            console.log("Auth data stored successfully:", { authId, authToken });
+        } catch (error) {
+            console.error("Error storing auth data:", error);
+        }
+    }
 
 
     const storeUserData = async (data) => {
@@ -108,7 +121,6 @@ const LoaderScreen = ({ route }) => {
 
 
     const handleVerifySDK = async () => {
-        Alert.alert("Mobile Number", `${mobileNumber}\n${fcmToken}\n${buildType}\n${languageCode}`);
         setLoader(true)
         setLoadingMessage('Loading....')
         const getURL = APIConfig.BASE_URL + APIConfig.AUTH.validateSDKLogin;

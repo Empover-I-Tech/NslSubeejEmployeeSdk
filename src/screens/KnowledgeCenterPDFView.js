@@ -13,6 +13,8 @@ import { useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 import ReactNativePdf from 'react-native-pdf';
 import Sound from 'react-native-sound';
+
+Sound.setCategory('Playback', true);
 import FileViewer from 'react-native-file-viewer';
 import SimpleToast from 'react-native-simple-toast';
 import RNFS from 'react-native-fs';
@@ -28,7 +30,7 @@ const KnowledgeCenterPDFView = ({ route }) => {
   const dynamicStyles = useSelector(state => state.companyStyles.companyStyles);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  const [lastPage, setLastPage] = useState(1);
+  const lastPageRef = useRef(1);
   const [isDownloading, setIsDownloading] = useState(false);
   const [pdfPath, setPdfPath] = useState(isComingFrom ? selectedItem?.urlPath : selectedItem)
   let pdfRef = useRef(null);
@@ -161,9 +163,9 @@ const KnowledgeCenterPDFView = ({ route }) => {
   };
 
 
-  let isSoundPlaying = false;
+  const isSoundPlaying = useRef(false);
   const playSound = (type) => {
-    if (isSoundPlaying) {
+    if (isSoundPlaying.current) {
       console.log('Sound is still playing, please wait...');
       return;
     }
@@ -173,29 +175,29 @@ const KnowledgeCenterPDFView = ({ route }) => {
         console.log('Failed to load sound', error);
         return;
       }
-      isSoundPlaying = true;
+      isSoundPlaying.current = true;
       sound.play((success) => {
         if (!success) {
           console.log('Failed to play sound');
         }
         sound.release();
-        isSoundPlaying = false;
+        isSoundPlaying.current = false;
       });
     });
   };
   const playSoundIOS = (type) => {
-    if (isSoundPlaying) {
+    if (isSoundPlaying.current) {
       console.log('Sound is still playing, skipping...');
       return;
     }
 
-    isSoundPlaying = true;
+    isSoundPlaying.current = true;
 
     const soundFile = type === 'success' ? 'paper_turning.mp3' : 'tear_paper.mp3';
     const sound = new Sound(soundFile, Sound.MAIN_BUNDLE, (error) => {
       if (error) {
         console.log('Failed to load sound', error);
-        isSoundPlaying = false;
+        isSoundPlaying.current = false;
         return;
       }
 
@@ -211,54 +213,48 @@ const KnowledgeCenterPDFView = ({ route }) => {
           console.log('Failed to play sound');
         }
         sound.release();
-        isSoundPlaying = false;
+        isSoundPlaying.current = false;
       });
 
       setTimeout(() => {
         if (!hasCallbackFired) {
           console.log("Play callback didn't fire — manually releasing lock.");
           sound.release();
-          isSoundPlaying = false;
+          isSoundPlaying.current = false;
         }
       }, (duration * 1000) + 100);
     });
   };
 
 
-  let pageChangeTimeout = null;
+  const pageChangeTimeout = useRef(null);
   const handlePageChangedIOS = (currentPage, numberOfPages) => {
-    if (pageChangeTimeout) clearTimeout(pageChangeTimeout);
+    if (pageChangeTimeout.current) clearTimeout(pageChangeTimeout.current);
 
-    pageChangeTimeout = setTimeout(() => {
+    pageChangeTimeout.current = setTimeout(() => {
       setCurrentPage(currentPage);
-      const pageDiff = Math.abs(currentPage - lastPage);
-      if (currentPage == lastPage) {
-        return
-      }
+      const pageDiff = Math.abs(currentPage - lastPageRef.current);
+      if (currentPage === lastPageRef.current) return;
+      lastPageRef.current = currentPage;
 
       if (pageDiff > 1) {
         playSoundIOS('scroll_jump');
       } else {
         playSoundIOS('success');
       }
-
-      setLastPage(currentPage);
     }, 200);
   };
 
   const handlePageChanged = (currentPage, numberOfPages) => {
     setCurrentPage(currentPage);
-    const pageDiff = Math.abs(currentPage - lastPage);
-    // playSound('success');
-    if (currentPage == lastPage) {
-      return
-    }
+    const pageDiff = Math.abs(currentPage - lastPageRef.current);
+    if (currentPage === lastPageRef.current) return;
+    lastPageRef.current = currentPage;
     if (pageDiff > 1) {
       playSound('scroll_jump');
     } else {
       playSound('success');
-      setLastPage(currentPage);
-    };
+    }
   }
 
   const safeRender = (fn) => {
