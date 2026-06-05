@@ -1,4 +1,5 @@
 // nslsubeejemployeesdk/index.js
+import 'react-native-get-random-values';
 
 // ✅ Redux store
 export { store, persistor } from './src/state/store';
