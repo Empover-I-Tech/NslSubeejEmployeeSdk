@@ -2501,7 +2501,7 @@ const HomeScreenEmpSDK = ({ route }) => {
                 <TouchableOpacity onPress={() => rewardPointsCashbackNavigation("RewardsScreen", REWARDS)} style={styles.selectedCalculatorContainer2}>
                   <View style={[styles.calculatorIconContainer2, { backgroundColor: cashBackSelected === REWARDS ? dynamicStyles.primaryColor : '#fff', borderColor: cashBackSelected === REWARDS ? dynamicStyles.primaryColor : '#D6D6D6' }]}>
                     <View style={{ flexDirection: "row", alignItems: "center" }}>
-                      <Image source={cashBackSelected === REWARDS ? require('../../assets/Images/rewardsGiftIcon2.png') : require('../../../assets/Images/rewardsGiftIcon.png')} style={[styles.subeejIcon2]} />
+                      <Image source={cashBackSelected === REWARDS ? require('../../assets/Images/rewardsGiftIcon2.png') : require('../../assets/Images/rewardsGiftIcon.png')} style={[styles.subeejIcon2]} />
                       <Text style={[styles.selectedCalculatorText2, { color: cashBackSelected === REWARDS ? dynamicStyles.secondaryColor : '#000000', fontFamily: fonts.Bold }]}>
                         {translate('Reward_Points')}
                       </Text>
