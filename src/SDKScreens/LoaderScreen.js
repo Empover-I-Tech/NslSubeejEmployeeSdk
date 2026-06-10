@@ -28,9 +28,19 @@ const LoaderScreen = ({ route }) => {
     const isConnected = useSelector((state) => state.network.isConnected);
     const selectedCompanyData = useSelector(state => state.selectedCompnayAct.selectedCompanyAct)
     const [loaderImage, setLoaderImage] = useState(require('../../assets/Images/SubeejLoader.gif'))
-    const [loader, setLoader] = useState(false)
-    const [loadingMessage, setLoadingMessage] = useState('')
+    const [loadingCount, setLoadingCount] = useState(0);
+    const [loadingMessage, setLoadingMessage] = useState('');
     const dispatch = useDispatch()
+
+    const startLoading = (msg = '') => {
+        setLoadingMessage(msg);
+        setLoadingCount(prev => prev + 1);
+    };
+
+    const stopLoading = () => {
+        setLoadingCount(prev => Math.max(prev - 1, 0));
+    };
+    const loading = loadingCount > 0;
 
 
     useEffect(() => {
@@ -38,9 +48,9 @@ const LoaderScreen = ({ route }) => {
         storeAuthData()
         if (mobileNumber != null) {
             console.log("Mobile number in LoaderScreen:", mobileNumber);
-            handleVerifySDK()
             changeLanguage(languageCode || "en")
             setEnvironment(buildEnvironment || 'PROD');
+            handleVerifySDK()
         }
     }, [mobileNumber])
 
@@ -114,17 +124,15 @@ const LoaderScreen = ({ route }) => {
         } catch (error) {
             console.error("Failed to store user data in keychain:", error);
         } finally {
-            setLoader(false);
-            setLoadingMessage('')
+            stopLoading()
         }
     };
 
 
     const handleVerifySDK = async () => {
-        setLoader(true)
-        setLoadingMessage('Loading....')
+
         const getURL = APIConfig.BASE_URL + APIConfig.AUTH.validateSDKLogin;
-        console.log("getURL====",getURL)
+        console.log("getURL====", getURL)
         const getHeaders = await GetApiHeaders();
         getHeaders.authType = "JSONREQUEST";
         getHeaders["Content-Type"] = "application/json";
@@ -132,6 +140,7 @@ const LoaderScreen = ({ route }) => {
             mobileNumber: mobileNumber,
         }
         if (isConnected) {
+            startLoading(translate('loading'));
             try {
                 const response = await fetch(getURL, {
                     method: "POST",
@@ -181,36 +190,39 @@ const LoaderScreen = ({ route }) => {
                     dispatch(setCompanyStyle(dynamicStyles));
                     await storeUserData(data);
                 } else {
-                    setLoader(false);
-                    setLoadingMessage('')
-                     Alert.alert(
+                    stopLoading()
+                    Alert.alert(
                         "Alert",
                         jsonData.message || translate("something_went_wrong"),
                         [
                             {
                                 text: translate('ok'),
-                                onPress: () => { navigation.goBack()}
+                                onPress: () => { navigation.goBack() }
                             }
                         ],
                         { cancelable: false }
                     );
- 
+
                     // SimpleToast.show(jsonData.message || translate("something_went_wrong"))
                 }
             } catch (error) {
                 console.error("Network or parsing error:", error);
+            }
+            finally {
+                stopLoading()
             }
         } else {
             SimpleToast.show(translate("no_internet_conneccted"))
         }
     }
 
-    return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <Text style={{ fontSize: 24, fontWeight: 'bold', color: 'black' }}>{route?.params?.navigateItem?.mobileNumber || "Hello World"}</Text>
-            {loader && <CustomLoader loading={loader} message={loadingMessage} loaderImage={loaderImage} />}
-        </View>
-    )
+    return loading ? (
+        <CustomLoader
+            loading={loading}
+            message={loadingMessage}
+            loaderImage={loaderImage}
+        />
+    ) : null;
 
 
 }
