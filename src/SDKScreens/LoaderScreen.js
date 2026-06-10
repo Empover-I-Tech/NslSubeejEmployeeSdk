@@ -42,17 +42,27 @@ const LoaderScreen = ({ route }) => {
     };
     const loading = loadingCount > 0;
 
-
     useEffect(() => {
-        console.log("useEffect in LoaderScreen triggered with mobileNumber:", mobileNumber);
-        storeAuthData()
-        if (mobileNumber != null) {
-            console.log("Mobile number in LoaderScreen:", mobileNumber);
-            changeLanguage(languageCode || "en")
+        initializeSDK();
+    }, [route?.params]);
+
+    const initializeSDK = async () => {
+        try {
+            if (!route?.params) return;
+
+            console.log('Initializing SDK...');
+            await changeLanguage(languageCode || 'en');
+
             setEnvironment(buildEnvironment || 'PROD');
-            handleVerifySDK()
+
+            await storeAuthData();
+
+            await handleVerifySDK();
+
+        } catch (error) {
+            console.log('initializeSDK error:', error);
         }
-    }, [mobileNumber])
+    };
 
     const storeAuthData = async () => {
         try {

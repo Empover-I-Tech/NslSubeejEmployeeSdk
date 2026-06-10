@@ -80,20 +80,35 @@ export const FIREBASE_VERSION_COLLECTION_NAME = "getAppVersion"
 export const FIREBASE_VERSION_DOC_ID = "E1N0prNbFYMriEhZMuvI"
 export const MAP_MY_INDIA_KEY = "5zf2txekry89tciw19sgmjpo7w133ioj";
 export const MAP_MY_INDIA_URL = `https://apis.mapmyindia.com/advancedmaps/v1/${MAP_MY_INDIA_KEY}/rev_geocode`
+
+//This is for SDK Purpose
+export const setEnvironment = (buildType) => {
+    APP_ENV_PROD = buildType === 'PROD';
+    console.log('APP_ENV_PROD:', APP_ENV_PROD);
+}
+
 export default configs = {
-    // BASE_URL: !APP_ENV_PROD ? 'http://3.110.159.82:8080/subeejkisan/rest/' : 'https://subeejkisan.com:8443/rest/',
-    // BASE_URL_NVM: !APP_ENV_PROD ? 'http://3.110.159.82:8080/vyapar_mitra/rest/nsl/' : 'https://nvmretailpro.com:8443/rest/nsl/',
-    BASE_URL: APP_ENV_PROD ? 'https://subeejkisan.com:8443/rest/' : 'http://3.110.159.82:8080/subeejkisan/rest/',
-    BASE_URL_NVM: APP_ENV_PROD ? 'https://nvmretailpro.com:8443/rest/nsl/' : 'http://3.110.159.82:8080/vyapar_mitra/rest/nsl/',
-    // SUBEEJ_KISAN_MANDI_PRICES_DUMMY_URL: 'http://3.110.159.82:8080/subeejkisan/rest/mandiPrices/getMandiPricesAnalysisReport_V1',
-    MANDI_PRICE_GET_MANDI_PRICE_AReport_V1: "mandiPrices/getMandiPricesAnalysisReport_V1",
-    ACCOUNT_CLOSE_URL: ({ mobileNumber, languageId, buttonColor }) => {
-        const baseUrl = APP_ENV_PROD ? 'https://subeejkisan.com/' : 'http://subeejkisan.empover.com/';
-        const url = `${baseUrl}accountClosure?mobileNumber=${mobileNumber}&languageId=${languageId}&buttonColor=${encodeURIComponent(buttonColor)}`;
-        return url;
+
+    get BASE_URL() {
+        return APP_ENV_PROD
+            ? 'https://nvmretailpro.com:8443/rest/nsl/'
+            : 'http://3.110.159.82:8080/vyapar_mitra/rest/nsl/';
     },
 
- 
+    get SUBEEJ_BASE_URL() {
+        return APP_ENV_PROD
+            ? 'https://subeejkisan.com:8443/rest/'
+            : 'http://3.110.159.82:8080/subeejkisan/rest/';
+    },
+
+    ACCOUNT_CLOSE_URL: ({ mobileNumber, languageId, buttonColor }) => {
+        const baseUrl = APP_ENV_PROD
+            ? 'https://subeejkisan.com/'
+            : 'http://subeejkisan.empover.com/';
+
+        return `${baseUrl}accountClosure?mobileNumber=${mobileNumber}&languageId=${languageId}&buttonColor=${encodeURIComponent(buttonColor)}`;
+    },
+    MANDI_PRICE_GET_MANDI_PRICE_AReport_V1: "mandiPrices/getMandiPricesAnalysisReport_V1",
 
     AUTH: {
         GETONBOARDING: 'referral/getSplashScreens',
@@ -236,10 +251,5 @@ export default configs = {
     //EMPLOYEE DASHBOARD API
     USERGETEMPLOYEEDASHBOARDDETAILS: "users/getEmployeeDashBoardDetailes",
     USERSGETMINDATEFROMUSERINFO: "users/getMinDateFromUserInfo",
-  
-}
-//This is for SDK Purpose
-export const setEnvironment=(buildType) => {
-    APP_ENV_PROD = buildType === 'PROD';
-    console.log('APP_ENV_PROD:', APP_ENV_PROD);
+
 }

@@ -1,9 +1,35 @@
 import React, { useEffect } from 'react';
-import { Provider } from 'react-redux';
+import { Provider, useSelector } from 'react-redux';
 import { NavigationContainer, NavigationIndependentTree } from '@react-navigation/native';
 import { store, persistor } from '../state/store';
 import SubeejNavigator from './SubeejNavigator';
 import { initLocalisation } from '../Localization/Localisation';
+import {
+    SafeAreaProvider,
+    SafeAreaView,
+} from 'react-native-safe-area-context';
+import SDKNetworkHandler from './SDKNetworkHandler';
+
+const RootContent = (props) => {
+    const dynamicStyles = useSelector(state => state.companyStyles.companyStyles);
+
+    return (
+        <SafeAreaView
+            edges={['top']}
+            style={{
+                flex: 1,
+                backgroundColor: dynamicStyles?.primaryColor || '#ffffff',
+            }}
+        >
+            <NavigationIndependentTree>
+                <NavigationContainer>
+                    <SDKNetworkHandler />
+                    <SubeejNavigator {...props} />
+                </NavigationContainer>
+            </NavigationIndependentTree>
+        </SafeAreaView>
+    );
+};
 
 const SubeejRoot = (props) => {
 
@@ -12,12 +38,11 @@ const SubeejRoot = (props) => {
     }, []);
     return (
         <Provider store={store}>
-            <NavigationIndependentTree>
-                <NavigationContainer>
-                    <SubeejNavigator {...props} />
-                </NavigationContainer>
-            </NavigationIndependentTree>
+            <SafeAreaProvider>
+                <RootContent {...props} />
+            </SafeAreaProvider>
         </Provider>
+
     );
 };
 
