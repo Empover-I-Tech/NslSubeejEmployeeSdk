@@ -203,7 +203,7 @@ const LoaderScreen = ({ route }) => {
                     stopLoading()
                     Alert.alert(
                         "Alert",
-                        jsonData.message || translate("something_went_wrong"),
+                        jsonData.message || translate("Something_went_wrong"),
                         [
                             {
                                 text: translate('ok'),
