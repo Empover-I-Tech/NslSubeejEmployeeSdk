@@ -1,31 +1,34 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import {
-  LoaderScreen,
-  HomeScreenEmpSDK,
-  BottomTabsNavigatorEmp,
-  FertilizerSeeds,
-  YieldCalculator,
-  SeedsCalculator,
-  SamadhanScreen,
-  RaiseComplaintScreen,
-  MoreScreenRn,
-  QRScannerRn,
-  NearByScreen,
-  KnowledgeCenterRn,
-  CropDesiesDetection,
-  CropDiagonstic,
-  LanguageScreenRn,
-  Agronomy,
-  WeatherScreen,
-  Remedyrecommendation,
-  NearByRetailersScreen,
-  AdvancedKnowledgeCenter,
-  KnowledgeCenterDocsList,
-  KnowledgeCenterPDFView,
-  Location,
-} from '../index'; // adjust path if needed
+import LoaderScreen from './LoaderScreen';
+import HomeScreenEmpSDK from './HomeScreenEmpSDK';
+import BottomTabsNavigatorEmp from '../navigation/BottomTabsEmp';
+
+import FertilizerSeeds from '../screens/FertilizerSeeds';
+import YieldCalculator from '../screens/YieldCalculator';
+import SeedsCalculator from '../screens/SeedsCalculator';
+
+import SamadhanScreen from '../screens/SamadhanScreen';
+import RaiseComplaintScreen from '../screens/RaiseComplaintScreen';
+
+import QRScannerRn from '../screens/QRScannerRn';
+
+import WeatherScreen from '../screens/Weather/WeatherScreen';
+import Location from '../components/Location';
+import Agronomy from '../screens/Agronomy';
+import KnowledgeCenterRn from '../screens/KnowledgeCenterRn';
+
+import CropDesiesDetection from '../screens/CropDiagnostics/CropDesiesDetection';
+import CropDiagonstic from '../screens/CropDiagnostics/CropDiagonstic';
+import Remedyrecommendation from '../screens/Remedyrecommendation';
+import NearByScreen from '../screens/NearByScreen';
+import NearByRetailersScreen from '../screens/NearByRetailersScreen';
+
+import AdvancedKnowledgeCenter from '../screens/AdvancedKnowledgeCenter';
+import KnowledgeCenterPDFView from '../screens/KnowledgeCenterPDFView';
+import KnowledgeCenterDocsList from '../screens/KnowledgeCenterDocsList';
+
 
 const Stack = createNativeStackNavigator();
 
@@ -40,13 +43,11 @@ const SubeejNavigator = ({ route }) => {
     SeedsCalculator,
     SamadhanScreen,
     RaiseComplaintScreen,
-    MoreScreenRn,
     QRScannerRn,
     NearByScreen,
     KnowledgeCenterRn,
     CropDesiesDetection,
     CropDiagonstic,
-    LanguageScreenRn,
     Agronomy,
     WeatherScreen,
     Remedyrecommendation,
