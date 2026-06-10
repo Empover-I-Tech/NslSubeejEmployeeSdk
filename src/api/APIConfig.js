@@ -89,13 +89,13 @@ export const setEnvironment = (buildType) => {
 
 export default configs = {
 
-    get BASE_URL() {
+     get BASE_URL_NVM() {
         return APP_ENV_PROD
             ? 'https://nvmretailpro.com:8443/rest/nsl/'
             : 'http://3.110.159.82:8080/vyapar_mitra/rest/nsl/';
     },
 
-    get SUBEEJ_BASE_URL() {
+    get BASE_URL() {
         return APP_ENV_PROD
             ? 'https://subeejkisan.com:8443/rest/'
             : 'http://3.110.159.82:8080/subeejkisan/rest/';
@@ -108,7 +108,17 @@ export default configs = {
 
         return `${baseUrl}accountClosure?mobileNumber=${mobileNumber}&languageId=${languageId}&buttonColor=${encodeURIComponent(buttonColor)}`;
     },
+
+    // BASE_URL: APP_ENV_PROD ? 'https://subeejkisan.com:8443/rest/' : 'http://3.110.159.82:8080/subeejkisan/rest/',
+    // BASE_URL_NVM: APP_ENV_PROD ? 'https://nvmretailpro.com:8443/rest/nsl/' : 'http://3.110.159.82:8080/vyapar_mitra/rest/nsl/',
     MANDI_PRICE_GET_MANDI_PRICE_AReport_V1: "mandiPrices/getMandiPricesAnalysisReport_V1",
+    // ACCOUNT_CLOSE_URL: ({ mobileNumber, languageId, buttonColor }) => {
+    //     const baseUrl = APP_ENV_PROD ? 'https://subeejkisan.com/' : 'http://subeejkisan.empover.com/';
+    //     const url = `${baseUrl}accountClosure?mobileNumber=${mobileNumber}&languageId=${languageId}&buttonColor=${encodeURIComponent(buttonColor)}`;
+    //     return url;
+    // },
+
+
 
     AUTH: {
         GETONBOARDING: 'referral/getSplashScreens',
