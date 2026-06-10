@@ -1,43 +1,84 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import LoaderScreen from '../SDKScreens/LoaderScreen';
-import HomeScreenEmpSDK from '../SDKScreens/HomeScreenEmpSDK';
-import Location from '../components/Location';
-import WeatherScreen from '../screens/Weather/WeatherScreen';
+import {
+  LoaderScreen,
+  HomeScreenEmpSDK,
+  BottomTabsNavigatorEmp,
+  FertilizerSeeds,
+  YieldCalculator,
+  SeedsCalculator,
+  SamadhanScreen,
+  RaiseComplaintScreen,
+  MoreScreenRn,
+  QRScannerRn,
+  NearByScreen,
+  KnowledgeCenterRn,
+  CropDesiesDetection,
+  CropDiagonstic,
+  LanguageScreenRn,
+  Agronomy,
+  WeatherScreen,
+  Remedyrecommendation,
+  NearByRetailersScreen,
+  AdvancedKnowledgeCenter,
+  KnowledgeCenterDocsList,
+  KnowledgeCenterPDFView,
+  Location,
+} from '../index'; // adjust path if needed
 
 const Stack = createNativeStackNavigator();
 
 const SubeejNavigator = ({ route }) => {
-    const sdkConfig = route?.params?.navigateItem;
-    return (
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
+  const sdkConfig = route?.params?.navigateItem;
 
-            <Stack.Screen
-                name="LoaderScreen"
-                component={LoaderScreen}
-                initialParams={{
-                    navigateItem: sdkConfig,
-                }}
-            />
+  const screens = {
+    HomeScreenEmpSDK,
+    BottomTabsNavigatorEmp,
+    FertilizerSeeds,
+    YieldCalculator,
+    SeedsCalculator,
+    SamadhanScreen,
+    RaiseComplaintScreen,
+    MoreScreenRn,
+    QRScannerRn,
+    NearByScreen,
+    KnowledgeCenterRn,
+    CropDesiesDetection,
+    CropDiagonstic,
+    LanguageScreenRn,
+    Agronomy,
+    WeatherScreen,
+    Remedyrecommendation,
+    NearByRetailersScreen,
+    AdvancedKnowledgeCenter,
+    KnowledgeCenterDocsList,
+    KnowledgeCenterPDFView,
+    Location,
+  };
 
-            <Stack.Screen
-                name="HomeScreenEmpSDK"
-                component={HomeScreenEmpSDK}
-            />
+  return (
+    <Stack.Navigator
+      initialRouteName="LoaderScreen"
+      screenOptions={{ headerShown: false }}
+    >
+      <Stack.Screen
+        name="LoaderScreen"
+        component={LoaderScreen}
+        initialParams={{
+          navigateItem: sdkConfig,
+        }}
+      />
 
-            <Stack.Screen
-                name="Location"
-                component={Location}
-            />
-
-            <Stack.Screen
-                name="WeatherScreen"
-                component={WeatherScreen}
-            />
-
-        </Stack.Navigator>
-    );
+      {Object.entries(screens).map(([name, component]) => (
+        <Stack.Screen
+          key={name}
+          name={name}
+          component={component}
+        />
+      ))}
+    </Stack.Navigator>
+  );
 };
 
 export default SubeejNavigator;
