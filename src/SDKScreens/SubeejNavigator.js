@@ -15,6 +15,7 @@ const SubeejNavigator = () => {
             <Stack.Screen
                 name="LoaderScreen"
                 component={LoaderScreen}
+                initialParams={props.route?.params}
             />
 
             <Stack.Screen
