@@ -8,14 +8,17 @@ import WeatherScreen from '../screens/Weather/WeatherScreen';
 
 const Stack = createNativeStackNavigator();
 
-const SubeejNavigator = () => {
+const SubeejNavigator = ({ route }) => {
+    const sdkConfig = route?.params?.navigateItem;
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
 
             <Stack.Screen
                 name="LoaderScreen"
                 component={LoaderScreen}
-                initialParams={props.route?.params}
+                initialParams={{
+                    navigateItem: sdkConfig,
+                }}
             />
 
             <Stack.Screen

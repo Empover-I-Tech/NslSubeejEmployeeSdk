@@ -1,21 +1,22 @@
 import React, { useEffect } from 'react';
 import { Provider } from 'react-redux';
-import { NavigationContainer } from '@react-navigation/native';
-
-import { store, persistor } from '../state/store';
+import { NavigationContainer, NavigationIndependentTree } from '@react-navigation/native';
+import { store, persistor } from './redux/store/store';
 import SubeejNavigator from './SubeejNavigator';
 import { initLocalisation } from '../Localization/Localisation';
 
 const SubeejRoot = (props) => {
 
-     useEffect(() => {
+    useEffect(() => {
         initLocalisation();
     }, []);
     return (
         <Provider store={store}>
-            <NavigationContainer independent={true}>
-                <SubeejNavigator {...props} />
-            </NavigationContainer>
+            <NavigationIndependentTree>
+                <NavigationContainer>
+                    <SubeejNavigator {...props} />
+                </NavigationContainer>
+            </NavigationIndependentTree>
         </Provider>
     );
 };
