@@ -23,7 +23,7 @@ import { useFontStyles } from '../../hooks/useFontStyles';
 import { check ,PERMISSIONS,request,RESULTS} from 'react-native-permissions';
 
 const WeatherScreen = ({ route }) => {
-  console.log("routechecking=-=->", route)
+  console.log("WeatherRoute=-=->", JSON.stringify(route))
   const fonts=useFontStyles()
   const dispatch=useDispatch()
   const [currentTime, setCurrentTime] = useState(moment().format("LT"));
@@ -248,7 +248,7 @@ const WeatherScreen = ({ route }) => {
 
           }
         }
-        if (route?.params?.enablePestForecast === true) {
+        if ((route?.params?.enablePestForecast === true) || (route?.params?.backScreen?.enablePestForecast == true)) {
           setSelectedFilter(translate('PestForecast'))
         }
       }
@@ -595,7 +595,7 @@ const WeatherScreen = ({ route }) => {
     if (isGpsEnabled) {
       if (hasPermission === "granted") {
             if(isConnected){
-                navigation.navigate('Location',{coordinates:{latitude:latitude,longitude:longitude,address:cityDet,screenName:"WeatherScreen",zoom:mapZoomingLevel, isComingFrom: (route?.params?.enablePestForecast === true) ? true : false}})
+                navigation.navigate('Location',{coordinates:{latitude:latitude,longitude:longitude,address:cityDet,screenName:"WeatherScreen",zoom:mapZoomingLevel, isComingFrom: (route?.params?.enablePestForecast === true) || (route?.params?.backScreen?.enablePestForecast == true) ? true : false}})
             }else{
                 SimpleToast.show(translate('no_internet_conneccted'));
             }

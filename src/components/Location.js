@@ -29,7 +29,7 @@ MapplsGL.setAtlasClientSecret("NdJUAD9O1c0LyinGBY0q0A17p-U96zMmvmehrrw4OVI91FWsW
 const styles = BuildStyleOverwrite(Styles);
 const Location = ({ route }) => {
     const fonts = useFontStyles()
-    console.log("checkingRoutes=-=-=->", route?.params?.coordinates)
+    console.log("Location Route=-=-=->", JSON.stringify(route))
     const getCompanyStyles = useSelector(state => state.companyStyles.companyStyles);
     const [isMapReady, setIsMapReady] = useState(false);
     const [isUserInteracting, setIsUserInteracting] = useState(false);
@@ -39,7 +39,7 @@ const Location = ({ route }) => {
     const [address, setAddress] = useState(route?.params?.coordinates?.address ? route?.params?.coordinates?.address : "");
     const [screen, setScreen] = useState(route?.params?.coordinates?.screenName ? route?.params?.coordinates?.screenName : "");
     const [isMap, setIsMap] = useState(!route?.params?.coordinates?.address);
-    const [isComingFrom, setIsComingFrom] = useState(route?.params?.isComingFrom)
+    const [isComingFrom, setIsComingFrom] = useState(route?.params?.coordinates?.isComingFrom)
     const [pinDance, setPinDance] = useState(false);
     const [loading, setLoading] = useState(false);
     const cameraRef = useRef(null);
