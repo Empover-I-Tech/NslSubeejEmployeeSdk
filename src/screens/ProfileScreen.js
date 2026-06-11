@@ -180,11 +180,13 @@ const ProfileScreen = ({ route }) => {
         let granted = false;
 
         if (sdkVersion >= 33) {
-          const result = await PermissionsAndroid.request(
-            PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES
-          );
-          granted = result === PermissionsAndroid.RESULTS.GRANTED;
-        } else if (sdkVersion >= 29) {
+          // const result = await PermissionsAndroid.request(
+          //   PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES
+          // );
+          // granted = result === PermissionsAndroid.RESULTS.GRANTED;
+          granted = true
+        } else 
+          if (sdkVersion >= 29) {
           const result = await PermissionsAndroid.request(
             PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE
           );

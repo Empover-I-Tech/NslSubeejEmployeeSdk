@@ -121,7 +121,7 @@ const HomeScreenEmp = ({ route }) => {
   const [uploadTotalCount, setUploadTotalCount] = useState(0)
   const { fetchData } = useGetRequestWithJwt();
   const [langId, setLangId] = useState(null)
-  
+
 
   const cachedImages = realm.objects('Image');
   const cachedGeoTaggingHistory = realm.objects('GEOTAGGINGHISTORY');
@@ -553,16 +553,16 @@ const HomeScreenEmp = ({ route }) => {
   //   getEmployeeDashboardapi(selectedDateRange.startDate, selectedDateRange.endDate)
   //   getMinDateEmployee()
   // }, [])
-useFocusEffect(
-  useCallback(() => {
-    getEmployeeDashboardapi(
-      selectedDateRange?.startDate ?? "",
-      selectedDateRange?.endDate ?? "",
-    );
+  useFocusEffect(
+    useCallback(() => {
+      getEmployeeDashboardapi(
+        selectedDateRange?.startDate ?? "",
+        selectedDateRange?.endDate ?? "",
+      );
 
-    getMinDateEmployee();
-  }, [selectedDateRange,langId]),
-);
+      getMinDateEmployee();
+    }, [selectedDateRange, langId]),
+  );
 
   // useEffect(() => {
   //   callDashboard = async () => {
@@ -586,7 +586,7 @@ useFocusEffect(
         const response = await axios.post(url, payload, { headers });
         const data = response?.data
         console.log("HADERS=-=-=>", JSON.stringify(headers))
-        console.log("PAYLOAD---=-=>", payload,"URL=-=-=->",url)
+        console.log("PAYLOAD---=-=>", payload, "URL=-=-=->", url)
         console.log("RESPONSE=--=-=>", JSON.stringify(data))
         if (data?.statusCode == 200 || data?.statusCode == HTTP_OK) {
           setmployeeDashboardData(response?.data?.response)
@@ -2087,10 +2087,10 @@ useFocusEffect(
     if (locationPermission === "granted" && cameraPermissionGranted) {
 
       if (isConnected) {
-          navigation.navigate('QRScannerRn', {
+        navigation.navigate('QRScannerRn', {
           type: "self",
           fellowFarmerName: "",
-          fellowFarmerMobileNumber :"",
+          fellowFarmerMobileNumber: "",
         });
         // navigation.navigate("CashBackScan", { screenName: value });
       } else {
@@ -2285,7 +2285,7 @@ useFocusEffect(
 
 
 
-  
+
 
   const checkForceUpdate = useCallback(() => {
     const subscriber = firestore()
@@ -2442,7 +2442,7 @@ useFocusEffect(
       }
     } else if (title === "Scan") {
       // fromProductScancashbackScanBothLocationandCameraHandle('self')
-employeeQrscanSelf()
+      employeeQrscanSelf()
       // setProductScanModalOpen(true)
       // setFellowFarmerVisible(true)
     }
@@ -2618,32 +2618,88 @@ employeeQrscanSelf()
     }
   }
 
-  const renderMetricsItems = (item) => {
+  const renderMetricsItems = ({ item }) => {
     return (
-      <View style={styles.metricMainContainer}>
-        <View style={styles.metricSubContainer}>
-          {item?.item?.icon &&
-            <Image source={{ uri: item?.item?.icon }} style={{ height: 35, width: 35, resizeMode: "contain", marginRight: 10 }} />
-          }
-          <Text style={[styles.metricsValuesNumber, { color: item?.item?.valueColor || "#000", fontFamily: fonts.Bold,fontSize:RFValue(16, height),width:60 }]}>{item?.item?.value ?? 0}</Text>
+      <TouchableOpacity
+        activeOpacity={0.8}
+        style={{
+          width: '31%',
+          margin: '1%',
+          backgroundColor: '#FFF',
+          borderRadius: 10,
+          padding: 10,
+          elevation: 3,
+          minHeight: 100,
+        }}>
+
+        {/* Icon + Value */}
+        <View
+          style={{
+            alignItems: 'center',
+            width: '100%',
+          }}>
+
+          {item?.icon ? (
+            <Image
+              source={{ uri: item.icon }}
+              style={{
+                width: 30,
+                height: 30,
+                resizeMode: 'contain',
+              }}
+            />
+          ) : null}
+
+          <Text
+            style={{
+              flex: 1,
+              marginLeft: 5,
+              textAlign: 'right',
+              fontSize: 14,
+              fontWeight: 'bold',
+              color: item?.valueColor || '#000',
+            }}>
+            {String(item?.value ?? 0)}
+          </Text>
         </View>
-        <View>
-          {item?.item?.subTitleTranslate &&
-            <Text style={[styles.labelsText, { color: "#3A3A3A", fontFamily: fonts.Medium }]}>{item?.item?.subTitleTranslate ?? ""}</Text>
-          }
-          {item?.item?.titleTranslate &&
-            <Text style={[styles.labelsText1, { color: item.item.titleColor, fontFamily: fonts.Medium }]}>{item?.item?.titleTranslate ?? ""}</Text>
-          }
-        </View>
-      </View>
-    )
-  }
+
+        {/* Subtitle */}
+        {!!item?.subTitleTranslate && (
+          <Text
+            numberOfLines={1}
+            style={{
+              marginTop: 8,
+              fontSize: 11,
+              textAlign: 'center',
+              color: '#666',
+            }}>
+            {item.subTitleTranslate}
+          </Text>
+        )}
+
+        {/* Title */}
+        {!!item?.titleTranslate && (
+          <Text
+            numberOfLines={2}
+            style={{
+              marginTop: 2,
+              fontSize: 13,
+              textAlign: 'center',
+              color: item?.titleColor || '#000',
+              fontWeight: '600',
+            }}>
+            {item.titleTranslate}
+          </Text>
+        )}
+      </TouchableOpacity>
+    );
+  };
 
   const metricsList = () => {
     return (
       <View style={{ backgroundColor: "#fff", borderRadius: 10, marginTop: 10, paddingBottom: 20 }}>
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-          <Text style={[styles.serviceText, { marginLeft: 10, marginVertical: 10, fontFamily: fonts.SemiBold,fontSize:RFValue(18,height) }]}>{employeeDashboardData?.metrics?.sectionTitleTranslated}</Text>
+          <Text style={[styles.serviceText, { marginLeft: 10, marginVertical: 10, fontFamily: fonts.SemiBold, fontSize: RFValue(18, height) }]}>{employeeDashboardData?.metrics?.sectionTitleTranslated}</Text>
 
           {/* Date Range Picker */}
           <TouchableOpacity
@@ -2658,16 +2714,26 @@ employeeQrscanSelf()
             {selectedDateRange.startDate && selectedDateRange.endDate ?
               <Text style={[styles.selectText, { fontFamily: fonts.Bold }]}>{`${selectedDateRange.startDate}  -  ${selectedDateRange.endDate}`}</Text>
               :
-              <Text style={[styles.selectText, { fontFamily: fonts.Regular,fontSize:RFValue(14,height) }]}>Select</Text>
+              <Text style={[styles.selectText, { fontFamily: fonts.Regular, fontSize: RFValue(14, height) }]}>Select</Text>
             }
             <Image style={styles.calendarIcon} source={require("../../../assets/Images/dateRangeCalendarIcon.png")} />
           </TouchableOpacity>
         </View>
 
-        <View style={{ width: "100%", paddingLeft: 10 }}>
-          <FlatList initialNumToRender={3} numColumns={3}
-            data={employeeDashboardData?.metrics?.sectionItems?.filter((item) => item.visible)}
-            renderItem={renderMetricsItems} keyExtractor={(item, index) => index.toString()} />
+        <View style={{ width: "100%" }}>
+          <FlatList
+            data={
+              employeeDashboardData?.metrics?.sectionItems?.filter(
+                item => item?.visible === true
+              ) || []
+            }
+            renderItem={renderMetricsItems}
+            keyExtractor={(item, index) => index.toString()}
+            numColumns={3}
+            initialNumToRender={6}
+            contentContainerStyle={{ paddingHorizontal: 8 }}
+            showsVerticalScrollIndicator={false}
+          />
         </View>
       </View>
     )
@@ -2778,7 +2844,7 @@ employeeQrscanSelf()
         >
           {metricsList()}
 
-          <TouchableOpacity onPress={farmerServiceHandle} style={{ borderRadius: 10, marginVertical: 10, height: width * 0.12, justifyContent: "center", backgroundColor: dynamicStyles.primaryColor, alignItems: "center",marginTop:20 }}>
+          <TouchableOpacity onPress={farmerServiceHandle} style={{ borderRadius: 10, marginVertical: 10, height: width * 0.12, justifyContent: "center", backgroundColor: dynamicStyles.primaryColor, alignItems: "center", marginTop: 20 }}>
             <Text style={{ color: dynamicStyles.secondaryColor, fontFamily: fonts.SemiBold, fontSize: 14 }}>{translate('farmer_services')}</Text>
           </TouchableOpacity>
           <View style={{ height: 100 }} />
@@ -2882,7 +2948,7 @@ employeeQrscanSelf()
         </TouchableWithoutFeedback>
       </Modal>
 
-      
+
       <Modal animationType="slide" transparent visible={productScanModalOpen}>
         <TouchableWithoutFeedback>
           <View style={styles.modalOverlay}>
@@ -3458,20 +3524,34 @@ const styles = StyleSheet.create({
     marginRight: 15,
   },
   metricMainContainer: {
-    width: "30%",
-    margin: 5,
-    // width:"100%"
+    width: '31%',
+    margin: '1%',
+    backgroundColor: '#FFF',
+    borderRadius: 10,
+    padding: 10,
+    minHeight: 90,
   },
+
   metricSubContainer: {
-    // flex: 1,
-    // width:"33.3%",
-    backgroundColor: '#F2F6F9',
-    borderRadius: 8,
-    padding: 8,
-    minHeight: width * 0.14,
-    flexDirection: "row",
-    alignItems: "center"
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
   },
+  // metricMainContainer: {
+  //   width: "30%",
+  //   margin: 5,
+  //   // width:"100%"
+  // },
+  // metricSubContainer: {
+  //   // flex: 1,
+  //   // width:"33.3%",
+  //   backgroundColor: '#F2F6F9',
+  //   borderRadius: 8,
+  //   padding: 8,
+  //   minHeight: width * 0.14,
+  //   flexDirection: "row",
+  //   alignItems: "center"
+  // },
 
   modalSubContainerMenuList: {
     backgroundColor: '#fff',
@@ -3506,8 +3586,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5',
     minWidth: 110,
     marginRight: 10,
-    paddingLeft:15,
-    paddingRight:10,
+    paddingLeft: 15,
+    paddingRight: 10,
     // paddingHorizontal: 10,
     flexDirection: "row"
   },
@@ -3519,7 +3599,7 @@ const styles = StyleSheet.create({
     fontSize: RFValue(12, height)
   },
   calendarIcon: {
-    height:19,
+    height: 19,
     width: 19,
     resizeMode: "contain",
     marginLeft: 10

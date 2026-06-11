@@ -24,20 +24,6 @@ const showSettingsAlert = (permissionName) => {
     );
 };
 
-const getStoragePermissions = () => {
-    const sdkInt = parseInt(Platform.Version, 10);
-
-    if (sdkInt >= 33) {
-        return [PERMISSIONS.ANDROID.READ_MEDIA_IMAGES];
-    } else {
-        const perms = [PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE];
-        if (sdkInt <= 28) {
-            perms.push(PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE);
-        }
-        return perms;
-    }
-};
-
 export const checkAndRequestPermission = async (permission, permissionLabel) => {
     const status = await check(permission);
 
@@ -56,27 +42,6 @@ export const checkAndRequestPermission = async (permission, permissionLabel) => 
             showSettingsAlert(permissionLabel);
             return false;
     }
-};
-
-export const requestCameraAndStoragePermissions = async () => {
-    if (Platform.OS !== 'android') return true;
-
-    const cameraGranted = await checkAndRequestPermission(
-        PERMISSIONS.ANDROID.CAMERA,
-        'Camera'
-    );
-
-    const storagePermissions = getStoragePermissions();
-    let storageGranted = true;
-
-    for (const perm of storagePermissions) {
-        const granted = await checkAndRequestPermission(perm, 'Storage');
-        if (!granted) {
-            storageGranted = false;
-        }
-    }
-
-    return cameraGranted && storageGranted;
 };
 
 export const showPermissionDeniedAlert = (featureName = 'this feature') => {

@@ -168,6 +168,7 @@ const GenuineCheckModal = ({
                                     source={{
                                         html: `<div>${apiResponse.messageTwo}</div>`,
                                     }}
+                                    enableCSSInlineProcessing={true}
                                     tagsStyles={{
                                         div: {
                                             fontSize: 14,

@@ -65,6 +65,7 @@ const LanguageScreenRn = ({ route }) => {
                     setLoaderApi(false);
                 } else {
                     setLoaderApi(false);
+                    SimpleToast.show(data?.message || translate('Something_went_wrong'));
                 }
             } catch (error) {
                 setLoaderApi(false);

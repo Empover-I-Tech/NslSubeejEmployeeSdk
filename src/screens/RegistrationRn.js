@@ -1220,7 +1220,8 @@ const RegistrationRn = ({ route }) => {
                                 <View style={{ alignItems: "center", }}>
 
                                     {welcomeMssg &&
-                                        <RenderHTML contentWidth={width} source={{ html: welcomeMssg }} />
+                                        <RenderHTML contentWidth={width} source={{ html: welcomeMssg }} 
+                                        enableCSSInlineProcessing={true}/>
                                     }
                                 </View>
                                 <TouchableOpacity onPress={() => handleOkPressNavigation()} style={{ borderRadius: 10, marginVertical: 10, backgroundColor: selectedCompany.primaryColor, height: 50, alignItems: "center", justifyContent: "center" }}>

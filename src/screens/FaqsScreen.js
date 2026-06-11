@@ -103,7 +103,8 @@ const FaqsScreen = ({ navigation }) => {
           />
         </TouchableOpacity>
         {expandedIndex === index && (
-          <RenderHTML contentWidth={width} source={{ html: item.answers }} />
+          <RenderHTML contentWidth={width} source={{ html: item.answers }} 
+          enableCSSInlineProcessing={true}/>
         )}
       </View>
     )

@@ -242,7 +242,7 @@ export default function DateRangePickerModal({
               selectedDayBackgroundColor: primaryColor,
               todayTextColor: primaryColor,
               monthTextColor: 'transparent', // hidden — we show our own header
-              textMonthFontSize: 0,
+              textMonthFontSize: 1,
               textDayFontSize: 13,
               calendarBackground: '#fff',
               dayTextColor: '#333',

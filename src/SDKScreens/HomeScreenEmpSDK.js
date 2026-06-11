@@ -122,7 +122,7 @@ const HomeScreenEmpSDK = ({ route }) => {
   const [uploadTotalCount, setUploadTotalCount] = useState(0)
   const { fetchData } = useGetRequestWithJwt();
   const [langId, setLangId] = useState(null)
-  
+
 
   const cachedImages = realm.objects('Image');
   const cachedGeoTaggingHistory = realm.objects('GEOTAGGINGHISTORY');
@@ -1678,7 +1678,7 @@ const HomeScreenEmpSDK = ({ route }) => {
           setMarketPriceVisible(response?.data?.response?.userMenuControl["Market Prices"]?.visible)
         }
         else if (response.data.statusCode === HTTP_601) {
-            SimpleToast.show(data?.message || translate("Something_went_wrong"))
+          SimpleToast.show(data?.message || translate("Something_went_wrong"))
 
           // await logoutMethod()
 
@@ -1732,7 +1732,7 @@ const HomeScreenEmpSDK = ({ route }) => {
         setWeatherVisible(response?.data?.response?.isVisible)
       }
       else if (response.data.statusCode === HTTP_601) {
-            SimpleToast.show(data?.message || translate("Something_went_wrong"))
+        SimpleToast.show(data?.message || translate("Something_went_wrong"))
 
         // await logoutMethod()
       }
@@ -2188,26 +2188,82 @@ const HomeScreenEmpSDK = ({ route }) => {
     }
   }
 
-  const renderMetricsItems = (item) => {
+  const renderMetricsItems = ({ item }) => {
     return (
-      <View style={styles.metricMainContainer}>
-        <View style={styles.metricSubContainer}>
-          {item?.item?.icon &&
-            <Image source={{ uri: item?.item?.icon }} style={{ height: 30, width: 30, resizeMode: "contain", marginRight: 10 }} />
-          }
-          <Text style={[styles.metricsValuesNumber, { color: item?.item?.valueColor || "#000", fontFamily: fonts.Bold }]}>{item?.item?.value ?? 0}</Text>
+      <TouchableOpacity
+        activeOpacity={0.8}
+        style={{
+          width: '31%',
+          margin: '1%',
+          backgroundColor: '#FFF',
+          borderRadius: 10,
+          padding: 10,
+          elevation: 3,
+          minHeight: 100,
+        }}>
+
+        {/* Icon + Value */}
+        <View
+          style={{
+            alignItems: 'center',
+            width: '100%',
+          }}>
+
+          {item?.icon ? (
+            <Image
+              source={{ uri: item.icon }}
+              style={{
+                width: 30,
+                height: 30,
+                resizeMode: 'contain',
+              }}
+            />
+          ) : null}
+
+          <Text
+            style={{
+              flex: 1,
+              marginLeft: 5,
+              textAlign: 'right',
+              fontSize: 14,
+              fontWeight: 'bold',
+              color: item?.valueColor || '#000',
+            }}>
+            {String(item?.value ?? 0)}
+          </Text>
         </View>
-        <View>
-          {item?.item?.subTitleTranslate &&
-            <Text style={[styles.labelsText, { color: "#3A3A3A", fontFamily: fonts.Medium }]}>{item?.item?.subTitleTranslate ?? ""}</Text>
-          }
-          {item?.item?.titleTranslate &&
-            <Text style={[styles.labelsText1, { color: item.item.titleColor, fontFamily: fonts.Medium }]}>{item?.item?.titleTranslate ?? ""}</Text>
-          }
-        </View>
-      </View>
-    )
-  }
+
+        {/* Subtitle */}
+        {!!item?.subTitleTranslate && (
+          <Text
+            numberOfLines={1}
+            style={{
+              marginTop: 8,
+              fontSize: 11,
+              textAlign: 'center',
+              color: '#666',
+            }}>
+            {item.subTitleTranslate}
+          </Text>
+        )}
+
+        {/* Title */}
+        {!!item?.titleTranslate && (
+          <Text
+            numberOfLines={2}
+            style={{
+              marginTop: 2,
+              fontSize: 13,
+              textAlign: 'center',
+              color: item?.titleColor || '#000',
+              fontWeight: '600',
+            }}>
+            {item.titleTranslate}
+          </Text>
+        )}
+      </TouchableOpacity>
+    );
+  };
 
   const metricsList = () => {
     return (
@@ -2234,10 +2290,20 @@ const HomeScreenEmpSDK = ({ route }) => {
           </TouchableOpacity>
         </View>
 
-        <View style={{ width: "100%", paddingLeft: 10 }}>
-          <FlatList initialNumToRender={3} numColumns={3}
-            data={employeeDashboardData?.metrics?.sectionItems?.filter((item) => item.visible)}
-            renderItem={renderMetricsItems} keyExtractor={(item, index) => index.toString()} />
+        <View style={{ width: "100%" }}>
+          <FlatList
+            data={
+              employeeDashboardData?.metrics?.sectionItems?.filter(
+                item => item?.visible === true
+              ) || []
+            }
+            renderItem={renderMetricsItems}
+            keyExtractor={(item, index) => index.toString()}
+            numColumns={3}
+            initialNumToRender={6}
+            contentContainerStyle={{ paddingHorizontal: 8 }}
+            showsVerticalScrollIndicator={false}
+          />
         </View>
       </View>
     )
@@ -2273,15 +2339,15 @@ const HomeScreenEmpSDK = ({ route }) => {
         <View style={styles.profileContainer}>
           <View style={styles.profileSubContainer}>
             {/* <TouchableOpacity onPress={() => navigation.navigate('MoreScreenRn', { companyName: dynamicStyles.companyName })}> */}
-              <View style={styles.farmerIconContainer}>
-                {userData?.userPic ?
-                  <>
-                    {isConnected ? <Image source={{ uri: userData.userPic }} style={userData?.userPic ? styles.farmerIcon1 : styles.farmerIcon} />
-                      : <Image source={defaultImage} style={userData?.userPic ? styles.farmerIcon1 : styles.farmerIcon} />}
-                  </>
-                  : <Image source={defaultImage} style={userData?.userPic ? styles.farmerIcon1 : styles.farmerIcon} />
-                }
-              </View>
+            <View style={styles.farmerIconContainer}>
+              {userData?.userPic ?
+                <>
+                  {isConnected ? <Image source={{ uri: userData.userPic }} style={userData?.userPic ? styles.farmerIcon1 : styles.farmerIcon} />
+                    : <Image source={defaultImage} style={userData?.userPic ? styles.farmerIcon1 : styles.farmerIcon} />}
+                </>
+                : <Image source={defaultImage} style={userData?.userPic ? styles.farmerIcon1 : styles.farmerIcon} />
+              }
+            </View>
             {/* </TouchableOpacity> */}
             <View style={{ flexDirection: 'row' }}>
               <View>
@@ -2448,7 +2514,7 @@ const HomeScreenEmpSDK = ({ route }) => {
         </TouchableWithoutFeedback>
       </Modal>
 
-      
+
       <Modal animationType="slide" transparent visible={productScanModalOpen}>
         <TouchableWithoutFeedback>
           <View style={styles.modalOverlay}>
@@ -3024,19 +3090,18 @@ const styles = StyleSheet.create({
     marginRight: 15,
   },
   metricMainContainer: {
-    width: "30%",
-    margin: 5,
-    // width:"100%"
+    width: '31%',
+    margin: '1%',
+    backgroundColor: '#FFF',
+    borderRadius: 10,
+    padding: 10,
+    minHeight: 90,
   },
+
   metricSubContainer: {
-    // flex: 1,
-    // width:"33.3%",
-    backgroundColor: '#F2F6F9',
-    borderRadius: 8,
-    padding: 8,
-    minHeight: width * 0.14,
-    flexDirection: "row",
-    alignItems: "center"
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
   },
 
   modalSubContainerMenuList: {

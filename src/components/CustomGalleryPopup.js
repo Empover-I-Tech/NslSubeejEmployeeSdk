@@ -10,7 +10,7 @@ import { useFontStyles } from '../hooks/useFontStyles';
 
 const CustomGalleryPopup = ({ showOrNot, onPressingOut, onPressingGallery, onPressingCamera }) => {
   const dynamicStyles = useSelector(state => state.companyStyles.companyStyles);
-  const fonts=useFontStyles()
+  const fonts = useFontStyles()
 
   const showPermissionAlert = (type) => {
     Alert.alert(
@@ -55,37 +55,39 @@ const CustomGalleryPopup = ({ showOrNot, onPressingOut, onPressingGallery, onPre
   const requestGalleryPermission = async () => {
     if (Platform.OS === 'android') {
       const sdkVersion = Platform.Version;
- 
+
       try {
         let granted = false;
-          console.log(sdkVersion,"<------------- sdkVersion result")
- 
+        console.log(sdkVersion, "<------------- sdkVersion result")
+
         if (sdkVersion >= 33) {
-          // Android 13+ (API 33) requires READ_MEDIA_IMAGES
-          const result = await PermissionsAndroid.request(
-            PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES
-          );
- 
-          granted = result === PermissionsAndroid.RESULTS.GRANTED;
-        } else if (sdkVersion >= 29) {
-          // Android 10 to 12
-          const result = await PermissionsAndroid.request(
-            PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE
-          );
- 
-          granted = result === PermissionsAndroid.RESULTS.GRANTED;
-        } else {
-          // Below Android 10 (API < 29)
-          const result = await PermissionsAndroid.requestMultiple([
-            PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-            PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
-          ]);
- 
-          granted =
-            result[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] === PermissionsAndroid.RESULTS.GRANTED &&
-            result[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] === PermissionsAndroid.RESULTS.GRANTED;
-        }
- 
+          granted = true
+          // // Android 13+ (API 33) requires READ_MEDIA_IMAGES
+          // const result = await PermissionsAndroid.request(
+          //   PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES
+          // );
+
+          // granted = result === PermissionsAndroid.RESULTS.GRANTED;
+        } else
+          if (sdkVersion >= 29) {
+            // Android 10 to 12
+            const result = await PermissionsAndroid.request(
+              PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE
+            );
+
+            granted = result === PermissionsAndroid.RESULTS.GRANTED;
+          } else {
+            // Below Android 10 (API < 29)
+            const result = await PermissionsAndroid.requestMultiple([
+              PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+              PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
+            ]);
+
+            granted =
+              result[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] === PermissionsAndroid.RESULTS.GRANTED &&
+              result[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] === PermissionsAndroid.RESULTS.GRANTED;
+          }
+
         if (granted) {
           onPressingGallery();
         } else {
@@ -98,7 +100,7 @@ const CustomGalleryPopup = ({ showOrNot, onPressingOut, onPressingGallery, onPre
     } else if (Platform.OS === 'ios') {
       try {
         const currentStatus = await check(PERMISSIONS.IOS.PHOTO_LIBRARY);
-  
+
         if (currentStatus === RESULTS.GRANTED || currentStatus === RESULTS.LIMITED) {
           // ✅ Either full or limited access is acceptable here
           onPressingGallery();
@@ -114,7 +116,7 @@ const CustomGalleryPopup = ({ showOrNot, onPressingOut, onPressingGallery, onPre
         } else {
           showPermissionAlert();
         }
-  
+
       } catch (error) {
         console.warn('iOS Permission error:', error);
       }
@@ -148,7 +150,7 @@ const CustomGalleryPopup = ({ showOrNot, onPressingOut, onPressingGallery, onPre
               <Image source={require('../../src/assets/images/crossMark.png')} style={{ tintColor: dynamicStyles.iconPrimaryColor, height: 20, width: 20, resizeMode: "contain" }} />
             </TouchableOpacity>
             <View style={stylesheetStyes.galleryImage}>
-              <Text style={[stylesheetStyes.uploadText, { color: dynamicStyles.textColor,fontFamily:fonts.Bold },]}>
+              <Text style={[stylesheetStyes.uploadText, { color: dynamicStyles.textColor, fontFamily: fonts.Bold },]}>
                 {translate('UploadImage')}
               </Text>
               <View style={stylesheetStyes.cameraOverallView}>
@@ -165,7 +167,7 @@ const CustomGalleryPopup = ({ showOrNot, onPressingOut, onPressingGallery, onPre
                       resizeMode="contain"
                     />
                   </TouchableOpacity>
-                  <Text style={[stylesheetStyes.text11, { color: dynamicStyles.textColor,fontFamily:fonts.Bold },]}>{translate('camera')}</Text>
+                  <Text style={[stylesheetStyes.text11, { color: dynamicStyles.textColor, fontFamily: fonts.Bold },]}>{translate('camera')}</Text>
                 </View>
                 <View style={stylesheetStyes.cameraView}>
                   <TouchableOpacity
@@ -181,7 +183,7 @@ const CustomGalleryPopup = ({ showOrNot, onPressingOut, onPressingGallery, onPre
                     />
 
                   </TouchableOpacity>
-                  <Text style={[stylesheetStyes.text11, { color: dynamicStyles.textColor,fontFamily:fonts.Bold },]}>{translate('gallery')}</Text>
+                  <Text style={[stylesheetStyes.text11, { color: dynamicStyles.textColor, fontFamily: fonts.Bold },]}>{translate('gallery')}</Text>
                 </View>
               </View>
             </View>

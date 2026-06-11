@@ -1022,7 +1022,8 @@ const GeoTaggingViewScreen = ({ route }) => {
               <ImageBackground style={{ height: height * 0.1, width: "100%" }} source={require("../../assets/Images/congratulationStickers.png")}>
                 <View style={{ alignItems: "center" }}>
                   {submitReponseMssg?.message1 != undefined ?
-                    <RenderHTML contentWidth={width} source={{ html: submitReponseMssg?.message1 }} />
+                    <RenderHTML contentWidth={width} source={{ html: submitReponseMssg?.message1 }}
+                    enableCSSInlineProcessing={true} />
                     :
                     <Text style={{ fontFamily: fonts.Bold, alignSelf: "center", color: "#000", fontSize: RFValue(16, height), marginTop: 10 }}>{"Data Submitted Successfully"}</Text>
                   }

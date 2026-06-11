@@ -29,7 +29,7 @@ import { useFontStyles } from '../hooks/useFontStyles';
 const { height } = Dimensions.get('window');
 
 const IntialLanguageScreenRn = ({ route }) => {
-  const fonts=useFontStyles()
+  const fonts = useFontStyles()
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const isConnected = useSelector(state => state.network.isConnected);
@@ -55,11 +55,12 @@ const IntialLanguageScreenRn = ({ route }) => {
       });
       if (response.data.statusCode === HTTP_OK) {
         chooseLanguageHandle(response.data.response);
-      }else{
-            setIsLoading(false);
+      } else {
+        SimpleToast.show(response?.data?.message || translate('Something_went_wrong'));
+        setIsLoading(false);
       }
     } catch (error) {
-          setIsLoading(false);
+      setIsLoading(false);
       console.error('Error fetching languages:', error);
     } finally {
       setIsLoading(false);
@@ -168,10 +169,10 @@ const IntialLanguageScreenRn = ({ route }) => {
             </View>
           )}
           <View>
-            <Text style={[styles.localLanguageNameText, { color: '#000',fontFamily:fonts.SemiBold }]}>
+            <Text style={[styles.localLanguageNameText, { color: '#000', fontFamily: fonts.SemiBold }]}>
               {item.localLanguageName}
             </Text>
-            <Text style={[styles.languageNameText, { color: '#000',fontFamily:fonts.Regular }]}>
+            <Text style={[styles.languageNameText, { color: '#000', fontFamily: fonts.Regular }]}>
               {item.languageName}
             </Text>
           </View>
@@ -191,8 +192,8 @@ const IntialLanguageScreenRn = ({ route }) => {
         />
       )}
       <View style={styles.chooseLanguageTextContainer}>
-        <Text style={[styles.chooseLanguageText,{fontFamily:fonts.Bold}]}>{translate('choose_lag')}</Text>
-        <Text style={[styles.chooseLanguageSubText,{fontFamily:fonts.Regular}]}>{translate('preferred_lang')}</Text>
+        <Text style={[styles.chooseLanguageText, { fontFamily: fonts.Bold }]}>{translate('choose_lag')}</Text>
+        <Text style={[styles.chooseLanguageSubText, { fontFamily: fonts.Regular }]}>{translate('preferred_lang')}</Text>
       </View>
       <View style={styles.flatListMainContainer}>
         <FlatList
@@ -209,7 +210,7 @@ const IntialLanguageScreenRn = ({ route }) => {
           })}
         />
         <TouchableOpacity style={styles.getStartBtn} onPress={handleContinue} disabled={isLoading}>
-          <Text style={[styles.getStartedText,{fontFamily:fonts.Bold}]}>{translate('get_started')}</Text>
+          <Text style={[styles.getStartedText, { fontFamily: fonts.Bold }]}>{translate('get_started')}</Text>
         </TouchableOpacity>
       </View>
       {isLoading && (

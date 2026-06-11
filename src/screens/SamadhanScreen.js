@@ -32,7 +32,6 @@ const SamadhanScreen = ({ route }) => {
     const [duplicateModalOpen, setDuplicateModalOpen] = useState(false)
     const navigation = useNavigation();
     const routeNames = useNavigationState(state => state?.routeNames ?? []);
-    // BottomTabsEmp has HomeScreenEmp; BottomTabs (farmer) does not
     const isEmpNavigator = routeNames.includes('HomeScreenEmp');
     const listFooterPadding = isEmpNavigator ? 90 : 65;
     const cachedSamadhanHistory = realm.objects('SAMADHANHISTORY');

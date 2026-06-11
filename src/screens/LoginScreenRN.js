@@ -163,7 +163,7 @@ const LoginScreenRn = () => {
   useFocusEffect(
     useCallback(() => {
       handleLocationPermission()
-      checkPermissions()
+      // checkPermissions()
       checkForceUpdate()
       requestNotificationPermission()
     }, [])

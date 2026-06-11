@@ -1,7 +1,7 @@
 
 export const FIREBASE_LOG = true;
-// export const APP_ENV_PROD = true;
-export let APP_ENV_PROD = false;
+export let APP_ENV_PROD = true;
+// export let APP_ENV_PROD = false;
 export const LOCAL_SERVER = '';
 
 
@@ -82,7 +82,7 @@ export const MAP_MY_INDIA_KEY = "5zf2txekry89tciw19sgmjpo7w133ioj";
 export const MAP_MY_INDIA_URL = `https://apis.mapmyindia.com/advancedmaps/v1/${MAP_MY_INDIA_KEY}/rev_geocode`
 
 //This is for SDK Purpose
-export const setEnvironment = (buildType) => {
+export const setEnvironment=(buildType) => {
     APP_ENV_PROD = buildType === 'PROD';
     console.log('APP_ENV_PROD:', APP_ENV_PROD);
 }
