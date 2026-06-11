@@ -28,6 +28,7 @@ import NearByRetailersScreen from '../screens/NearByRetailersScreen';
 import AdvancedKnowledgeCenter from '../screens/AdvancedKnowledgeCenter';
 import KnowledgeCenterPDFView from '../screens/KnowledgeCenterPDFView';
 import KnowledgeCenterDocsList from '../screens/KnowledgeCenterDocsList';
+import CashBackScan from '../screens/CashbackProgram/CashbackScan';
 
 
 const Stack = createNativeStackNavigator();
@@ -38,6 +39,7 @@ const SubeejNavigator = ({ onSDKClose, route }) => {
   const screens = {
     HomeScreenEmpSDK,
     BottomTabsNavigatorEmp,
+    CashBackScan,
     FertilizerSeeds,
     YieldCalculator,
     SeedsCalculator,
