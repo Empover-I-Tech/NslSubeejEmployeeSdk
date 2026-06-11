@@ -12,7 +12,7 @@ import { setIsEmployee } from "../../src/state/actions/employeeActions";
 import { changeLanguage, translate } from '../Localization/Localisation';
 import { setSelectedCompanyAct } from '../state/actions/selectedCompanyActions';
 import SimpleToast from 'react-native-simple-toast';
-import { FCM_TOKEN, storeData } from '../assets/Utils/Utils';
+import { FCM_TOKEN } from '../assets/Utils/Utils';
 
 
 const LoaderScreen = ({ route }) => {
@@ -64,9 +64,9 @@ const LoaderScreen = ({ route }) => {
             if (!route?.params) return;
 
             console.log('Initializing SDK...');
-            await storeData(LANGUAGECODE, selectedLanguage.value);
-            await storeData(LANGUAGENAME, selectedLanguage.label);
-            await storeData(LANGUAGEID, `${selectedLanguage.id}`);
+            await storeInAsyncStorage(LANGUAGECODE, selectedLanguage.value);
+            await storeInAsyncStorage(LANGUAGENAME, selectedLanguage.label);
+            await storeInAsyncStorage(LANGUAGEID, `${selectedLanguage.id}`);
             await changeLanguage(selectedLanguage.value);
             const newStore = selectedCompanyData
             newStore.languageId = selectedLanguage.id
@@ -85,8 +85,8 @@ const LoaderScreen = ({ route }) => {
 
     const storeAuthData = async () => {
         try {
-            await storeData(SDK_AUTH_TOKEN, authToken || '');
-            await storeData(SDK_AUTH_ID, authId || '');
+            await storeInAsyncStorage(SDK_AUTH_TOKEN, authToken || '');
+            await storeInAsyncStorage(SDK_AUTH_ID, authId || '');
             console.log("Auth data stored successfully:", { authId, authToken });
         } catch (error) {
             console.error("Error storing auth data:", error);
