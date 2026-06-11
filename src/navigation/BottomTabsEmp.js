@@ -3,15 +3,12 @@ import React, { useEffect, useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Alert, Dimensions, Image, StyleSheet, Text, View } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
-import SimpleToast from 'react-native-simple-toast';
-
-// Import your screen components
 import MandiPricesScreen from '../screens/MandiPrices/MandiPricesScreen';
 import SamadhanScreen from '../screens/SamadhanScreen';
 import { translate } from '../Localization/Localisation';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { useFontStyles } from '../hooks/useFontStyles';
-import HomeScreenEmp from '../screens/EmployeeScreens/HomeScreenEmp';
+import HomeScreenEmpSDK from '../SDKScreens/HomeScreenEmpSDK';
 
 const Tab = createBottomTabNavigator();
 const { width, height } = Dimensions.get('window');
@@ -63,8 +60,8 @@ const BottomTabsNavigatorEmp = () => {
     >
    {true && (   
     <Tab.Screen
-        name="HomeScreenEmp"
-        component={HomeScreenEmp}
+        name="HomeScreenEmpSDK"
+        component={HomeScreenEmpSDK}
         options={{
           tabBarLabel: ({ focused }) => (
             <View style={{ alignItems: 'center' }}>
@@ -105,7 +102,7 @@ const BottomTabsNavigatorEmp = () => {
           listeners={({ navigation }) => ({
             tabPress: e => {
               e.preventDefault();
-              navigation.navigate('HomeScreenEmp', { openFarmerServices: true });
+              navigation.navigate('HomeScreenEmpSDK', { openFarmerServices: true });
             },
           })}
         />

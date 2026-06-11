@@ -110,7 +110,7 @@ const LoaderScreen = ({ route }) => {
                 name: 'BottomTabsNavigatorEmp',
                 screen: 'HomeScreenEmpSDK',
             }
-            navigation.navigate(routeConfig.name, {
+            navigation.replace(routeConfig.name, {
                 screen: routeConfig.screen,
                 params: { languageId: selectedCompanyData?.languageId || 0 },
             });
