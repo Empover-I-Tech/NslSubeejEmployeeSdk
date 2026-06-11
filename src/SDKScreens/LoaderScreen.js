@@ -22,6 +22,7 @@ const LoaderScreen = ({ route }) => {
     const languageCode = route?.params?.navigateItem?.languageCode
     const authId = route?.params?.navigateItem?.authId
     const authToken = route?.params?.navigateItem?.authToken
+    const onSDKClose = route?.params?.onSDKClose;
     console.log("jjjjjjjj", JSON.stringify(route?.params?.navigateItem?.mobileNumber))
     const navigation = useNavigation();
 

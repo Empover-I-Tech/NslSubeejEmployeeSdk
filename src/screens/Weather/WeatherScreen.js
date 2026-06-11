@@ -595,7 +595,7 @@ const WeatherScreen = ({ route }) => {
     if (isGpsEnabled) {
       if (hasPermission === "granted") {
             if(isConnected){
-                navigation.navigate('Location',{coordinates:{latitude:latitude,longitude:longitude,address:cityDet,screenName:"WeatherScreen",zoom:mapZoomingLevel}})
+                navigation.navigate('Location',{coordinates:{latitude:latitude,longitude:longitude,address:cityDet,screenName:"WeatherScreen",zoom:mapZoomingLevel, isComingFrom: (route?.params?.enablePestForecast === true) ? true : false}})
             }else{
                 SimpleToast.show(translate('no_internet_conneccted'));
             }

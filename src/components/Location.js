@@ -28,17 +28,18 @@ MapplsGL.setAtlasClientId("qwj3TMxdzY7SIXZq8s3A4xDzY3LBjO3xAepnlJFBOjA_DQ7xzJWYt
 MapplsGL.setAtlasClientSecret("NdJUAD9O1c0LyinGBY0q0A17p-U96zMmvmehrrw4OVI91FWsWwBD2VCd3HVpTBawIi_g0BxxNireuLAJZpwie4283oO0mRYf");
 const styles = BuildStyleOverwrite(Styles);
 const Location = ({ route }) => {
-    const fonts=useFontStyles()
-    console.log("checkingRoutes=-=-=->",route?.params?.coordinates)
+    const fonts = useFontStyles()
+    console.log("checkingRoutes=-=-=->", route?.params?.coordinates)
     const getCompanyStyles = useSelector(state => state.companyStyles.companyStyles);
     const [isMapReady, setIsMapReady] = useState(false);
     const [isUserInteracting, setIsUserInteracting] = useState(false);
-    const [locallatitudes, setLocalLatitudes] = useState(route?.params?.coordinates?.latitude?route?.params?.coordinates?.latitude:0);
-    const [locallongitudes, setLocalLongitudes] = useState(route?.params?.coordinates?.longitude?route?.params?.coordinates?.longitude:0);
+    const [locallatitudes, setLocalLatitudes] = useState(route?.params?.coordinates?.latitude ? route?.params?.coordinates?.latitude : 0);
+    const [locallongitudes, setLocalLongitudes] = useState(route?.params?.coordinates?.longitude ? route?.params?.coordinates?.longitude : 0);
     let [addLoader, setAddLoader] = useState(false)
-    const [address, setAddress] = useState(route?.params?.coordinates?.address?route?.params?.coordinates?.address:"");
-    const [screen, setScreen] = useState(route?.params?.coordinates?.screenName?route?.params?.coordinates?.screenName:"");
+    const [address, setAddress] = useState(route?.params?.coordinates?.address ? route?.params?.coordinates?.address : "");
+    const [screen, setScreen] = useState(route?.params?.coordinates?.screenName ? route?.params?.coordinates?.screenName : "");
     const [isMap, setIsMap] = useState(!route?.params?.coordinates?.address);
+    const [isComingFrom, setIsComingFrom] = useState(route?.params?.isComingFrom)
     const [pinDance, setPinDance] = useState(false);
     const [loading, setLoading] = useState(false);
     const cameraRef = useRef(null);
@@ -48,14 +49,14 @@ const Location = ({ route }) => {
     const [hasCentered, setHasCentered] = useState(false);
     const [primaryColor, setPrimaryColor] = useState(route?.params?.primaryColor ?? companyStyle?.value?.primaryColor);
     const [dynamicStyles, setDynamicStyles] = useState(getCompanyStyles);
-    const [newLat,setNewLat]=useState(null)
-    const [newLong,setNewLong]=useState(null)
-    const [zoomingPick,setZoomingPick]=useState(route?.params?.coordinates?.zoom?route?.params?.coordinates?.zoom:0)
+    const [newLat, setNewLat] = useState(null)
+    const [newLong, setNewLong] = useState(null)
+    const [zoomingPick, setZoomingPick] = useState(route?.params?.coordinates?.zoom ? route?.params?.coordinates?.zoom : 0)
 
-    const centerMap = (longi, lati,zoom) => {
+    const centerMap = (longi, lati, zoom) => {
         cameraRef.current?.setCamera({
             centerCoordinate: [longi, lati],
-            zoomLevel:zoom,
+            zoomLevel: zoom,
             animationDuration: 1000,
         });
     };
@@ -69,10 +70,10 @@ const Location = ({ route }) => {
             console.log('screen focused', route?.params);
             setHasCentered(false); // reset on screen focus
 
-            if(route?.params?.coordinates?.address){
+            if (route?.params?.coordinates?.address) {
                 setIsMap(false);
 
-            }else{
+            } else {
                 setIsMap(true);
 
             }
@@ -89,7 +90,7 @@ const Location = ({ route }) => {
             return () => {
                 console.log('Screen is no longer focused!');
             };
-        // }, [isConnected, route?.params])
+            // }, [isConnected, route?.params])
         }, [])
 
     );
@@ -102,10 +103,10 @@ const Location = ({ route }) => {
     const onMapLoad = () => {
         setIsMapReady(true);
         if (hasCentered) return;
-        centerMap(route?.params?.coordinates?.longitude,route?.params?.coordinates?.latitude,route?.params?.coordinates?.zoom);
+        centerMap(route?.params?.coordinates?.longitude, route?.params?.coordinates?.latitude, route?.params?.coordinates?.zoom);
         // centerMap(route.params.latitude, route.params.longitude);
-            setLoading(false);
-            setHasCentered(true);
+        setLoading(false);
+        setHasCentered(true);
         // console.log(latitude, longitude, "from on map load");
 
         // if (hasCentered) return;
@@ -126,32 +127,32 @@ const Location = ({ route }) => {
 
 
 
-    const fetchCurrentLocation=()=>{
-          Geolocation.getCurrentPosition(
-      position => {
-        const { latitude, longitude } = position.coords;
-        setNewLat(latitude);
-        setNewLong(longitude);
-      },
-      error => {
-        console.error('Error fetching location:', error);
-        if (error.code === 3 || error.code === 2) {
-          Geolocation.getCurrentPosition(
+    const fetchCurrentLocation = () => {
+        Geolocation.getCurrentPosition(
             position => {
-              const { latitude, longitude } = position.coords;
-                  setNewLat(latitude);
-                  setNewLong(longitude);
+                const { latitude, longitude } = position.coords;
+                setNewLat(latitude);
+                setNewLong(longitude);
             },
-            fallbackError => {
-              console.error('Fallback location error:', fallbackError);
+            error => {
+                console.error('Error fetching location:', error);
+                if (error.code === 3 || error.code === 2) {
+                    Geolocation.getCurrentPosition(
+                        position => {
+                            const { latitude, longitude } = position.coords;
+                            setNewLat(latitude);
+                            setNewLong(longitude);
+                        },
+                        fallbackError => {
+                            console.error('Fallback location error:', fallbackError);
+                        },
+                        { enableHighAccuracy: true, timeout: 30000, maximumAge: 10000 }
+                    );
+                } else {
+                }
             },
-            { enableHighAccuracy: true, timeout: 30000, maximumAge: 10000 }
-          );
-        } else {
-        }
-      },
-      { enableHighAccuracy: false, timeout: 15000, maximumAge: 5000 }
-    );
+            { enableHighAccuracy: false, timeout: 15000, maximumAge: 5000 }
+        );
     }
 
     const onMapError = (error) => {
@@ -159,7 +160,7 @@ const Location = ({ route }) => {
     };
 
     const onMapRegionChange = (event) => {
-        if(event?.properties?.isUserInteraction===false){
+        if (event?.properties?.isUserInteraction === false) {
             return
         };
         const [longitude, latitude] = event?.geometry?.coordinates || [];
@@ -172,18 +173,18 @@ const Location = ({ route }) => {
     };
 
     const onRegionDidChange = (region) => {
-        setZoomingPick(region.properties.zoomLevel)        
+        setZoomingPick(region.properties.zoomLevel)
         setIsUserInteracting(false);
         console.log(locallatitudes, locallongitudes, "marker updated on map");
     };
 
     const handleBackToCurrentLocation = () => {
         setPinDance(false);
-                setLocalLatitudes(newLat);
+        setLocalLatitudes(newLat);
         setLocalLongitudes(newLong);
         cameraRef.current?.setCamera({
-            centerCoordinate: [newLong,newLat],
-            zoomLevel:40,
+            centerCoordinate: [newLong, newLat],
+            zoomLevel: 40,
             animationDuration: 1000,
         });
     };
@@ -218,12 +219,14 @@ const Location = ({ route }) => {
                 setAddress(place?.formatted_address);
                 if (locallatitudes && locallongitudes && place?.formatted_address) {
                     navigation.navigate(screen, {
-                        backScreen:{
-                        latitude:locallatitudes,
-                        longitude:locallongitudes,
-                        address: place.formatted_address,
-                        zoom:zoomingPick
-                    }});
+                        backScreen: {
+                            latitude: locallatitudes,
+                            longitude: locallongitudes,
+                            address: place.formatted_address,
+                            zoom: zoomingPick,
+                            enablePestForecast: isComingFrom
+                        }
+                    });
                 }
             } else {
                 Alert.alert(translate('Invalid_Selection'), translate('valid_location'));
@@ -242,10 +245,10 @@ const Location = ({ route }) => {
                     paddingBottom: 20,
                     borderBottomStartRadius: 10,
                     borderBottomEndRadius: 10,
-                    paddingTop:  20,
-                    flexDirection:"row",
-                    alignItems:"center",
-                    justifyContent:"space-between"
+                    paddingTop: 20,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between"
                 }}
             >
                 <TouchableOpacity style={styles['flex_direction_row']} onPress={goSignup}>
@@ -258,7 +261,7 @@ const Location = ({ route }) => {
                         }}
                         source={require('../../assets/Images/BackIcon.png')}
                     />
-                   
+
                 </TouchableOpacity>
                 <Text
                     style={[
@@ -271,7 +274,7 @@ const Location = ({ route }) => {
                 >
                     {translate('Map')}
                 </Text>
-                <View style={{width:40}}/>
+                <View style={{ width: 40 }} />
             </View>
 
             <View style={{ flex: 1 }}>
@@ -293,14 +296,14 @@ const Location = ({ route }) => {
                             ref={cameraRef}
                             zoomLevel={route?.params?.coordinates?.zoom ? route?.params?.coordinates?.zoom : 20}
                             animationDuration={1000}
-                            // centerCoordinate={[route?.params?.coordinates?.longitude ? route?.params?.coordinates?.longitude : 0,route?.params?.coordinates?.latitude?route?.params?.coordinates?.latitude:0]}
+                        // centerCoordinate={[route?.params?.coordinates?.longitude ? route?.params?.coordinates?.longitude : 0,route?.params?.coordinates?.latitude?route?.params?.coordinates?.latitude:0]}
                         />
-                            {!route?.params?.coordinates && (
-                                <MapplsGL.UserLocation
-                                    visible={true}
-                                    showsUserHeadingIndicator={true}
-                                />
-                            )}
+                        {!route?.params?.coordinates && (
+                            <MapplsGL.UserLocation
+                                visible={true}
+                                showsUserHeadingIndicator={true}
+                            />
+                        )}
 
                         {/* <MapplsGL.UserLocation visible={true} showsUserHeadingIndicator={true} /> */}
                     </MapplsGL.MapView>
@@ -320,7 +323,7 @@ const Location = ({ route }) => {
                         right: 20,
                         alignItems: "center",
                         justifyContent: "center",
-                        backgroundColor:dynamicStyles?.primaryColor,
+                        backgroundColor: dynamicStyles?.primaryColor,
                         height: 60,
                         width: 60,
                         borderRadius: 60,
@@ -364,7 +367,7 @@ const Location = ({ route }) => {
                         buttonBg={dynamicStyles?.primaryColor}
                         btnWidth={'90%'}
                         enableLoader={addLoader}
-                        titleTextColor={ dynamicStyles?.secondaryColor}
+                        titleTextColor={dynamicStyles?.secondaryColor}
                         onPress={handlePickLocation}
                     />
                 </View>}
