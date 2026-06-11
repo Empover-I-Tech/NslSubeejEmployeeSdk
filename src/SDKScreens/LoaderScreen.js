@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import APIConfig, { HTTP_OK, HTTP_SWITCHING_PROTOCOLS, setEnvironment } from "../../src/api/APIConfig";
 import CustomLoader from "../../src/components/CustomLoader"
 import { setCompanyStyle } from "../../src/state/actions/companyStyles";
-import { COMPANYCODE, EMP_DASHBOARD_SCREEN, FIRSTNAME, LANGUAGECODE, LASTNAME, MOBILENUMBER, ROLDID, ROLENAME, SCREENNAME, SDK_AUTH_ID, SDK_AUTH_TOKEN, USER_ID, USER_IMG, USERNAME } from "../../src/utils";
+import { COMPANYCODE, EMP_DASHBOARD_SCREEN, FIRSTNAME, LANGUAGECODE, LANGUAGEID, LANGUAGENAME, LASTNAME, MOBILENUMBER, ROLDID, ROLENAME, SCREENNAME, SDK_AUTH_ID, SDK_AUTH_TOKEN, USER_ID, USER_IMG, USERNAME } from "../../src/utils";
 import { downloadFileToLocal, GetApiHeaders } from "../../src/utils/helpers";
 import { storeInAsyncStorage } from "../../src/utils/keychainUtils";
 import { useNavigation } from '@react-navigation/native';
@@ -12,7 +12,7 @@ import { setIsEmployee } from "../../src/state/actions/employeeActions";
 import { changeLanguage, translate } from '../Localization/Localisation';
 import { setSelectedCompanyAct } from '../state/actions/selectedCompanyActions';
 import SimpleToast from 'react-native-simple-toast';
-import { FCM_TOKEN } from '../assets/Utils/Utils';
+import { FCM_TOKEN, storeData } from '../assets/Utils/Utils';
 
 
 const LoaderScreen = ({ route }) => {
@@ -26,6 +26,16 @@ const LoaderScreen = ({ route }) => {
     const onSDKClose = route?.params?.onSDKClose;
     console.log("jjjjjjjj", JSON.stringify(route?.params?.navigateItem?.mobileNumber))
     const navigation = useNavigation();
+
+    const languageData = [
+        { label: 'English', value: 'en', id: 1 },
+        { label: 'Telugu', value: 'te', id: 2 },
+        { label: 'Hindi', value: 'hi', id: 3 },
+        { label: 'Marathi', value: 'mr', id: 4 },
+    ];
+    const selectedLanguage =
+        languageData.find(item => item.value === languageCode)
+        || languageData[0];
 
     const isConnected = useSelector((state) => state.network.isConnected);
     const selectedCompanyData = useSelector(state => state.selectedCompnayAct.selectedCompanyAct)
@@ -54,10 +64,12 @@ const LoaderScreen = ({ route }) => {
             if (!route?.params) return;
 
             console.log('Initializing SDK...');
-            await storeInAsyncStorage(LANGUAGECODE, languageCode)
-            await changeLanguage(languageCode || 'en');
+            await storeData(LANGUAGECODE, selectedLanguage.value);
+            await storeData(LANGUAGENAME, selectedLanguage.label);
+            await storeData(LANGUAGEID, `${selectedLanguage.id}`);
+            await changeLanguage(selectedLanguage.value);
             const newStore = selectedCompanyData
-            newStore.languageCode = languageCode
+            newStore.languageId = selectedLanguage.id
             dispatch(setSelectedCompanyAct(newStore));
 
             setEnvironment(buildEnvironment || 'PROD');
@@ -73,8 +85,8 @@ const LoaderScreen = ({ route }) => {
 
     const storeAuthData = async () => {
         try {
-            await storeInAsyncStorage(SDK_AUTH_TOKEN, authToken || '');
-            await storeInAsyncStorage(SDK_AUTH_ID, authId || '');
+            await storeData(SDK_AUTH_TOKEN, authToken || '');
+            await storeData(SDK_AUTH_ID, authId || '');
             console.log("Auth data stored successfully:", { authId, authToken });
         } catch (error) {
             console.error("Error storing auth data:", error);
