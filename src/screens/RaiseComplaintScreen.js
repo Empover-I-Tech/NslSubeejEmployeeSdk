@@ -21,6 +21,7 @@ import { useFontStyles } from "../hooks/useFontStyles";
 import { PERMISSIONS, request, RESULTS, check } from 'react-native-permissions';
 import { EMP_DASHBOARD_SCREEN, ROLDID, SCREENNAME } from "../utils";
 import { getFromAsyncStorage } from "../utils/keychainUtils";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 const { width, height } = Dimensions.get('window');
 const CustomDropDown = ({ validationsBorder, valueHandle, name, data, label, inputValue, handleDropDown, dropDownVisible, closeDropDown }) => {
@@ -450,201 +451,202 @@ const RaiseComplaintScreen = () => {
 
     return (
         <>
-            {/* <KeyboardAvoidingView
-                style={{ flex: 1, top: 30 }}
-                behavior={Platform.OS === "ios" ? "padding" : "height"}
-                keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0} // adjust if header exists
-            > */}
-
-            <View style={[RnStyle.headerContainer, { backgroundColor: dynamicStyles.primaryColor }]}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginLeft: Platform.OS === 'ios' ? 15 : 0 }}>
-                    <Image source={require('../../assets/Images/BackIcon.png')}
-                        style={[{
-                            height: 40,
-                            width: 40,
-                            resizeMode: "contain", tintColor: dynamicStyles.secondaryColor
-                        }]} />
-                </TouchableOpacity>
-                <Text style={[RnStyle.samadhanText, { fontFamily: fonts.SemiBold, color: dynamicStyles.secondaryColor }]}>{translate("Raise_Complaints")}</Text>
-            </View>
-            <ScrollView
-                showsVerticalScrollIndicator={false}
+            <KeyboardAwareScrollView
+                style={{ flex: 1 }}
+                contentContainerStyle={{ flexGrow: 1 }}
+                enableOnAndroid={true}
+                extraScrollHeight={10} // adjust if needed
                 keyboardShouldPersistTaps="handled"
-                contentContainerStyle={{
-                    // paddingHorizontal: 20,
-                    paddingTop: 10,
-                    paddingBottom: 60, // small bottom padding for smooth scroll
-                }}
             >
-                <TouchableWithoutFeedback
-                    onPress={() => Keyboard.dismiss()}
+
+                <View style={[RnStyle.headerContainer, { backgroundColor: dynamicStyles.primaryColor }]}>
+                    <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginLeft: Platform.OS === 'ios' ? 15 : 0 }}>
+                        <Image source={require('../../assets/Images/BackIcon.png')}
+                            style={[{
+                                height: 40,
+                                width: 40,
+                                resizeMode: "contain", tintColor: dynamicStyles.secondaryColor
+                            }]} />
+                    </TouchableOpacity>
+                    <Text style={[RnStyle.samadhanText, { fontFamily: fonts.SemiBold, color: dynamicStyles.secondaryColor }]}>{translate("Raise_Complaints")}</Text>
+                </View>
+                <ScrollView
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                    contentContainerStyle={{
+                        // paddingHorizontal: 20,
+                        paddingTop: 10,
+                        paddingBottom: 60, // small bottom padding for smooth scroll
+                    }}
                 >
+                    <TouchableWithoutFeedback
+                        onPress={() => Keyboard.dismiss()}
+                    >
 
-                    <View style={RnStyle.samadhanMainContainer}>
+                        <View style={RnStyle.samadhanMainContainer}>
 
-                        <View>
-                            <Text style={[RnStyle.headerMssgText, { fontFamily: fonts.SemiBold }]}>{translate("Customer_support")}</Text>
-                            <View style={RnStyle.line} />
-                            <CustomDropDown
-                                label={translate("Select_Category")}
-                                inputValue={selectCategory}
-                                dropDownVisible={categoryListVisibleDropDown}
-                                handleDropDown={categoryHandleDropDown}
-                                data={catagoryList}
-                                valueHandle={categoryValueHandle}
-                                validationsBorder={selectCategoryValidation}
-                                closeDropDown={CloseCategoryHandleDropDown}
-                            />
-                            {selectCategoryValidation && <Text style={[RnStyle.validationText, { fontFamily: fonts.Medium }]}>{translate("Please_Select_Category")}</Text>}
-                            <CustomDropDown
-                                label={translate("Select_Sub_Category")}
-                                inputValue={subSelectCategory}
-                                dropDownVisible={subCategoryListVisibleDropDown}
-                                data={subCategoryList1}
-                                handleDropDown={subCategoryHandleDropDown}
-                                valueHandle={subCategoryValueHandle}
-                                validationsBorder={subSelectCategoryValidation}
-                                closeDropDown={closeSubCategoryHandleDropDown}
+                            <View>
+                                <Text style={[RnStyle.headerMssgText, { fontFamily: fonts.SemiBold }]}>{translate("Customer_support")}</Text>
+                                <View style={RnStyle.line} />
+                                <CustomDropDown
+                                    label={translate("Select_Category")}
+                                    inputValue={selectCategory}
+                                    dropDownVisible={categoryListVisibleDropDown}
+                                    handleDropDown={categoryHandleDropDown}
+                                    data={catagoryList}
+                                    valueHandle={categoryValueHandle}
+                                    validationsBorder={selectCategoryValidation}
+                                    closeDropDown={CloseCategoryHandleDropDown}
+                                />
+                                {selectCategoryValidation && <Text style={[RnStyle.validationText, { fontFamily: fonts.Medium }]}>{translate("Please_Select_Category")}</Text>}
+                                <CustomDropDown
+                                    label={translate("Select_Sub_Category")}
+                                    inputValue={subSelectCategory}
+                                    dropDownVisible={subCategoryListVisibleDropDown}
+                                    data={subCategoryList1}
+                                    handleDropDown={subCategoryHandleDropDown}
+                                    valueHandle={subCategoryValueHandle}
+                                    validationsBorder={subSelectCategoryValidation}
+                                    closeDropDown={closeSubCategoryHandleDropDown}
 
 
-                            />
-                            {subSelectCategoryValidation && <Text style={[RnStyle.validationText, { fontFamily: fonts.Medium }]}>{translate("Please_Select_sub_category")}</Text>}
+                                />
+                                {subSelectCategoryValidation && <Text style={[RnStyle.validationText, { fontFamily: fonts.Medium }]}>{translate("Please_Select_sub_category")}</Text>}
 
-                            {selectCategoryId === 4 &&
-                                <View>
-                                    <Text style={[RnStyle.labelText, { fontFamily: fonts.SemiBold }]}>{translate("AddCoupon")}<Text style={{ color: "red" }}> *</Text></Text>
-                                    <TextInput value={coupons} onChangeText={handleOnchangeCoupon} placeholderTextColor={"#00000080"} placeholder={translate("PleaseAddCoupon")} style={[RnStyle.textInputContainer1, { borderColor: couponValidation ? "#ED3237" : "#D6D6D6", fontFamily: fonts.Regular }]} />
-                                    {couponValidation && <Text style={[RnStyle.validationText, { fontFamily: fonts.Medium }]}>{couponValidationContent}</Text>}
+                                {selectCategoryId === 4 &&
+                                    <View>
+                                        <Text style={[RnStyle.labelText, { fontFamily: fonts.SemiBold }]}>{translate("AddCoupon")}<Text style={{ color: "red" }}> *</Text></Text>
+                                        <TextInput value={coupons} onChangeText={handleOnchangeCoupon} placeholderTextColor={"#00000080"} placeholder={translate("PleaseAddCoupon")} style={[RnStyle.textInputContainer1, { borderColor: couponValidation ? "#ED3237" : "#D6D6D6", fontFamily: fonts.Regular }]} />
+                                        {couponValidation && <Text style={[RnStyle.validationText, { fontFamily: fonts.Medium }]}>{couponValidationContent}</Text>}
+                                    </View>
+                                }
+
+                                <View style={RnStyle.imageLabeContainer}>
+                                    <Text style={[RnStyle.imageLabel, { fontFamily: fonts.SemiBold }]}>{translate("Image_Upload")}</Text>
+
+                                    <TouchableOpacity onPress={() => setImageSelectionModal(true)} style={RnStyle.imageMainContainer}>
+                                        {imagePic ?
+                                            <Image source={{ uri: imagePic }} style={{ height: 130, borderRadius: 8, resizeMode: "contain" }} />
+                                            :
+                                            <View style={{ backgroundColor: "#E8E8E8", height: 130, borderRadius: 8, alignItems: "center", justifyContent: "center" }}>
+                                                <TouchableOpacity onPress={() => setImageSelectionModal(true)} style={[RnStyle.selfyBtnContainer, { backgroundColor: dynamicStyles.secondaryColor }]}>
+                                                    <Image source={require("../../assets/Images/photoIconImg.png")}
+                                                        style={[RnStyle.photoIconImg, { tintColor: dynamicStyles.primaryColor }]} />
+                                                    <View style={[RnStyle.plusContainer, { backgroundColor: "#DB710E" }]}>
+                                                        <Image style={[RnStyle.addIcon1, { tintColor: "#fff" }]} source={require("../../assets/Images/plusIconImg.png")} />
+                                                    </View>
+                                                </TouchableOpacity>
+                                            </View>
+                                        }
+
+                                    </TouchableOpacity>
                                 </View>
-                            }
 
-                            <View style={RnStyle.imageLabeContainer}>
-                                <Text style={[RnStyle.imageLabel, { fontFamily: fonts.SemiBold }]}>{translate("Image_Upload")}</Text>
+                                <CustomTextArea
+                                    label={translate("Remarks")}
+                                    placeHolderValue={translate("enterRemarks")}
+                                    inputValue={remarksValue}
+                                    handleValue={handleRemarksValue}
 
-                                <TouchableOpacity onPress={() => setImageSelectionModal(true)} style={RnStyle.imageMainContainer}>
-                                    {imagePic ?
-                                        <Image source={{ uri: imagePic }} style={{ height: 130, borderRadius: 8, resizeMode: "contain" }} />
-                                        :
-                                        <View style={{ backgroundColor: "#E8E8E8", height: 130, borderRadius: 8, alignItems: "center", justifyContent: "center" }}>
-                                            <TouchableOpacity onPress={() => setImageSelectionModal(true)} style={[RnStyle.selfyBtnContainer, { backgroundColor: dynamicStyles.secondaryColor }]}>
-                                                <Image source={require("../../assets/Images/photoIconImg.png")}
-                                                    style={[RnStyle.photoIconImg, { tintColor: dynamicStyles.primaryColor }]} />
-                                                <View style={[RnStyle.plusContainer, { backgroundColor: "#DB710E" }]}>
-                                                    <Image style={[RnStyle.addIcon1, { tintColor: "#fff" }]} source={require("../../assets/Images/plusIconImg.png")} />
-                                                </View>
-                                            </TouchableOpacity>
-                                        </View>
-                                    }
-
-                                </TouchableOpacity>
+                                />
+                                {btnEnabled &&
+                                    <TouchableOpacity onPress={submitFormBtn} style={[RnStyle.supportTicketBtnContainer1, { backgroundColor: dynamicStyles.primaryColor }]}>
+                                        <Text style={[RnStyle.supportTicketText, { color: dynamicStyles.secondaryColor, fontFamily: fonts.SemiBold }]}>{translate("submit")}</Text>
+                                    </TouchableOpacity>}
                             </View>
-
-                            <CustomTextArea
-                                label={translate("Remarks")}
-                                placeHolderValue={translate("enterRemarks")}
-                                inputValue={remarksValue}
-                                handleValue={handleRemarksValue}
-
-                            />
-                            {btnEnabled &&
-                                <TouchableOpacity onPress={submitFormBtn} style={[RnStyle.supportTicketBtnContainer1, { backgroundColor: dynamicStyles.primaryColor }]}>
-                                    <Text style={[RnStyle.supportTicketText, { color: dynamicStyles.secondaryColor, fontFamily: fonts.SemiBold }]}>{translate("submit")}</Text>
-                                </TouchableOpacity>}
-                        </View>
-                        <Modal
-                            animationType="slide"
-                            transparent={true}
-                            visible={successModal}
-                        >
-                            <TouchableWithoutFeedback onPress={() => setSuccessModal(false)}>
-                                <View
-                                    style={{
-                                        backgroundColor: "rgba(0,0,0,0.3)",
-                                        flex: 1,
-                                        width: "100%",
-                                        alignItems: "center",
-                                        justifyContent: "center"
-                                    }}
-                                >
+                            <Modal
+                                animationType="slide"
+                                transparent={true}
+                                visible={successModal}
+                            >
+                                <TouchableWithoutFeedback onPress={() => setSuccessModal(false)}>
                                     <View
                                         style={{
-                                            backgroundColor: "#fff",
-                                            paddingHorizontal: 10, paddingVertical: 15,
-                                            shadowColor: "#000",
-                                            shadowOffset: {
-                                                width: 0,
-                                                height: 2,
-                                            },
-                                            shadowOpacity: 0.25,
-                                            shadowRadius: 4,
-                                            elevation: 5,
-                                            borderRadius: 5,
-                                            width: "90%",
-
-
+                                            backgroundColor: "rgba(0,0,0,0.3)",
+                                            flex: 1,
+                                            width: "100%",
+                                            alignItems: "center",
+                                            justifyContent: "center"
                                         }}
                                     >
+                                        <View
+                                            style={{
+                                                backgroundColor: "#fff",
+                                                paddingHorizontal: 10, paddingVertical: 15,
+                                                shadowColor: "#000",
+                                                shadowOffset: {
+                                                    width: 0,
+                                                    height: 2,
+                                                },
+                                                shadowOpacity: 0.25,
+                                                shadowRadius: 4,
+                                                elevation: 5,
+                                                borderRadius: 5,
+                                                width: "90%",
 
-                                        <View style={{ alignItems: "center" }}>
-                                            <Image source={require('../../assets/Images/successIconMssg.png')} style={RnStyle.successIcon} />
 
-                                        </View>
-                                        <Text style={{ marginVertical: 10, color: "#000", fontSize: RFValue(14, height), fontFamily: fonts.SemiBold, alignSelf: "center" }}>{successMssg}</Text>
+                                            }}
+                                        >
 
-                                        <TouchableOpacity onPress={navigateSamadhanScreen} style={{ borderRadius: 7, marginVertical: 10, backgroundColor: dynamicStyles.primaryColor, height: 40, alignItems: "center", justifyContent: "center" }}>
-                                            <Text style={{ color: dynamicStyles.secondaryColor, fontSize: 14, fontFamily: fonts.SemiBold }}>{translate("ok")}</Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                </View>
-                            </TouchableWithoutFeedback>
-                        </Modal>
+                                            <View style={{ alignItems: "center" }}>
+                                                <Image source={require('../../assets/Images/successIconMssg.png')} style={RnStyle.successIcon} />
 
-                        <Modal
-                            animationType="slide"
-                            transparent={true}
-                            visible={imageSelectionModal}
-                        >
-                            <TouchableWithoutFeedback>
-                                <View style={RnStyle.modalMainContainer1}>
-                                    <View style={RnStyle.modalSubContainer1}>
-                                        <View style={RnStyle.crossIconContainer1}>
-                                            <Text style={[RnStyle.selectTextColor, { fontFamily: fonts.SemiBold }]}>{translate("select")}</Text>
-                                            <TouchableOpacity onPress={() => setImageSelectionModal(false)}>
-                                                <Image source={require('../../assets/Images/crossIcon.png')} style={RnStyle.crossIcon1} />
+                                            </View>
+                                            <Text style={{ marginVertical: 10, color: "#000", fontSize: RFValue(14, height), fontFamily: fonts.SemiBold, alignSelf: "center" }}>{successMssg}</Text>
+
+                                            <TouchableOpacity onPress={navigateSamadhanScreen} style={{ borderRadius: 7, marginVertical: 10, backgroundColor: dynamicStyles.primaryColor, height: 40, alignItems: "center", justifyContent: "center" }}>
+                                                <Text style={{ color: dynamicStyles.secondaryColor, fontSize: 14, fontFamily: fonts.SemiBold }}>{translate("ok")}</Text>
                                             </TouchableOpacity>
-                                        </View>
-
-                                        <View>
-                                            <TouchableOpacity onPress={requestCameraPermission} style={RnStyle.buttons}>
-                                                <Image source={require('../../assets/Images/camIcon.png')} style={[RnStyle.crossIcon1, { tintColor: dynamicStyles.primaryColor, marginRight: 15 }]} />
-                                                <Text style={[RnStyle.cameraText, { fontFamily: fonts.SemiBold }]}>{translate("Camera")}</Text>
-                                            </TouchableOpacity>
-
-                                            <TouchableOpacity onPress={requestGalleryPermission} style={RnStyle.button1}>
-                                                <Image source={require('../../assets/Images/photoIconImg.png')} style={[RnStyle.crossIcon1, { tintColor: dynamicStyles.primaryColor, marginRight: 15 }]} />
-                                                <Text style={[RnStyle.cameraText, { fontFamily: fonts.SemiBold }]}>{translate("Gallery")}</Text>
-                                            </TouchableOpacity>
-
                                         </View>
                                     </View>
-                                </View>
-                            </TouchableWithoutFeedback>
-                        </Modal>
+                                </TouchableWithoutFeedback>
+                            </Modal>
 
-                    </View>
+                            <Modal
+                                animationType="slide"
+                                transparent={true}
+                                visible={imageSelectionModal}
+                            >
+                                <TouchableWithoutFeedback>
+                                    <View style={RnStyle.modalMainContainer1}>
+                                        <View style={RnStyle.modalSubContainer1}>
+                                            <View style={RnStyle.crossIconContainer1}>
+                                                <Text style={[RnStyle.selectTextColor, { fontFamily: fonts.SemiBold }]}>{translate("select")}</Text>
+                                                <TouchableOpacity onPress={() => setImageSelectionModal(false)}>
+                                                    <Image source={require('../../assets/Images/crossIcon.png')} style={RnStyle.crossIcon1} />
+                                                </TouchableOpacity>
+                                            </View>
 
-                </TouchableWithoutFeedback>
-            </ScrollView>
-            {/* </KeyboardAvoidingView> */}
-            {loaderIcon && <PreLoginCustomLoader />}
-            <CustomCommonModal
-                modalVisible={alertModal}
-                modalClose={alertCloseHandle}
-                ErrorText={alertTextContent}
-                ButtonText={translate("ok")}
-                ButtonFun={alertCloseHandle}
+                                            <View>
+                                                <TouchableOpacity onPress={requestCameraPermission} style={RnStyle.buttons}>
+                                                    <Image source={require('../../assets/Images/camIcon.png')} style={[RnStyle.crossIcon1, { tintColor: dynamicStyles.primaryColor, marginRight: 15 }]} />
+                                                    <Text style={[RnStyle.cameraText, { fontFamily: fonts.SemiBold }]}>{translate("Camera")}</Text>
+                                                </TouchableOpacity>
 
-            />
+                                                <TouchableOpacity onPress={requestGalleryPermission} style={RnStyle.button1}>
+                                                    <Image source={require('../../assets/Images/photoIconImg.png')} style={[RnStyle.crossIcon1, { tintColor: dynamicStyles.primaryColor, marginRight: 15 }]} />
+                                                    <Text style={[RnStyle.cameraText, { fontFamily: fonts.SemiBold }]}>{translate("Gallery")}</Text>
+                                                </TouchableOpacity>
+
+                                            </View>
+                                        </View>
+                                    </View>
+                                </TouchableWithoutFeedback>
+                            </Modal>
+
+                        </View>
+
+                    </TouchableWithoutFeedback>
+                </ScrollView>
+                {/* </KeyboardAvoidingView> */}
+                {loaderIcon && <PreLoginCustomLoader />}
+                <CustomCommonModal
+                    modalVisible={alertModal}
+                    modalClose={alertCloseHandle}
+                    ErrorText={alertTextContent}
+                    ButtonText={translate("ok")}
+                    ButtonFun={alertCloseHandle} />
+            </KeyboardAwareScrollView>
         </>
     )
 }

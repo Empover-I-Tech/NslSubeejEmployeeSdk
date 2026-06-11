@@ -695,7 +695,7 @@ const CashFreeTransactions = (props) => {
                                                         width: '100%', alignSelf: 'center',
                                                         // height:claimBtnVisible?400:"90%"
                                                         minHeight: 50,
-                                                        maxHeight: 400
+                                                        maxHeight: 520
                                                     }]}>
                                                     <FlatList
                                                         data={successList}

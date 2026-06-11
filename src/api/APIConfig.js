@@ -118,7 +118,7 @@ export default configs = {
     //     return url;
     // },
 
-
+ 
 
     AUTH: {
         GETONBOARDING: 'referral/getSplashScreens',
@@ -261,5 +261,5 @@ export default configs = {
     //EMPLOYEE DASHBOARD API
     USERGETEMPLOYEEDASHBOARDDETAILS: "users/getEmployeeDashBoardDetailes",
     USERSGETMINDATEFROMUSERINFO: "users/getMinDateFromUserInfo",
-
+  
 }

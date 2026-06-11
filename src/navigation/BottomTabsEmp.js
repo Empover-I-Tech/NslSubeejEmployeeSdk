@@ -1,8 +1,7 @@
 // src/navigation/BottomTabsNavigator.js
 import React, { useEffect, useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Alert, Dimensions, Image, Platform, StyleSheet, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Alert, Dimensions, Image, StyleSheet, Text, View } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import SimpleToast from 'react-native-simple-toast';
 
@@ -18,7 +17,6 @@ const Tab = createBottomTabNavigator();
 const { width, height } = Dimensions.get('window');
 
 const BottomTabsNavigatorEmp = () => {
-  const insets = useSafeAreaInsets();
   const [homeVisible,setHomeVisible]=useState(true)
   const [scanVisible,setScanVisible]=useState(true)
   const [help,setHelp]=useState(true)
@@ -46,7 +44,7 @@ const BottomTabsNavigatorEmp = () => {
         headerShown: false,
         tabBarShowLabel: true,
         tabBarStyle: {
-          height: 20 + (insets.bottom || 0),
+          height: 65,
           borderTopLeftRadius: 25,
           borderTopRightRadius: 25,
           position: 'absolute',
@@ -55,7 +53,7 @@ const BottomTabsNavigatorEmp = () => {
           right: 0,
           backgroundColor: '#fff',
           elevation: 8,
-          // paddingBottom: (insets.bottom || 0) + 6,
+          paddingBottom: 6,
         },
         tabBarLabelStyle: {
           fontSize: 11,
@@ -91,7 +89,7 @@ const BottomTabsNavigatorEmp = () => {
           component={MandiPricesScreen}
           options={{
             tabBarLabel: () => null,
-            tabBarItemStyle: { marginTop: -20 },
+            tabBarItemStyle: { marginTop: -60 },
             tabBarIcon: ({ focused }) => (
               <View style={{
                 backgroundColor:dynamicStyles.primaryColor, borderRadius: 40, height: 70, justifyContent: "center", alignItems: "center",

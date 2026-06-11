@@ -18,7 +18,7 @@ import { check, request, PERMISSIONS, RESULTS } from "react-native-permissions";
 import { CommonActions, useFocusEffect, useNavigation } from '@react-navigation/native';
 import { setSelectedCompanyAct } from '../state/actions/selectedCompanyActions';
 import { CustomCommonModal, CustomCommonModalTwo } from '../components/CustomCommonModal';
-// import firestore from '@react-native-firebase/firestore';
+import firestore from '@react-native-firebase/firestore';
 import CustomOTP from '../components/CustomOTP';
 import CustomLoader from '../components/CustomLoader';
 import SimpleToast from 'react-native-simple-toast';
@@ -164,7 +164,7 @@ const LoginScreenRn = () => {
     useCallback(() => {
       handleLocationPermission()
       checkPermissions()
-      // checkForceUpdate()
+      checkForceUpdate()
       requestNotificationPermission()
     }, [])
   );
@@ -205,36 +205,36 @@ const LoginScreenRn = () => {
     }
   }
 
-  // async function checkForceUpdate() {
-  //   try {
-  //     const subscriber = firestore()
-  //       .collection(FIREBASE_VERSION_COLLECTION_NAME)
-  //       .doc(FIREBASE_VERSION_DOC_ID)
-  //       .onSnapshot(documentSnapshot => {
-  //         if (documentSnapshot?.exists) {
-  //           const data = documentSnapshot?.data();
-  //           if (data) {
-  //             setTimeout(() => {
-  //               // checkAppversionUpdate(data);
-  //               if (Platform.OS == "android") {
-  //                 checkAppversionUpdate(data);
-  //               } else {
-  //                 checkAppversionUpdateIOS(data);
-  //               }
-  //             }, 500);
-  //           } else {
-  //             console.error('Document data is undefined');
-  //           }
-  //         } else {
-  //           console.error('Document does not exist');
-  //         }
-  //       });
+  async function checkForceUpdate() {
+    try {
+      const subscriber = firestore()
+        .collection(FIREBASE_VERSION_COLLECTION_NAME)
+        .doc(FIREBASE_VERSION_DOC_ID)
+        .onSnapshot(documentSnapshot => {
+          if (documentSnapshot?.exists) {
+            const data = documentSnapshot?.data();
+            if (data) {
+              setTimeout(() => {
+                // checkAppversionUpdate(data);
+                if (Platform.OS == "android") {
+                  checkAppversionUpdate(data);
+                } else {
+                  checkAppversionUpdateIOS(data);
+                }
+              }, 500);
+            } else {
+              console.error('Document data is undefined');
+            }
+          } else {
+            console.error('Document does not exist');
+          }
+        });
 
-  //     return () => subscriber();
-  //   } catch (error) {
-  //     console.error('Error fetching document:', error);
-  //   }
-  // }
+      return () => subscriber();
+    } catch (error) {
+      console.error('Error fetching document:', error);
+    }
+  }
 
   async function checkAppversionUpdate(documentSnapshot) {
     try {

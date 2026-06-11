@@ -1193,7 +1193,7 @@ const MandiPricesScreen = () => {
                                                             <FlatList
                                                                 data={FILTERS}
                                                                 horizontal
-                                                                style={{ marginVertical: 5, width: "100%", paddingHorizontal: 20 }}
+                                                                style={{ marginVertical: 5, width: "100%", paddingHorizontal: 10 }}
                                                                 keyExtractor={(item) => item}
                                                                 renderItem={({ item }) => (
                                                                     <TouchableOpacity onPress={() => setSelectedFilter(item)} style={styleSheetStyles.tab}>
@@ -1208,54 +1208,61 @@ const MandiPricesScreen = () => {
                                                                 <ActivityIndicator size="large" color="#000" />
                                                             )
                                                                 : graphData !== null &&
-                                                                <View style={styleSheetStyles.container}>
+                                                                <ScrollView
+                                                                    horizontal={graphData?.labels?.length > 6}
+                                                                    showsHorizontalScrollIndicator={false}
+                                                                    contentContainerStyle={{ paddingHorizontal: 10 }}
+                                                                >
+                                                                    <View style={[styleSheetStyles.container, { alignItems: 'center' }]}>
 
-                                                                    <LineChart
-                                                                        data={{
-                                                                            labels: graphData?.labels?.reverse(),
-                                                                            datasets: [
-                                                                                {
-                                                                                    data: graphData?.maxPrices?.reverse(), // Maximum Price
-                                                                                    color: () => 'rgba(17, 172, 53, 1)',
-                                                                                    strokeWidth: 2,
+                                                                        <LineChart
+                                                                            data={{
+                                                                                labels: graphData?.labels?.reverse(),
+                                                                                datasets: [
+                                                                                    {
+                                                                                        data: graphData?.maxPrices?.reverse(), // Maximum Price
+                                                                                        color: () => 'rgba(17, 172, 53, 1)',
+                                                                                        strokeWidth: 2,
+                                                                                    },
+                                                                                    {
+                                                                                        data: graphData?.minPrices?.reverse(), // Minimum Price
+                                                                                        color: () => 'rgba(216, 193, 27, 1)',
+                                                                                        strokeWidth: 2,
+                                                                                    },
+                                                                                ],
+                                                                            }}
+                                                                            width={Math.max(responsiveWidth(85), graphData?.labels?.length * 60)}
+                                                                            height={responsiveHeight(26)}
+                                                                            yAxisLabel="₹"
+                                                                            yAxisSuffix=""
+                                                                            chartConfig={{
+                                                                                backgroundGradientFrom: '#fff',
+                                                                                backgroundGradientTo: '#fff',
+                                                                                decimalPlaces: 0,
+                                                                                color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                                                                                // color: (opacity = 1) => `rgba(211, 21, 10, ${opacity})`,
+                                                                                labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                                                                                propsForDots: {
+                                                                                    r: '5',
+                                                                                    strokeWidth: '2',
+                                                                                    // stroke: 'red',
                                                                                 },
-                                                                                {
-                                                                                    data: graphData?.minPrices?.reverse(), // Minimum Price
-                                                                                    color: () => 'rgba(216, 193, 27, 1)',
-                                                                                    strokeWidth: 2,
-                                                                                },
-                                                                            ],
-                                                                        }}
-                                                                        width={responsiveWidth(85)}
-                                                                        height={300}
-                                                                        yAxisLabel="₹"
-                                                                        yAxisSuffix=""
-                                                                        chartConfig={{
-                                                                            backgroundGradientFrom: '#fff',
-                                                                            backgroundGradientTo: '#fff',
-                                                                            decimalPlaces: 0,
-                                                                            color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                                                                            // color: (opacity = 1) => `rgba(211, 21, 10, ${opacity})`,
-                                                                            labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                                                                            propsForDots: {
-                                                                                r: '5',
-                                                                                strokeWidth: '2',
-                                                                                // stroke: 'red',
-                                                                            },
-                                                                            // propsForBackgroundLines: {
-                                                                            //     strokeWidth: 0, 
-                                                                            // },
+                                                                                // propsForBackgroundLines: {
+                                                                                //     strokeWidth: 0, 
+                                                                                // },
 
-                                                                        }}
-                                                                        style={styleSheetStyles.chart}
-                                                                    />
-                                                                    <View style={styleSheetStyles.legendContainer}>
-                                                                        <View style={[styleSheetStyles.legendItem, { backgroundColor: 'rgba(17, 172, 53, 1)' }]} />
-                                                                        <Text style={[styleSheetStyles.legendText, { fontFamily: fonts.SemiBold }]}>{translate("Maximum_Price")}</Text>
-                                                                        <View style={[styleSheetStyles.legendItem, { backgroundColor: 'rgba(216, 193, 27, 1)' }]} />
-                                                                        <Text style={[styleSheetStyles.legendText, { fontFamily: fonts.SemiBold }]}>{translate("Minimum_Price")}</Text>
+                                                                            }}
+                                                                            style={styleSheetStyles.chart}
+                                                                        />
+                                                                        <View style={styleSheetStyles.legendContainer}>
+                                                                            <View style={[styleSheetStyles.legendItem, { backgroundColor: 'rgba(17, 172, 53, 1)' }]} />
+                                                                            <Text style={[styleSheetStyles.legendText, { fontFamily: fonts.SemiBold }]}>{translate("Maximum_Price")}</Text>
+                                                                            <View style={[styleSheetStyles.legendItem, { backgroundColor: 'rgba(216, 193, 27, 1)' }]} />
+                                                                            <Text style={[styleSheetStyles.legendText, { fontFamily: fonts.SemiBold }]}>{translate("Minimum_Price")}</Text>
+                                                                        </View>
                                                                     </View>
-                                                                </View>}
+                                                                </ScrollView>}
+
                                                         </ScrollView>
                                                     </View>
                                                 </ViewShot>

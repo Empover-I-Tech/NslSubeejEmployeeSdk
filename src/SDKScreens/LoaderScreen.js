@@ -27,6 +27,7 @@ const LoaderScreen = ({ route }) => {
 
     const isConnected = useSelector((state) => state.network.isConnected);
     const selectedCompanyData = useSelector(state => state.selectedCompnayAct.selectedCompanyAct)
+    console.log("selectedCompanyData", selectedCompanyData)
     const [loaderImage, setLoaderImage] = useState(require('../../assets/Images/SubeejLoader.gif'))
     const [loadingCount, setLoadingCount] = useState(0);
     const [loadingMessage, setLoadingMessage] = useState('');
@@ -104,33 +105,15 @@ const LoaderScreen = ({ route }) => {
             const isEmployee = (data?.screenName == EMP_DASHBOARD_SCREEN);
             dispatch(setIsEmployee(isEmployee));
 
-            const routeConfig = isEmployee
-                ? {
-                    name: 'BottomTabsNavigatorEmp',
-                    screen: 'HomeScreenEmp',
-                }
-                : {
-                    name: 'MainTabs',
-                    screen: 'HomeScreenRn',
-                };
+            const routeConfig = isEmployee &&
+            {
+                name: 'BottomTabsNavigatorEmp',
+                screen: 'HomeScreenEmpSDK',
+            }
             navigation.navigate(routeConfig.name, {
                 screen: routeConfig.screen,
                 params: { languageId: selectedCompanyData?.languageId || 0 },
             });
-            // navigation.dispatch(
-            //     CommonActions.reset({
-            //         index: 0,
-            //         routes: [
-            //             {
-            //                 name: routeConfig.name,
-            //                 params: {
-            //                     screen: routeConfig.screen,
-            //                     params: { languageId: selectedCompanyData?.languageId || 0 },
-            //                 },
-            //             },
-            //         ],
-            //     })
-            // );
         } catch (error) {
             console.error("Failed to store user data in keychain:", error);
         } finally {
@@ -207,13 +190,20 @@ const LoaderScreen = ({ route }) => {
                         [
                             {
                                 text: translate('ok'),
-                                onPress: () => { navigation.goBack() }
+                                onPress: () => {
+                                    if (onSDKClose) {
+                                        onSDKClose();
+                                    } else if (navigation.canGoBack()) {
+                                        navigation.goBack();
+                                    }
+                                    else {
+                                        navigation.goBack()
+                                    }
+                                }
                             }
                         ],
                         { cancelable: false }
                     );
-
-                    // SimpleToast.show(jsonData.message || translate("something_went_wrong"))
                 }
             } catch (error) {
                 console.error("Network or parsing error:", error);

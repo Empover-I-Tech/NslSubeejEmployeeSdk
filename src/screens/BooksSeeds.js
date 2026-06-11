@@ -19,6 +19,7 @@ import APIConfig, { HTTP_OK } from '../api/APIConfig';
 import usePostRequestWithJwt from "../api/usePostRequestWithJwt";
 import useGetRequestWithJwt from '../api/useGetRequestWithJwt';
 import { useFontStyles } from "../hooks/useFontStyles";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 const { height } = Dimensions.get("window");
 
@@ -153,14 +154,17 @@ const BookSeeds = () => {
 
 
     const closeSuccesMssgModal = () => {
-       
+
         setSuccessMssgVisible(false)
     }
 
     return (
-        <KeyboardAvoidingView
+        <KeyboardAwareScrollView
             style={{ flex: 1 }}
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            contentContainerStyle={{ flexGrow: 1 }}
+            enableOnAndroid={true}
+            extraScrollHeight={10} // adjust if needed
+            keyboardShouldPersistTaps="handled"
         >
             <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
                 <View style={{ flex: 1 }}>
@@ -294,7 +298,7 @@ const BookSeeds = () => {
                     {loaderApi && <PreLoginCustomLoader />}
                 </View>
             </TouchableWithoutFeedback>
-        </KeyboardAvoidingView>
+        </KeyboardAwareScrollView>
     );
 };
 

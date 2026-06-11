@@ -42,6 +42,7 @@ import { useOfflineSync } from "../utils/syncUtils";
 import RNAndroidLocationEnabler from "react-native-android-location-enabler";
 import { useFontStyles } from "../hooks/useFontStyles";
 import { request, openSettings, PERMISSIONS, RESULTS } from "react-native-permissions";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 const { width, height } = Dimensions.get('window');
 
@@ -547,16 +548,13 @@ const GeoTaggingViewScreen = ({ route }) => {
         <Image source={require('../../assets/Images/flowerIcon.png')} style={RnStyles.flowerImg} />
       </View>
 
-      {/* <KeyboardAvoidingView
-        //  enableOnAndroid
-        //   extraScrollHeight={30}
-        //   keyboardOpeningTime={0}
-        //   contentContainerStyle={{ paddingBottom: 50 }}
-
+      <KeyboardAwareScrollView
         style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
-      > */}
+        contentContainerStyle={{ flexGrow: 1 }}
+        enableOnAndroid={true}
+        extraScrollHeight={10} // adjust if needed
+        keyboardShouldPersistTaps="handled"
+      >
         <ScrollView
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
@@ -939,7 +937,7 @@ const GeoTaggingViewScreen = ({ route }) => {
           </View>
 
         </ScrollView>
-      {/* </KeyboardAvoidingView> */}
+      </KeyboardAwareScrollView>
 
 
       {btnSubmitEnbled && <View

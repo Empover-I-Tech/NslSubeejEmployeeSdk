@@ -32,7 +32,7 @@ import KnowledgeCenterDocsList from '../screens/KnowledgeCenterDocsList';
 
 const Stack = createNativeStackNavigator();
 
-const SubeejNavigator = ({ route }) => {
+const SubeejNavigator = ({ onSDKClose, route }) => {
   const sdkConfig = route?.params?.navigateItem;
 
   const screens = {
@@ -68,6 +68,7 @@ const SubeejNavigator = ({ route }) => {
         component={LoaderScreen}
         initialParams={{
           navigateItem: sdkConfig,
+          onSDKClose: onSDKClose
         }}
       />
 

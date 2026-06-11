@@ -37,7 +37,7 @@ import { RFValue } from 'react-native-responsive-fontsize';
 import { check, request, PERMISSIONS, RESULTS, openSettings } from 'react-native-permissions';
 import { setCompanyStyle } from '../state/actions/companyStyles';
 import Geolocation from 'react-native-geolocation-service';
-// import firestore from '@react-native-firebase/firestore';
+import firestore from '@react-native-firebase/firestore';
 import SimpleToast from 'react-native-simple-toast';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import { setLocationActions } from '../state/actions/locationActions';
@@ -520,7 +520,7 @@ const HomeScreenRn = ({ route }) => {
       getUserDetailsVersion11()
       updateOfflineCount();
       fetchUserData();
-      // checkForceUpdate();
+      checkForceUpdate();
       GetUserLocation();
       setSelectedCalculator('');
       setProductScanModalOpen(false);
@@ -2463,32 +2463,32 @@ const HomeScreenRn = ({ route }) => {
     setAlertVisible(true);
   }, []);
 
-  // const checkForceUpdate = useCallback(() => {
-  //   const subscriber = firestore()
-  //     .collection(FIREBASE_VERSION_COLLECTION_NAME)
-  //     .doc(FIREBASE_VERSION_DOC_ID)
-  //     .onSnapshot(
-  //       documentSnapshot => {
-  //         if (documentSnapshot?.exists) {
-  //           const data = documentSnapshot.data();
-  //           if (data) {
-  //             setTimeout(() => {
-  //               if (Platform.OS == "android") {
-  //                 checkAppversionUpdate(data);
-  //               } else {
-  //                 checkAppversionUpdateIOS(data);
-  //               }
-  //             }, 500);
+  const checkForceUpdate = useCallback(() => {
+    const subscriber = firestore()
+      .collection(FIREBASE_VERSION_COLLECTION_NAME)
+      .doc(FIREBASE_VERSION_DOC_ID)
+      .onSnapshot(
+        documentSnapshot => {
+          if (documentSnapshot?.exists) {
+            const data = documentSnapshot.data();
+            if (data) {
+              setTimeout(() => {
+                if (Platform.OS == "android") {
+                  checkAppversionUpdate(data);
+                } else {
+                  checkAppversionUpdateIOS(data);
+                }
+              }, 500);
 
-  //           }
-  //         }
-  //       },
-  //       error => {
-  //         console.error('Error fetching Firestore document:', error);
-  //       }
-  //     );
-  //   return () => subscriber();
-  // }, []);
+            }
+          }
+        },
+        error => {
+          console.error('Error fetching Firestore document:', error);
+        }
+      );
+    return () => subscriber();
+  }, []);
 
   const checkAppversionUpdate = useCallback(async documentSnapshot => {
     try {

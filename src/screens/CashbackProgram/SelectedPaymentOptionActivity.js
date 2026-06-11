@@ -225,13 +225,13 @@ const SelectedPaymentOptionActivity = ({ route }) => {
                 SimpleToast.show(translate('ifsc_code_valid_error'));
                 return false;
             }
-            else if (ifscCode.length == 11) {
-                const pattern = /^[A-Z]{4}[0-9]{7}$/;
-                if (!pattern.test(ifscCode.toString().trim())) {
-                    SimpleToast.show(translate('ifsc_code_valid_error'));
-                    return false;
-                }
-            }
+            // else if (ifscCode.length == 11) {
+            //     const pattern = /^[A-Z]{4}[0-9]{7}$/;
+            //     if (!pattern.test(ifscCode.toString().trim())) {
+            //         SimpleToast.show(translate('ifsc_code_valid_error'));
+            //         return false;
+            //     }
+            // }
         }
         else if (selectedItems.selectedClickItem == UPI_M) {
 
@@ -283,7 +283,7 @@ const SelectedPaymentOptionActivity = ({ route }) => {
                 claimIDs: claimIds
             }
         }
-        if ((selectedItems.selectedClickItem == BANK_TRANSFER_M) || (selectedItems.selectedClickItem == BANK_DETAILS_M)) {
+        if ((selectedItems.selectedClickItem == BANK_TRANSFER_M) || (selectedItems.selectedClickItem.toLowerCase().replace(/\s/g, '') == BANK_DETAILS_M.toLowerCase().replace(/\s/g, ''))) {
             body = {
                 ...body,
                 accountName: accountName,
@@ -302,7 +302,7 @@ const SelectedPaymentOptionActivity = ({ route }) => {
             }
         }
         if ((selectedItems.selectedClickItem == PAYTM_M) ||
-            (selectedItems.selectedClickItem == AMAZON_PAY_GIFT_CARD)) {
+            (selectedItems.selectedClickItem.toLowerCase().replace(/\s/g, '') == AMAZON_PAY_GIFT_CARD.toLowerCase().replace(/\s/g, ''))) {
             body = {
                 ...body,
                 accountName: mobileNumber,
@@ -330,20 +330,9 @@ const SelectedPaymentOptionActivity = ({ route }) => {
                 console.log("REPONSE=-=-=-=->", data)
                 setLoader(false)
                 navigation.navigate('CompletedPaymentActivity', { decodeddJson: data?.response, navigateToPaymentOptions: navigateToPayment })
-                // if (decodeddJson.status == HTTP_UNPROCESSABLE_ENTITY) {
-
-                //     // show Alert for 
-                // }
-                // else {
-                //     if (decodeddJson != null) {
-                //         navigation.navigate('CompletedPaymentActivity', { decodeddJson: decodeddJson, navigateToPaymentOptions: navigateToPayment })
-                //     }
-                // }
             } else if(data?.statusCode === HTTP_601){
                 handleForceLogout()
             }
-            
-            
             else {
                 // show Alert for 
                 SimpleToast.show(data?.message ? data?.message : translate("Something_went_wrong"))

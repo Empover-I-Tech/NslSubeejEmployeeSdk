@@ -12,10 +12,10 @@ import SDKNetworkHandler from './SDKNetworkHandler';
 
 const RootContent = (props) => {
     const dynamicStyles = useSelector(state => state.companyStyles.companyStyles);
-
+    const onSDKClose = props?.route?.params?.onSDKClose;
     return (
         <SafeAreaView
-            edges={['top']}
+            edges={['top', 'bottom']}
             style={{
                 flex: 1,
                 backgroundColor: dynamicStyles?.primaryColor || '#ffffff',
@@ -24,7 +24,8 @@ const RootContent = (props) => {
             <NavigationIndependentTree>
                 <NavigationContainer>
                     <SDKNetworkHandler />
-                    <SubeejNavigator {...props} />
+                    <SubeejNavigator {...props} 
+                    onSDKClose={onSDKClose}/>
                 </NavigationContainer>
             </NavigationIndependentTree>
         </SafeAreaView>

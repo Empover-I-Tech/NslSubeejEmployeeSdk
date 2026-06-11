@@ -201,7 +201,8 @@ const SelectCompanyScreenRn = ({ route }) => {
                         ListEmptyComponent={() => <Text style={RnStyles.noDataText}>{translate("No_data_available")}</Text>}
                     />
                     <View>
-                        <RenderHTML contentWidth={width} source={{ html: companyInformation }} />
+                        <RenderHTML contentWidth={width} source={{ html: companyInformation }}
+                        enableCSSInlineProcessing={true} />
                         <View style={RnStyles.center}>
                             <TouchableOpacity style={RnStyles.proceedButtonContainer} onPress={handleProceed}>
                                 <Text style={RnStyles.buttonText}>{translate('Proceed')}</Text>
