@@ -10,6 +10,7 @@ import { storeInAsyncStorage } from "../../src/utils/keychainUtils";
 import { useNavigation } from '@react-navigation/native';
 import { setIsEmployee } from "../../src/state/actions/employeeActions";
 import { changeLanguage, translate } from '../Localization/Localisation';
+import { setSelectedCompanyAct } from '../state/actions/selectedCompanyActions';
 import SimpleToast from 'react-native-simple-toast';
 import { FCM_TOKEN } from '../assets/Utils/Utils';
 
@@ -53,7 +54,11 @@ const LoaderScreen = ({ route }) => {
             if (!route?.params) return;
 
             console.log('Initializing SDK...');
+            await storeInAsyncStorage(LANGUAGECODE, languageCode)
             await changeLanguage(languageCode || 'en');
+            const newStore = selectedCompanyData
+            newStore.languageCode = languageCode
+            dispatch(setSelectedCompanyAct(newStore));
 
             setEnvironment(buildEnvironment || 'PROD');
 

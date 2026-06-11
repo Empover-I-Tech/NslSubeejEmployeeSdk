@@ -163,6 +163,7 @@ const Remedyrecommendation = ({ route }) => {
         };
         console.log('URLInR:', getRemedyUrl);
         console.log('PayloadInR:', payload);
+        console.log('headers:', headers);
 
         const APIResponse = await axios.post(getRemedyUrl, payload, { headers });
 
