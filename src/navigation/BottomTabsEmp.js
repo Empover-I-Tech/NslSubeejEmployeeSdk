@@ -17,22 +17,22 @@ const Tab = createBottomTabNavigator();
 const { width, height } = Dimensions.get('window');
 
 const BottomTabsNavigatorEmp = () => {
-  const [homeVisible,setHomeVisible]=useState(true)
-  const [scanVisible,setScanVisible]=useState(true)
-  const [help,setHelp]=useState(true)
+  const [homeVisible, setHomeVisible] = useState(true)
+  const [scanVisible, setScanVisible] = useState(true)
+  const [help, setHelp] = useState(true)
   const currentTheme = useSelector(state => state.theme.theme);
   const dynamicStyles = useSelector(state => state.companyStyles.companyStyles);
   const menuControler = useSelector(state => state.marketpriceData.marketpriceData);
   const isConnected = useSelector(state => state.network.isConnected);
   const tabMenuEmp = useSelector(state => state.tabEmpMenuControl.tabempmenuControl);
-  console.log("tabempMenu=-=-=->",JSON.stringify(tabMenuEmp))
+  console.log("tabempMenu=-=-=->", JSON.stringify(tabMenuEmp))
   const dispatch = useDispatch();
   const fonts = useFontStyles()
   useEffect(() => {
     if (tabMenuEmp) {
-     setHomeVisible(tabMenuEmp?.homeVisible)
-     setScanVisible(tabMenuEmp?.scanVisible)
-     setHelp(tabMenuEmp?.helpDeskVisible)
+      setHomeVisible(tabMenuEmp?.homeVisible)
+      setScanVisible(tabMenuEmp?.scanVisible)
+      setHelp(tabMenuEmp?.helpDeskVisible)
     }
   }, [tabMenuEmp]);
 
@@ -61,25 +61,25 @@ const BottomTabsNavigatorEmp = () => {
         },
       }}
     >
-   {true && (   
-    <Tab.Screen
-        name="HomeScreenEmpSDK"
-        component={HomeScreenEmpSDK}
-        options={{
-          tabBarLabel: ({ focused }) => (
-            <View style={{ alignItems: 'center' }}>
-              <Text style={{ color: focused ? dynamicStyles.primaryColor : dynamicStyles.textColor, fontFamily: fonts.Regular, fontSize: RFValue(11, height) }}> {translate('Home')}</Text>
-              {focused && <View style={[{ backgroundColor: dynamicStyles.primaryColor }]} />}
-            </View>
-          ),
-          tabBarIcon: ({ focused }) => (
-            <Image
-              source={require('../../assets/Images/HomeIcon.png')}
-              style={[styles.bottomNavigationIcons, { tintColor: focused ? dynamicStyles.primaryColor : dynamicStyles.textColor }]}
-            />
-          ),
-        }}
-      />
+      {true && (
+        <Tab.Screen
+          name="HomeScreenEmpSDK"
+          component={HomeScreenEmpSDK}
+          options={{
+            tabBarLabel: ({ focused }) => (
+              <View style={{ alignItems: 'center' }}>
+                <Text style={{ color: focused ? dynamicStyles.primaryColor : dynamicStyles.textColor, fontFamily: fonts.Regular, fontSize: RFValue(11, height) }}> {translate('Home')}</Text>
+                {focused && <View style={[{ backgroundColor: dynamicStyles.primaryColor }]} />}
+              </View>
+            ),
+            tabBarIcon: ({ focused }) => (
+              <Image
+                source={require('../../assets/Images/HomeIcon.png')}
+                style={[styles.bottomNavigationIcons, { tintColor: focused ? dynamicStyles.primaryColor : dynamicStyles.textColor }]}
+              />
+            ),
+          }}
+        />
       )}
 
 
@@ -89,15 +89,15 @@ const BottomTabsNavigatorEmp = () => {
           component={MandiPricesScreen}
           options={{
             tabBarLabel: () => null,
-            tabBarItemStyle: { marginTop: -60 },
+            tabBarItemStyle: { marginTop: -15 },
             tabBarIcon: ({ focused }) => (
               <View style={{
-                backgroundColor:dynamicStyles.primaryColor, borderRadius: 40, height: 70, justifyContent: "center", alignItems: "center",
+                backgroundColor: dynamicStyles.primaryColor, borderRadius: 40, height: 70, justifyContent: "center", alignItems: "center",
                 width: 70,
               }}>
                 <Image
                   source={require('../../assets/Images/ScanIcon.png')}
-                  style={[styles.bottomNavigationIcons2, { tintColor:dynamicStyles.secondaryColor }]}
+                  style={[styles.bottomNavigationIcons2, { tintColor: dynamicStyles.secondaryColor }]}
                 />
               </View>
             ),
