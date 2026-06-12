@@ -32,7 +32,7 @@ const SamadhanScreen = ({ route }) => {
     const [duplicateModalOpen, setDuplicateModalOpen] = useState(false)
     const navigation = useNavigation();
     const routeNames = useNavigationState(state => state?.routeNames ?? []);
-    const isEmpNavigator = routeNames.includes('HomeScreenEmp');
+    const isEmpNavigator = routeNames.includes('HomeScreenEmpSDK');
     const listFooterPadding = isEmpNavigator ? 90 : 65;
     const cachedSamadhanHistory = realm.objects('SAMADHANHISTORY');
     const [previewVisible, setPreviewVisible] = useState(false);

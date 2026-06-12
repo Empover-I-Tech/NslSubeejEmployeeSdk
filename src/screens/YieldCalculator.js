@@ -1,15 +1,9 @@
 import { Platform, Text, StatusBar, View, Alert, StyleSheet, Image, TouchableOpacity, ScrollView, FlatList, Dimensions, ToastAndroid } from 'react-native';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useSelector } from 'react-redux';
-// import CustomListViewModal from '../Modals/CustomListViewModal';
-import CustomSeedListViewModal from '../components/CustomSeedListViewModal';
 import CustomYieldCalListViewModal from '../components/CustomYieldCalListViewModal';
-// import CustomTextInput from '../Components/CustomTextInput';
-import CustomSeedTextInput from '../components/CustomSeedTextInput';
 import CustomYieldTextInput from '../components/CustomYieldCalTextInput';
 import CustomFertilizerCalBorderInputDropDown from '../components/CustomFertilizerCalBorderInputDropDown';
-
-import { strings } from '../Localization/StringsCopy';
 import SimpleToast from 'react-native-simple-toast';
 // import CustomLoader from '../Components/CustomLoader';
 // import CustomSuccessLoader from '../Components/CustomSuccessLoader';
@@ -20,12 +14,7 @@ import { GetApiHeaders } from '../utils/helpers'
 // import { USER_ID, filterObjects, readFileToBase64, requestMultiplePermissions, retrieveData } from '../assets/Utils/Utils';
 import APIConfig, { HTTP_OK } from '../api/APIConfig'
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-// import { getCompanyStyles } from '../redux/store/slices/CompanyStyleSlice';
-// import CustomBorderInputDropDown from '../Components/CustomBorderInputDropDown';
-// import CustomSeedsBorderInputDropDown from '../components/CustomSeedsBorderInputDropDown';
-import CustomYieldCalBorderInputDropDown from '../components/CustomYieldCalBorderInputDropDown';
 import { responsiveHeight, responsiveWidth } from 'react-native-responsive-dimensions';
-// import CustomButton from '../Components/CustomButton'
 import ViewShot from 'react-native-view-shot';
 import Share from 'react-native-share';
 import useGetRequestWithJwt from '../api/useGetRequestWithJwt'
@@ -2448,18 +2437,6 @@ const YieldCalculator = () => {
                                         /> */}
                                         </View>
 
-                                        {/* <Text style={[styles.selectedCropText3, { color: dynamicStyles.textColor }]}  >
-                                        {translate("yieldSix")}
-                                    </Text>
-                                    <CustomYieldCalBorderInputDropDown
-                                        // width={[{ width: '92%' }, styles['centerItems']]}
-                                        defaultValue={areaToPlanted != undefined && areaToPlanted != translate("select") ? areaToPlanted : translate("select")}
-                                        IsRequired={true}
-                                        placeholder={translate("yieldSix")}
-                                        onFocus={() => {
-                                            changeDropDownData(areaPlantedArr, translate("yieldSix"), areaToPlanted)
-                                        }}
-                                    /> */}
                                         <CustomYieldTextInput
                                             // style={[styles['margin_top_20'], styles['centerItems']]}
                                             labelName={translate("yieldSix")}
@@ -2688,12 +2665,7 @@ const YieldCalculator = () => {
                     <Text style={{ textAlign: "center", color: !showStatus() ? "#000" : dynamicStyles.secondaryColor, fontSize: RFValue(14, 680), fontFamily:fonts.Bold }}>{translate("Share")}</Text>
                     <Image source={require("../../assets/Images/whatsAppImgIcon.png")} style={styles.whatsAppIcon} />
                 </TouchableOpacity>
-                {/* <CustomButton shouldDisable={!showStatus()} title={strings.Share} onPress={() => { takeScreenshot() }}
-                addIcon={showStatus()}
-                buttonBg={!showStatus() ? Colors.lightGray : dynamicStyles.primaryColor}
-                titleTextColor={!showStatus() ? Colors.white : dynamicStyles.secondaryColor}
-                btnWidth={'85%'}
-                textAlign='center' /> */}
+               
                 <CustomCommonModal
                     modalVisible={alertModal}
                     modalClose={alertCloseHandle}

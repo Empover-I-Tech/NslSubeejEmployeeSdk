@@ -66,7 +66,6 @@ import { setTabEmpMenuControl } from '../state/actions/tabempmenuControl';
 import APIConfig, { HTTP_601, HTTP_OK } from '../api/APIConfig';
 import Others from '../utils/Others';
 import Services from '../utils/Services';
-import { useGeoTaggingCRUD } from '../screens/realmOffline/useGeoTaggingCRUD';
 
 const DOWNLOAD_TIMEOUT = 30000; // 30 seconds
 const RETRY_ATTEMPTS = 2;
@@ -74,12 +73,10 @@ const RETRY_ATTEMPTS = 2;
 const HomeScreenEmpSDK = ({ route }) => {
   // const route = useRoute();
   const fonts = useFontStyles()
-  const { uploadOfflineGeoTagDataToServer, uploadOfflineHelpDesk, uploadOfflineSeedCalc, uploadOfflineYieldCalc, incrementOfflineCount, decrementOfflineCount, updateOfflineCount } = useOfflineSync();
+  const { uploadOfflineHelpDesk, uploadOfflineSeedCalc, uploadOfflineYieldCalc, incrementOfflineCount, decrementOfflineCount, updateOfflineCount } = useOfflineSync();
   const { saveSeedMasterList, saveYieldMasterList, saveSeedCalc, fertilizerMasterList, fertilizerMasterList2 } = useOfflineCalculatorsCRUD();
 
-  const {
-    getOfflineGeoTagCount
-  } = useGeoTaggingCRUD();
+
 
   const {
     getOfflineHelpDeskCount,
@@ -124,23 +121,11 @@ const HomeScreenEmpSDK = ({ route }) => {
   const [langId, setLangId] = useState(null)
 
 
-  const cachedImages = realm.objects('Image');
-  const cachedGeoTaggingHistory = realm.objects('GEOTAGGINGHISTORY');
+
   const cachedKnowledgeCenter = realm.objects('KnowledgeCenter');
   const cachedGoldClubKnowledgeCenter = realm.objects('GoldCludKnowledgeCenter');
   const cachedSamadhanHistory = realm.objects('SAMADHANHISTORY');
-  const Meeting = realm.objects('Meeting');
-  const GeoTaggingView = realm.objects('GeoTaggingView');
-  const cachedHybridList = realm.objects('hybridMaster');
-  const FABDetails = realm.objects('FABDetails');
-  const helpDeskRaise = realm.objects('helpDeskRaise');
-  const YieldMaster = realm.objects('YieldMaster');
-  const SeedMaster = realm.objects('SeedMaster');
-  const FertilizerMaster = realm.objects('FertilizerMaster');
-  const FertilizerMaster2 = realm.objects('FertilizerMaster2');
-  const SeedCalSubmit = realm.objects('SeedCalSubmit');
-  const YieldCalSubmit = realm.objects('YieldCalSubmit');
-  const goldClubKnowledgeCenter = realm.objects('GoldCludKnowledgeCenter');
+  
 
 
   const [weatherTwo, setWeatherTwo] = useState("")
@@ -205,17 +190,6 @@ const HomeScreenEmpSDK = ({ route }) => {
           const yieldCalUpdated = await uploadOfflineYieldCalc();
           if (yieldCalUpdated) {
             updateOfflineCount()
-          }
-        }
-        if (getOfflineGeoTagCount() > 0) {
-          const result = await uploadOfflineGeoTagDataToServer();
-          if (result.success) {
-            updateOfflineCount()
-
-            // call here transactiontablemasters data
-            getSampleGeoTaggingHistory()
-          } else {
-            SimpleToast.show("Sync failed");
           }
         }
         if (getOfflineHelpDeskCount() > 0) {
@@ -325,7 +299,7 @@ const HomeScreenEmpSDK = ({ route }) => {
       fetchKnowledgeCenter()
       goldClubFetchKnowledgeCenter()
       fetchSamadhanHistory()
-      getSampleGeoTaggingHistory()
+      // getSampleGeoTaggingHistory()
       fetchCurrentLocation()
       getMenuController()
       getUserMenuControl()
@@ -603,24 +577,6 @@ const HomeScreenEmpSDK = ({ route }) => {
     }
   };
 
-  const processSampleGeoTaggingData = async (data) => {
-    const updatedList = await Promise.all(
-      data.map(async (item, index) => {
-        const fileName = `cropImgs_${item.productLabel}_${item.cropName}.png`;
-        const localPath = await downloadImageToLocalCopy(item.imageUrl, fileName);
-        return {
-          ...item,
-          imageUrlLocal: localPath,
-        };
-      })
-    );
-
-    return {
-      updatedList
-    };
-  };
-
-
   const geSeedAndPopulationCaculator = async () => {
     // var networkStatus = await getNetworkStatus()
     if (isConnected) {
@@ -762,142 +718,6 @@ const HomeScreenEmpSDK = ({ route }) => {
         // setLoaderApi(false)
       }
     }
-  };
-
-  const getSampleGeoTaggingHistory = async () => {
-    if (isConnected) {
-      try {
-        const url = APIConfig.BASE_URL + APIConfig.geoTagging_getScanHistory
-        const headers = await GetApiHeaders();
-        const response = await fetchData(url, headers);
-        if (response && response?.data) {
-          if (response?.data?.scanHistoryList) {
-            const uploadedGeotaggingData = await processSampleGeoTaggingData(response?.data?.scanHistoryList)
-            const imageUrls = new Set();
-            let scanMssgOffline
-            if (langId === "2") {
-              scanMssgOffline = response.data.scanTeluguMessage
-            } else if (langId === "3") {
-              scanMssgOffline = response.data.scanHindiMessage
-            } else if (langId === "1") {
-              scanMssgOffline = response.data.scanMessage
-            }
-            let geoTaggingHistoryId;
-            const maxAttempts = 3;
-            let attempts = 0;
-            while (attempts < maxAttempts) {
-              try {
-                geoTaggingHistoryId = uuidv4();
-                const existingDashboard = realm.objects('GEOTAGGINGHISTORY').filtered('_id == $0', geoTaggingHistoryId);
-                if (existingDashboard.length === 0) {
-                  break;
-                }
-                attempts++;
-              } catch (uuidError) {
-                return;
-              }
-              if (attempts >= maxAttempts) {
-                return;
-              }
-            }
-            if (uploadedGeotaggingData) {
-              try {
-                realm.write(() => {
-                  realm.delete(cachedGeoTaggingHistory);
-                  realm.create('GEOTAGGINGHISTORY', {
-                    _id: geoTaggingHistoryId,
-                    couponsHistoryList: JSON.stringify(uploadedGeotaggingData.updatedList || []),
-                    scanMssg: JSON.stringify(scanMssgOffline || ""),
-                    timestamp: new Date(),
-                  });
-                });
-              } catch (realmError) {
-                console.error('Error creating GEOTAGGINGHISTORY object in Realm:', realmError);
-                return;
-              }
-            }
-          } else {
-            console.log("API Error:", response.data.message);
-          }
-        } else {
-        }
-      } catch (error) {
-        console.error("Error fetching scan history:", error);
-      }
-    } else {
-      // setLoaderApi(false);
-    }
-
-  };
-
-  const ShowHistoryRefresh = async () => {
-
-    if (isConnected) {
-      try {
-        const url = APIConfig.BASE_URL + APIConfig.geoTagging_getScanHistory
-        const headers = await GetApiHeaders();
-        const response = await fetchData(url, headers);
-        if (response && response?.data) {
-          if (response?.data?.scanHistoryList) {
-            const uploadedGeotaggingData = await processSampleGeoTaggingData(response?.data?.scanHistoryList)
-            const imageUrls = new Set();
-            let scanMssgOffline
-            if (langId === "2") {
-              scanMssgOffline = response.data.scanTeluguMessage
-            } else if (langId === "3") {
-              scanMssgOffline = response.data.scanHindiMessage
-            } else if (langId === "1") {
-              scanMssgOffline = response.data.scanMessage
-            }
-            let geoTaggingHistoryId;
-            const maxAttempts = 3;
-            let attempts = 0;
-            while (attempts < maxAttempts) {
-              try {
-                geoTaggingHistoryId = uuidv4();
-                const existingDashboard = realm.objects('GEOTAGGINGHISTORY').filtered('_id == $0', geoTaggingHistoryId);
-                if (existingDashboard.length === 0) {
-                  break;
-                }
-                attempts++;
-              } catch (uuidError) {
-                return;
-              }
-              if (attempts >= maxAttempts) {
-                return;
-              }
-            }
-            if (uploadedGeotaggingData) {
-              try {
-                realm.write(() => {
-                  realm.delete(cachedGeoTaggingHistory);
-                  realm.create('GEOTAGGINGHISTORY', {
-                    _id: geoTaggingHistoryId,
-                    couponsHistoryList: JSON.stringify(uploadedGeotaggingData.updatedList || []),
-                    scanMssg: JSON.stringify(scanMssgOffline || ""),
-                    timestamp: new Date(),
-                  });
-                });
-                console.log('Successfully created GEOTAGGINGHISTORY with _id:', geoTaggingHistoryId);
-              } catch (realmError) {
-                console.error('Error creating GEOTAGGINGHISTORY object in Realm:', realmError);
-                return;
-              }
-            }
-          } else {
-            console.log("API Error:", response.data.message);
-          }
-        } else {
-        }
-      } catch (error) {
-        console.error("Error fetching scan history:", error);
-      }
-    } else {
-      // setLoaderApi(false);
-      // SimpleToast.show(translate('no_internet_conneccted'))
-
-    }
-
   };
 
   const fetchKnowledgeCenter = async () => {
@@ -1953,7 +1773,7 @@ const HomeScreenEmpSDK = ({ route }) => {
       await goldClubFetchKnowledgeCenterRefresh()
       await fetchSamadhanHistory()
       // await ShowHistory()
-      await ShowHistoryRefresh()
+      // await ShowHistoryRefresh()
       await geSeedAndPopulationCaculator();
       await getYieldCalcutlor();
       await getFertilizerCalc();
@@ -2012,9 +1832,6 @@ const HomeScreenEmpSDK = ({ route }) => {
       }
     } else if (title === "Scan") {
       fromProductScancashbackScanBothLocationandCameraHandle('self')
-
-      // setProductScanModalOpen(true)
-      // setFellowFarmerVisible(true)
     }
     else if (title === "Pest Forecast") {
       navigationPest()
@@ -2338,7 +2155,6 @@ const HomeScreenEmpSDK = ({ route }) => {
         </View>
         <View style={styles.profileContainer}>
           <View style={styles.profileSubContainer}>
-            {/* <TouchableOpacity onPress={() => navigation.navigate('MoreScreenRn', { companyName: dynamicStyles.companyName })}> */}
             <View style={styles.farmerIconContainer}>
               {userData?.userPic ?
                 <>
@@ -2348,7 +2164,6 @@ const HomeScreenEmpSDK = ({ route }) => {
                 : <Image source={defaultImage} style={userData?.userPic ? styles.farmerIcon1 : styles.farmerIcon} />
               }
             </View>
-            {/* </TouchableOpacity> */}
             <View style={{ flexDirection: 'row' }}>
               <View>
                 <View style={styles.greetingSmileContainer}>
@@ -2575,7 +2390,6 @@ const HomeScreenEmpSDK = ({ route }) => {
           </View>
         </TouchableWithoutFeedback>
       </Modal>
-      {/* </ScreenWrapper> */}
 
 
       {genunityResponse &&

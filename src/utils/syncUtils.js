@@ -1,11 +1,8 @@
 // hooks/useOfflineSync.js
 import NetInfo from "@react-native-community/netinfo";
-import SimpleToast from 'react-native-simple-toast';
 import APIConfig, { HTTP_OK } from '../api/APIConfig';
-import { useGeoTaggingCRUD } from "../screens/realmOffline/useGeoTaggingCRUD";
 import { GetApiHeaders } from "./helpers";
 import usePostRequestWithJwt from "../api/usePostRequestWithJwt";
-import { translate } from "../Localization/Localisation";
 import { useOfflineCalculatorsCRUD } from "../screens/realmOffline/useOfflineCalculatorsCRUD";
 import { Provider, useDispatch, useSelector } from 'react-redux';
 import { setOfflineCount } from "../state/actions/offlineCountAction";
@@ -15,11 +12,6 @@ import { createHelpDeskFormData, storeData } from "../assets/Utils/Utils";
 export const useOfflineSync = () => {
     const offlineCount = useSelector((state) => state.offlineCountReducer.offlineCount);
     const dispatch = useDispatch();
-    const {
-        getAllGeoTags,
-        deleteGeoTagByUniquId,
-        getOfflineGeoTagCount
-    } = useGeoTaggingCRUD();
     const {
         getSeedCalc,
         getYieldCalc,
@@ -38,11 +30,10 @@ export const useOfflineSync = () => {
     } = helpDeskRaiseCRUD();
 
     const updateOfflineCount = async () => {
-        const geoTagOfflineCount = getOfflineGeoTagCount();
         const OfflineHelpDeskCount = getOfflineHelpDeskCount();
         const seedCalCount = hasSeedCalc() ? 1 : 0
         const yieldCalCount = hasYieldCalc() ? 1 : 0
-        const totalOfflineCount = seedCalCount + yieldCalCount + geoTagOfflineCount + OfflineHelpDeskCount;
+        const totalOfflineCount = seedCalCount + yieldCalCount + OfflineHelpDeskCount;
         dispatch(setOfflineCount(totalOfflineCount));
         // await storeData(OFFLINETOTALCOUNT, totalOfflineCount)
     }
@@ -60,38 +51,7 @@ export const useOfflineSync = () => {
         }
 
     }
-    const uploadOfflineGeoTagDataToServer = async () => {
-        const { isConnected } = await NetInfo.fetch();
-        if (!isConnected) {
-            return { success: false, message: "No internet connection" };
-        }
-
-        const payloadObj = getAllGeoTags();
-        console.log('getAllData', JSON.stringify(payloadObj ?? ""));
-
-        try {
-            const url = APIConfig.BASE_URL + APIConfig.geoTagging_submitSampleGeoTaggingDetails_V2;
-            const headers = await GetApiHeaders();
-            const response = await sendData(url, payloadObj, headers, false);
-
-            if (response.statusCode === 200) {
-                const ids = response?.data?.response?.uniqueIds ?? [];
-
-                ids.forEach(item => {
-                    const result = deleteGeoTagByUniquId(item.mobileUniqueId);
-                    console.log(`Deleted ${item.mobileUniqueId}: ${result ? 'Success' : 'Failed'}`);
-                });
-
-                return { success: true, data: response.data.response };
-            } else {
-                SimpleToast.show(translate("Failed_to_submit_data"));
-                return { success: false };
-            }
-        } catch (error) {
-            SimpleToast.show(translate("An_unexpected_error_occurred_Please_try_again"));
-            return { success: false };
-        }
-    };
+   
     const uploadOfflineSeedCalc = async () => {
         const { isConnected } = await NetInfo.fetch();
         if (!isConnected) {
@@ -221,5 +181,5 @@ export const useOfflineSync = () => {
         }
     };
 
-    return { uploadOfflineGeoTagDataToServer, uploadOfflineSeedCalc, uploadOfflineYieldCalc, incrementOfflineCount, decrementOfflineCount, uploadOfflineHelpDesk, updateOfflineCount };
+    return { uploadOfflineSeedCalc, uploadOfflineYieldCalc, incrementOfflineCount, decrementOfflineCount, uploadOfflineHelpDesk, updateOfflineCount };
 };

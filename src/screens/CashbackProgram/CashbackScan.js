@@ -261,43 +261,27 @@ const CashBackScan=({ route })=> {
     if(genuinityWindow){
       if (isEmployee) {
         navigation.navigate('BottomTabsNavigatorEmp', {
-          screen: 'HomeScreenEmp',
+          screen: 'HomeScreenEmpSDK',
           params: {
             response: response,
             title: CASHBACKSCAN
           }
         });
 
-      } else {
-        navigation.navigate('MainTabs', {
-          screen: 'HomeScreenRn',
-          params: {
-            response: response,
-            title: CASHBACKSCAN
-          }
-        })
-      }
+      } 
    
     dispatch(setCashBackSuccessModal(false))
     dispatch(setCashBackSuccessGenuineModal(true))
     }else if(cashbackWindow){
       if (isEmployee) {
         navigation.navigate('BottomTabsNavigatorEmp', {
-          screen: 'HomeScreenEmp',
+          screen: 'HomeScreenEmpSDK',
           params: {
             response: response,
             title: CASHBACKSCAN
           }
         });
-      } else {
-        navigation.navigate('MainTabs', {
-          screen: 'HomeScreenRn',
-          params: {
-            response: response,
-            title: CASHBACKSCAN
-          }
-        });
-      }
+      } 
       dispatch(setCashBackSuccessGenuineModal(false))
       dispatch(setCashBackSuccessModal(true))
     }
@@ -309,7 +293,7 @@ const CashBackScan=({ route })=> {
     const isEmployee = (screenName == EMP_DASHBOARD_SCREEN);
     if (isEmployee) {
       navigation.navigate('BottomTabsNavigatorEmp', {
-        screen: 'HomeScreenEmp',
+        screen: 'HomeScreenEmpSDK',
         params: {
           response: "",
           title: CASHBACKSCAN2,
@@ -317,17 +301,7 @@ const CashBackScan=({ route })=> {
           message: mssg
         }
       })
-    } else {
-      navigation.navigate('MainTabs', {
-        screen: 'HomeScreenRn',
-        params: {
-          response: "",
-          title: CASHBACKSCAN2,
-          statuCode: statusCode,
-          message: mssg
-        }
-      })
-    }
+    } 
   }
 
   return (

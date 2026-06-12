@@ -1,18 +1,11 @@
 // import { Box, Center, Progress, Text } from 'native-base';
 import { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { Styles } from '../styles/Styles';
 import { Animated, Dimensions, Image, View } from 'react-native';
-import TextAnimator from '../anim/TextAnimator';
 
 const CustomLoader = ({ visible, message, loaderImage = require('../../assets/Images/SubeejLoader.gif'), progress, type }) => {
   const currentTheme = useSelector(state => state.theme.theme);
-  const styles = Styles(currentTheme);
-  const [loaderVisible, setLoaderVisible] = useState(true);
-  const [loaderMessage, setLoaderMessage] = useState("");
-  const [image, setImage] = useState("");
   const floatAnim = useRef(new Animated.Value(0)).current;
-  const dynamicStyles = useSelector(state => state.companyStyles.companyStyles);
 
 
   useEffect(() => {
