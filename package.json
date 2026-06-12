@@ -4,7 +4,8 @@
   "description": "SubeejEmployeeSdk react native sdk",
   "main": "index.js",
   "files": [
-    "index.js"
+    "index.js",
+    "src"
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
