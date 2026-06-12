@@ -15,7 +15,7 @@ import { CustomCommonModal } from '../components/CustomCommonModal';
 import { WebView } from 'react-native-webview';
 import SimpleToast from 'react-native-simple-toast';
 import { useFontStyles } from "../hooks/useFontStyles";
-import { FIELDACTIVITYQR } from "../assets/Utils/Utils";
+import { FIELDACTIVITYQR, getWindowHeight, getWindowWidth } from "../assets/Utils/Utils";
 import { responsiveWidth } from "react-native-responsive-dimensions";
 import RenderHTML from "react-native-render-html";
 import CustomButton from "../components/CustomButton";
@@ -324,10 +324,10 @@ function QRScannerRn({ route }) {
                     <RNHoleView
                       holes={[
                         {
-                          x: Dimensions.get('window').width * 0.2,
-                          y: Dimensions.get('window').height * 0.25,
-                          width: Dimensions.get('window').width * 0.6,
-                          height: Dimensions.get('window').height * 0.3,
+                          x: getWindowWidth() * 0.2,
+                          y: getWindowHeight() * 0.25,
+                          width: getWindowWidth() * 0.6,
+                          height: getWindowHeight() * 0.3,
                           borderRadius: 10,
                         },
                       ]}

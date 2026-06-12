@@ -729,6 +729,9 @@ export const allowOnlyAlphabets = (input) => {
 export const allowOnlyNumbers = (input) => input.trim().replace(/[^0-9]/g, '');
 export const allowOnlyAlphabetsNumbers = (input) => input.trim().replace(/[^a-zA-Z0-9]/g, '');
 
+export const getWindowWidth = () => Dimensions.get('window').width;
+export const getWindowHeight = () => Dimensions.get('window').height;
+
 
 
 
