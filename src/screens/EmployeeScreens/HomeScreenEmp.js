@@ -3537,21 +3537,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
   },
-  // metricMainContainer: {
-  //   width: "30%",
-  //   margin: 5,
-  //   // width:"100%"
-  // },
-  // metricSubContainer: {
-  //   // flex: 1,
-  //   // width:"33.3%",
-  //   backgroundColor: '#F2F6F9',
-  //   borderRadius: 8,
-  //   padding: 8,
-  //   minHeight: width * 0.14,
-  //   flexDirection: "row",
-  //   alignItems: "center"
-  // },
 
   modalSubContainerMenuList: {
     backgroundColor: '#fff',
