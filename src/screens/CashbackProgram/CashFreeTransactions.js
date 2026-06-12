@@ -412,62 +412,62 @@ const CashFreeTransactions = (props) => {
         }
     };
 
-    const logoutMethod = async () => {
-        if (!isConnected) {
-            return;
-        }
+    // const logoutMethod = async () => {
+    //     if (!isConnected) {
+    //         return;
+    //     }
 
-        try {
-            const ForcedLougoutUrl = APIConfig.BASE_URL + APIConfig.AUTH.LOGOUT
-            const headers = await GetApiHeaders();
-            const apiCallLogout = await axios.get(ForcedLougoutUrl, { headers });
-            // Full response
-            console.log("Full Response:", apiCallLogout);
-            // Access response data
-            console.log("Response Data:", apiCallLogout.data);
+    //     try {
+    //         const ForcedLougoutUrl = APIConfig.BASE_URL + APIConfig.AUTH.LOGOUT
+    //         const headers = await GetApiHeaders();
+    //         const apiCallLogout = await axios.get(ForcedLougoutUrl, { headers });
+    //         // Full response
+    //         console.log("Full Response:", apiCallLogout);
+    //         // Access response data
+    //         console.log("Response Data:", apiCallLogout.data);
 
-            // Example: access specific field
+    //         // Example: access specific field
 
-            if (apiCallLogout.data.statusCode === HTTP_OK) {
-                console.log("Message:", apiCallLogout.data.statusCode);
+    //         if (apiCallLogout.data.statusCode === HTTP_OK) {
+    //             console.log("Message:", apiCallLogout.data.statusCode);
 
-                await Promise.all([
-                    deleteFromAsyncStorage(USER_ID),
-                    deleteFromAsyncStorage(MOBILENUMBER),
-                    deleteFromAsyncStorage(USERNAME),
-                    deleteFromAsyncStorage(REFERRALCODE),
-                    deleteFromAsyncStorage(USER_IMG),
-                    deleteFromAsyncStorage(STATE_ID),
-                    deleteFromAsyncStorage(STATE_NAME),
-                    deleteFromAsyncStorage(DISTRICT_ID),
-                    deleteFromAsyncStorage(DISTRICT_NAME),
-                    deleteFromAsyncStorage(FIRSTNAME),
-                    deleteFromAsyncStorage(LASTNAME),
-                    deleteFromAsyncStorage(OFFLINETOTALCOUNT),
-                    deleteFromAsyncStorage(COMPANYCODE),
-                    removeDatbaseData(),
-                    clearDownloadedImages()
-                ]);
-                dispatch(setCompanyStyle({}));
-                navigation.replace('LoginScreenRn');
-            } else {
-                SimpleToast.show(apiCallLogout.data.message)
-            }
+    //             await Promise.all([
+    //                 deleteFromAsyncStorage(USER_ID),
+    //                 deleteFromAsyncStorage(MOBILENUMBER),
+    //                 deleteFromAsyncStorage(USERNAME),
+    //                 deleteFromAsyncStorage(REFERRALCODE),
+    //                 deleteFromAsyncStorage(USER_IMG),
+    //                 deleteFromAsyncStorage(STATE_ID),
+    //                 deleteFromAsyncStorage(STATE_NAME),
+    //                 deleteFromAsyncStorage(DISTRICT_ID),
+    //                 deleteFromAsyncStorage(DISTRICT_NAME),
+    //                 deleteFromAsyncStorage(FIRSTNAME),
+    //                 deleteFromAsyncStorage(LASTNAME),
+    //                 deleteFromAsyncStorage(OFFLINETOTALCOUNT),
+    //                 deleteFromAsyncStorage(COMPANYCODE),
+    //                 removeDatbaseData(),
+    //                 clearDownloadedImages()
+    //             ]);
+    //             dispatch(setCompanyStyle({}));
+    //             navigation.replace('LoginScreenRn');
+    //         } else {
+    //             SimpleToast.show(apiCallLogout.data.message)
+    //         }
 
-        } catch (error) {
+    //     } catch (error) {
 
-            console.log("Logout error:", error.response?.data || error.message);
-        }
-    };
+    //         console.log("Logout error:", error.response?.data || error.message);
+    //     }
+    // };
 
-    const handleForceLogout = async () => {
-        try {
-            logoutMethod()
-        } catch (error) {
-            console.error('Error during logout:', error);
-            SimpleToast.show(translate('logout_error') || 'Failed to log out');
-        }
-    }
+    // const handleForceLogout = async () => {
+    //     try {
+    //         logoutMethod()
+    //     } catch (error) {
+    //         console.error('Error during logout:', error);
+    //         SimpleToast.show(translate('logout_error') || 'Failed to log out');
+    //     }
+    // }
 
     const callApiSuccessListDetails = async (selectedItem) => {
 
@@ -506,7 +506,7 @@ const CashFreeTransactions = (props) => {
                     }
 
                 } else if (data?.statusCode === HTTP_601) {
-                    handleForceLogout()
+                    // handleForceLogout()
                 }
 
                 else {
