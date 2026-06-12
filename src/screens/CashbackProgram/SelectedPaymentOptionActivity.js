@@ -332,6 +332,7 @@ const SelectedPaymentOptionActivity = ({ route }) => {
                 navigation.navigate('CompletedPaymentActivity', { decodeddJson: data?.response, navigateToPaymentOptions: navigateToPayment })
             } else if(data?.statusCode === HTTP_601){
                 // handleForceLogout()
+                 setLoader(false)
             }
             else {
                 // show Alert for 

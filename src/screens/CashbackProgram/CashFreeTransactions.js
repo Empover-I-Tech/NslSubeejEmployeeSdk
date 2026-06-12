@@ -507,6 +507,7 @@ const CashFreeTransactions = (props) => {
 
                 } else if (data?.statusCode === HTTP_601) {
                     // handleForceLogout()
+                    setLoaderApi(false)
                 }
 
                 else {

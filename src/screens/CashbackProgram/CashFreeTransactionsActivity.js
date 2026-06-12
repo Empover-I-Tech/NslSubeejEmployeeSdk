@@ -214,6 +214,7 @@ const CashFreeTransactionsActivity = () => {
                 } 
                 else if (response?.statusCode === HTTP_601) {
                     // handleForceLogout()
+                    setLoaderApi(false)
                     return
                 } 
                 

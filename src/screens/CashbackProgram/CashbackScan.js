@@ -203,6 +203,7 @@ const CashBackScan=({ route })=> {
           }
         } else if (response?.data?.statusCode === HTTP_601) {
           // handleForceLogout()
+          setLoaderApi(false)
           return
         }
         else{
