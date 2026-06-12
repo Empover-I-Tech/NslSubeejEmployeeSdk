@@ -4,7 +4,6 @@ import { Camera, useCameraDevice, useCodeScanner } from "react-native-vision-cam
 import { useDispatch, useSelector } from "react-redux";
 import { StatusBar, Dimensions, Image, Text as RnText, Platform, TouchableOpacity, View, StyleSheet } from "react-native";
 import { RNHoleView } from "react-native-hole-view";
-import { getWindowHeight, getWindowWidth } from "../../components/Upgrade/helpers";
 import usePostRequestWithJwt from "../../api/usePostRequestWithJwt";
 import APIConfig, { HTTP_601, HTTP_OK } from "../../api/APIConfig";
 import { GetApiHeaders } from "../../utils/helpers";
@@ -14,7 +13,7 @@ import PreLoginCustomLoader from '../../components/PreLoginCustomLoader';
 import { translate } from "../../Localization/Localisation";
 import SimpleToast from 'react-native-simple-toast';
 import { useFontStyles } from "../../hooks/useFontStyles";
-import { CASHBACKSCAN, CASHBACKSCAN2, DOWNLOAD_FOLDER_PATH } from "../../assets/Utils/Utils";
+import { CASHBACKSCAN, CASHBACKSCAN2, DOWNLOAD_FOLDER_PATH, getWindowHeight, getWindowWidth } from "../../assets/Utils/Utils";
 import { setCashBackSuccessModal } from "../../state/actions/cashBackSuccessModal";
 import { setCashBackSuccessGenuineModal } from "../../state/actions/cashBackSuccessGenuineModal";
 import { SafeAreaView } from "react-native-safe-area-context";
