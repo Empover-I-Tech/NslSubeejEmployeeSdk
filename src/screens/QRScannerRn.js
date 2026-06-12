@@ -4,7 +4,6 @@ import { Camera, useCameraDevice, useCodeScanner } from "react-native-vision-cam
 import { useSelector } from "react-redux";
 import { StatusBar, TouchableWithoutFeedback, Dimensions, Image, Modal, Text as RnText, Platform, TouchableOpacity, View, StyleSheet, Linking, SafeAreaView } from "react-native";
 import { RNHoleView } from "react-native-hole-view";
-import { getWindowHeight, getWindowWidth } from "../components/Upgrade/helpers";
 import usePostRequestWithJwt from "../api/usePostRequestWithJwt";
 import APIConfig, { HTTP_ACCEPTED, HTTP_CREATED, HTTP_OK } from "../api/APIConfig";
 import { GetApiHeaders } from "../utils/helpers";
@@ -325,10 +324,10 @@ function QRScannerRn({ route }) {
                     <RNHoleView
                       holes={[
                         {
-                          x: getWindowWidth() * 0.2,
-                          y: getWindowHeight() * 0.25,
-                          width: getWindowWidth() * 0.6,
-                          height: getWindowHeight() * 0.3,
+                          x: Dimensions.get('window').width * 0.2,
+                          y: Dimensions.get('window').height * 0.25,
+                          width: Dimensions.get('window').width * 0.6,
+                          height: Dimensions.get('window').height * 0.3,
                           borderRadius: 10,
                         },
                       ]}
