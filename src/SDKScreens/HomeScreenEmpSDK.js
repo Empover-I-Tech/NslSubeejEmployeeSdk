@@ -261,7 +261,6 @@ const HomeScreenEmpSDK = ({ route }) => {
       getUserDetailsVersion11()
       updateOfflineCount();
       fetchUserData();
-      checkForceUpdate();
       GetUserLocation();
       setSelectedCalculator('');
       setProductScanModalOpen(false);
