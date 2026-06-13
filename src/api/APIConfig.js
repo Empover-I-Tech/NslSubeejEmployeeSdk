@@ -260,6 +260,7 @@ export default configs = {
 
     //EMPLOYEE DASHBOARD API
     USERGETEMPLOYEEDASHBOARDDETAILS: "users/getEmployeeDashBoardDetailes",
+    USERGETEMPLOYEEMETRICSDASHBOARDDETAILS: "users/getMeticsForEmployeeDashboard",
     USERSGETMINDATEFROMUSERINFO: "users/getMinDateFromUserInfo",
 
 }

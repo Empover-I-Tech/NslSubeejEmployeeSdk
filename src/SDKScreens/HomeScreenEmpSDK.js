@@ -1,34 +1,14 @@
 import React, { use, useCallback, useEffect, useRef, useState } from 'react';
 import {
-  TextInput,
-  StatusBar,
-  Dimensions,
-  View,
-  TouchableWithoutFeedback,
-  Linking,
-  Platform,
-  Image,
-  TouchableOpacity,
-  StyleSheet,
-  Text,
-  FlatList,
-  Modal,
-  ScrollView,
-  PermissionsAndroid,
-  Alert,
-  Pressable
+  TextInput, StatusBar, Dimensions, View, TouchableWithoutFeedback, Linking, Platform, Image, TouchableOpacity,
+  StyleSheet, Text, FlatList, Modal, ScrollView, PermissionsAndroid, Alert, Pressable, ActivityIndicator
 } from 'react-native';
 import { useDispatch, useSelector, } from 'react-redux';
 import axios from 'axios';
-import {
-  deleteFromAsyncStorage,
-  getFromAsyncStorage,
-  storeInAsyncStorage,
-} from '../utils/keychainUtils';
-import { MOBILENUMBER, REFERRALCODE, USER_ID, USERNAME, USER_IMG, STATE_ID, DISTRICT_ID, STATE_NAME, DISTRICT_NAME, LANGUAGEID, OFFLINETOTALCOUNT, FIRSTNAME, LASTNAME, COMPANYCODE } from '../utils';
-import { GetApiHeaders, getGreetingMessage, normalizeText, getBuildNumber, getAppVersion, downloadFileToLocal } from '../utils/helpers';
+import { MOBILENUMBER, REFERRALCODE, USER_ID, USERNAME, USER_IMG, STATE_ID, DISTRICT_ID, STATE_NAME, DISTRICT_NAME, LANGUAGEID } from '../utils';
+import { GetApiHeaders, getGreetingMessage, normalizeText, downloadFileToLocal } from '../utils/helpers';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-
+import APIConfig, { HTTP_601, HTTP_OK } from '../api/APIConfig';
 import { RefreshControl } from 'react-native-gesture-handler';
 import { translate } from '../Localization/Localisation';
 import { RFValue } from 'react-native-responsive-fontsize';
@@ -41,7 +21,6 @@ import { setLocationActions } from '../state/actions/locationActions';
 import realm from '../screens/realmOffline/realmConfig';
 import { v4 as uuidv4 } from 'uuid';
 import RNFS from 'react-native-fs';
-
 import useGetRequestWithJwt from '../api/useGetRequestWithJwt';
 import { CASHBACK, CASHBACKSCAN, CASHBACKSCAN2, DOWNLOAD_FOLDER_PATH, FIELDACTIVITYQR, REWARDS, USERMENUCONTROL, compareVersions, processComplaintImages, retrieveData, storeData } from '../assets/Utils/Utils';
 import { useOfflineSync } from '../utils/syncUtils';
@@ -63,21 +42,18 @@ import { CustomCommonModal } from '../components/CustomCommonModal';
 import PreLoginCustomLoader from '../components/PreLoginCustomLoader';
 import { setNearBy } from '../state/actions/nearByAction';
 import { setTabEmpMenuControl } from '../state/actions/tabempmenuControl';
-import APIConfig, { HTTP_601, HTTP_OK } from '../api/APIConfig';
 import Others from '../utils/Others';
 import Services from '../utils/Services';
+import { getFromAsyncStorage, storeInAsyncStorage } from '../utils/keychainUtils';
 
 const DOWNLOAD_TIMEOUT = 30000; // 30 seconds
 const RETRY_ATTEMPTS = 2;
 
 const HomeScreenEmpSDK = ({ route }) => {
-  // const route = useRoute();
+ 
   const fonts = useFontStyles()
   const { uploadOfflineHelpDesk, uploadOfflineSeedCalc, uploadOfflineYieldCalc, incrementOfflineCount, decrementOfflineCount, updateOfflineCount } = useOfflineSync();
   const { saveSeedMasterList, saveYieldMasterList, saveSeedCalc, fertilizerMasterList, fertilizerMasterList2 } = useOfflineCalculatorsCRUD();
-
-
-
   const {
     getOfflineHelpDeskCount,
   } = helpDeskRaiseCRUD();
@@ -122,19 +98,17 @@ const HomeScreenEmpSDK = ({ route }) => {
 
 
 
+  const cachedGeoTaggingHistory = realm.objects('GEOTAGGINGHISTORY');
   const cachedKnowledgeCenter = realm.objects('KnowledgeCenter');
   const cachedGoldClubKnowledgeCenter = realm.objects('GoldCludKnowledgeCenter');
   const cachedSamadhanHistory = realm.objects('SAMADHANHISTORY');
-  
-
-
+ 
   const [weatherTwo, setWeatherTwo] = useState("")
   const [advanceKnVisible, setAdvanceKnVisible] = useState(true)
   const isSyncInProgress = useRef(false);
   const [showGenunityModal, setShowGenunityModal] = useState(false);
   const [genunityResponse, setGenunityResponse] = useState(null);
   const [staticServices, setStaticServices] = useState(Services)
-
   const [staticServiceBe, setStaticServiceBe] = useState(null)
   const [staticOthers, setStaticOthers] = useState(Others)
   const [staticOthersBe, setStaticOthersBe] = useState(null)
@@ -154,6 +128,8 @@ const HomeScreenEmpSDK = ({ route }) => {
   const [selectedDateRange, setSelectedDateRange] = useState({ startDate: '', endDate: '' })
   const nearByLink = useSelector(state => state.nearByReducer.nearBy)
   const [employeeDashboardData, setmployeeDashboardData] = useState({})
+  const [metricLoader, setMetricLoader] = useState(false)
+  const [metricsDashboardData, setMetricsDashboardData] = useState({})
   const [farmerServiceModalVisible, setFarmerServiceModalVisible] = useState(false)
   const [minDate, setMinDate] = useState("")
 
@@ -285,6 +261,7 @@ const HomeScreenEmpSDK = ({ route }) => {
       getUserDetailsVersion11()
       updateOfflineCount();
       fetchUserData();
+      checkForceUpdate();
       GetUserLocation();
       setSelectedCalculator('');
       setProductScanModalOpen(false);
@@ -299,7 +276,7 @@ const HomeScreenEmpSDK = ({ route }) => {
       fetchKnowledgeCenter()
       goldClubFetchKnowledgeCenter()
       fetchSamadhanHistory()
-      // getSampleGeoTaggingHistory()
+      getSampleGeoTaggingHistory()
       fetchCurrentLocation()
       getMenuController()
       getUserMenuControl()
@@ -316,20 +293,45 @@ const HomeScreenEmpSDK = ({ route }) => {
     }, [])
   );
 
+  useFocusEffect(
+    useCallback(() => {
+      console.log("SCREEN FOCUSED");
+
+      getEmployeeDashboardapi();
+      getMetricsDashboardapi(
+        selectedDateRange.startDate,
+        selectedDateRange.endDate
+      );
+      getMinDateEmployee();
+    }, [langId])
+  );
 
   useEffect(() => {
-    getEmployeeDashboardapi(selectedDateRange.startDate, selectedDateRange.endDate)
-    getMinDateEmployee()
-  }, [])
-
-  useEffect(() => {
-    callDashboard = async () => {
-      await getEmployeeDashboardapi(selectedDateRange?.startDate, selectedDateRange?.endDate)
+    if (
+      selectedDateRange?.startDate &&
+      selectedDateRange?.endDate
+    ) {
+      getMetricsDashboardapi(
+        selectedDateRange.startDate,
+        selectedDateRange.endDate
+      );
     }
-    callDashboard()
-  }, [langId])
+    else {
+      getMetricsDashboardapi(
+        selectedDateRange.startDate,
+        selectedDateRange.endDate
+      );
+    }
+  }, [selectedDateRange]);
 
-  const getEmployeeDashboardapi = async (startDate, endDate) => {
+  // useEffect(() => {
+  //   callDashboard = async () => {
+  //     await getEmployeeDashboardapi(selectedDateRange?.startDate, selectedDateRange?.endDate)
+  //   }
+  //   callDashboard()
+  // }, [langId])
+
+  const getEmployeeDashboardapi = async () => {
     if (isConnected) {
       setLoaderApi(true)
       try {
@@ -337,14 +339,16 @@ const HomeScreenEmpSDK = ({ route }) => {
         headers.authType = "JSONREQUEST";
         const payload = {
           userId: headers.userId,
-          startDate: startDate ?? "",
-          endDate: endDate ?? ""
         };
         const url = APIConfig.BASE_URL + APIConfig.USERGETEMPLOYEEDASHBOARDDETAILS;
-        const response = await axios.post(url, payload, { headers });
-        const data = response?.data
         console.log("HADERS=-=-=>", JSON.stringify(headers))
-        console.log("PAYLOAD---=-=>", payload)
+        console.log("PAYLOAD---=-=>", payload, "URL=-=-=->", url)
+        const response = await axios.post(url, payload, {
+          headers,
+          timeout: 300000 // 5 minutes
+        });
+        const data = response?.data
+
         console.log("RESPONSE=--=-=>", JSON.stringify(data))
         if (data?.statusCode == 200 || data?.statusCode == HTTP_OK) {
           setmployeeDashboardData(response?.data?.response)
@@ -354,9 +358,6 @@ const HomeScreenEmpSDK = ({ route }) => {
         }
         else if (data?.statusCode == HTTP_601) {
           setLoaderApi(false)
-          SimpleToast.show(data?.message || translate("Something_went_wrong"))
-
-          // await logoutMethod()
         }
         else {
           setLoaderApi(false)
@@ -364,9 +365,70 @@ const HomeScreenEmpSDK = ({ route }) => {
         }
       } catch (error) {
         setLoaderApi(false)
-        console.error("Error fetching data:", error);
+        if (error.response?.status === 504) {
+          SimpleToast.show(
+            "Server is taking too long to respond. Please try again later."
+          );
+          return;
+        }
+
+        SimpleToast.show(
+          error.response?.data?.message ||
+          "Something went wrong"
+        );
       } finally {
         // setLoaderApi(false);
+      }
+    } else {
+      SimpleToast.show(translate("no_internet_conneccted"))
+    }
+  }
+
+  const getMetricsDashboardapi = async (startDate, endDate) => {
+    if (isConnected) {
+      setMetricLoader(true)
+      try {
+        const headers = await GetApiHeaders();
+        headers.authType = "JSONREQUEST";
+        const payload = {
+          userId: headers.userId,
+          startDate: startDate ?? "",
+          endDate: endDate ?? ""
+        };
+        const url = APIConfig.BASE_URL + APIConfig.USERGETEMPLOYEEMETRICSDASHBOARDDETAILS;
+        console.log("HADERS=-=-=>", JSON.stringify(headers))
+        console.log("PAYLOAD---=-=>", payload, "URL=-=-=->", url)
+        const response = await axios.post(url, payload, {
+          headers,
+          timeout: 300000 // 5 minutes
+        });
+        const data = response?.data
+
+        console.log("RESPONSE=--=-=>", JSON.stringify(data))
+        if (data?.statusCode == 200 || data?.statusCode == HTTP_OK) {
+          setMetricsDashboardData(response?.data?.response)
+          console.log("checkingEmployeeDashboard=-=->", JSON.stringify(response.data))
+        }
+        else if (data?.statusCode == HTTP_601) {
+          setMetricLoader(false)
+        }
+        else {
+          SimpleToast.show(data?.message || translate("Something_went_wrong"))
+        }
+      } catch (error) {
+        if (error.response?.status === 504) {
+          SimpleToast.show(
+            "Server is taking too long to respond. Please try again later."
+          );
+          return;
+        }
+
+        SimpleToast.show(
+          error.response?.data?.message ||
+          "Something went wrong"
+        );
+      } finally {
+        setMetricLoader(false);
       }
     } else {
       SimpleToast.show(translate("no_internet_conneccted"))
@@ -577,6 +639,24 @@ const HomeScreenEmpSDK = ({ route }) => {
     }
   };
 
+  const processSampleGeoTaggingData = async (data) => {
+    const updatedList = await Promise.all(
+      data.map(async (item, index) => {
+        const fileName = `cropImgs_${item.productLabel}_${item.cropName}.png`;
+        const localPath = await downloadImageToLocalCopy(item.imageUrl, fileName);
+        return {
+          ...item,
+          imageUrlLocal: localPath,
+        };
+      })
+    );
+
+    return {
+      updatedList
+    };
+  };
+
+
   const geSeedAndPopulationCaculator = async () => {
     // var networkStatus = await getNetworkStatus()
     if (isConnected) {
@@ -718,6 +798,142 @@ const HomeScreenEmpSDK = ({ route }) => {
         // setLoaderApi(false)
       }
     }
+  };
+
+  const getSampleGeoTaggingHistory = async () => {
+    if (isConnected) {
+      try {
+        const url = APIConfig.BASE_URL + APIConfig.geoTagging_getScanHistory
+        const headers = await GetApiHeaders();
+        const response = await fetchData(url, headers);
+        if (response && response?.data) {
+          if (response?.data?.scanHistoryList) {
+            const uploadedGeotaggingData = await processSampleGeoTaggingData(response?.data?.scanHistoryList)
+            const imageUrls = new Set();
+            let scanMssgOffline
+            if (langId === "2") {
+              scanMssgOffline = response.data.scanTeluguMessage
+            } else if (langId === "3") {
+              scanMssgOffline = response.data.scanHindiMessage
+            } else if (langId === "1") {
+              scanMssgOffline = response.data.scanMessage
+            }
+            let geoTaggingHistoryId;
+            const maxAttempts = 3;
+            let attempts = 0;
+            while (attempts < maxAttempts) {
+              try {
+                geoTaggingHistoryId = uuidv4();
+                const existingDashboard = realm.objects('GEOTAGGINGHISTORY').filtered('_id == $0', geoTaggingHistoryId);
+                if (existingDashboard.length === 0) {
+                  break;
+                }
+                attempts++;
+              } catch (uuidError) {
+                return;
+              }
+              if (attempts >= maxAttempts) {
+                return;
+              }
+            }
+            if (uploadedGeotaggingData) {
+              try {
+                realm.write(() => {
+                  realm.delete(cachedGeoTaggingHistory);
+                  realm.create('GEOTAGGINGHISTORY', {
+                    _id: geoTaggingHistoryId,
+                    couponsHistoryList: JSON.stringify(uploadedGeotaggingData.updatedList || []),
+                    scanMssg: JSON.stringify(scanMssgOffline || ""),
+                    timestamp: new Date(),
+                  });
+                });
+              } catch (realmError) {
+                console.error('Error creating GEOTAGGINGHISTORY object in Realm:', realmError);
+                return;
+              }
+            }
+          } else {
+            console.log("API Error:", response.data.message);
+          }
+        } else {
+        }
+      } catch (error) {
+        console.error("Error fetching scan history:", error);
+      }
+    } else {
+      // setLoaderApi(false);
+    }
+
+  };
+
+  const ShowHistoryRefresh = async () => {
+
+    if (isConnected) {
+      try {
+        const url = APIConfig.BASE_URL + APIConfig.geoTagging_getScanHistory
+        const headers = await GetApiHeaders();
+        const response = await fetchData(url, headers);
+        if (response && response?.data) {
+          if (response?.data?.scanHistoryList) {
+            const uploadedGeotaggingData = await processSampleGeoTaggingData(response?.data?.scanHistoryList)
+            const imageUrls = new Set();
+            let scanMssgOffline
+            if (langId === "2") {
+              scanMssgOffline = response.data.scanTeluguMessage
+            } else if (langId === "3") {
+              scanMssgOffline = response.data.scanHindiMessage
+            } else if (langId === "1") {
+              scanMssgOffline = response.data.scanMessage
+            }
+            let geoTaggingHistoryId;
+            const maxAttempts = 3;
+            let attempts = 0;
+            while (attempts < maxAttempts) {
+              try {
+                geoTaggingHistoryId = uuidv4();
+                const existingDashboard = realm.objects('GEOTAGGINGHISTORY').filtered('_id == $0', geoTaggingHistoryId);
+                if (existingDashboard.length === 0) {
+                  break;
+                }
+                attempts++;
+              } catch (uuidError) {
+                return;
+              }
+              if (attempts >= maxAttempts) {
+                return;
+              }
+            }
+            if (uploadedGeotaggingData) {
+              try {
+                realm.write(() => {
+                  realm.delete(cachedGeoTaggingHistory);
+                  realm.create('GEOTAGGINGHISTORY', {
+                    _id: geoTaggingHistoryId,
+                    couponsHistoryList: JSON.stringify(uploadedGeotaggingData.updatedList || []),
+                    scanMssg: JSON.stringify(scanMssgOffline || ""),
+                    timestamp: new Date(),
+                  });
+                });
+                console.log('Successfully created GEOTAGGINGHISTORY with _id:', geoTaggingHistoryId);
+              } catch (realmError) {
+                console.error('Error creating GEOTAGGINGHISTORY object in Realm:', realmError);
+                return;
+              }
+            }
+          } else {
+            console.log("API Error:", response.data.message);
+          }
+        } else {
+        }
+      } catch (error) {
+        console.error("Error fetching scan history:", error);
+      }
+    } else {
+      // setLoaderApi(false);
+      // SimpleToast.show(translate('no_internet_conneccted'))
+
+    }
+
   };
 
   const fetchKnowledgeCenter = async () => {
@@ -1342,9 +1558,6 @@ const HomeScreenEmpSDK = ({ route }) => {
             storeInAsyncStorage(DISTRICT_NAME, `${data?.district ?? ""}`),
           ]);
         } else if (response.data.statusCode === HTTP_601) {
-          SimpleToast.show(data?.message || translate("Something_went_wrong"))
-
-          // await logoutMethod()
         }
       } catch (error) {
         console.error('Error fetching user details:', error);
@@ -1435,7 +1648,8 @@ const HomeScreenEmpSDK = ({ route }) => {
         //   // setFarmerServiceModalVisible(true);
         //         setProductScanModalOpen(true)
         // setFellowFarmerVisible(true)
-        fromProductScancashbackScanBothLocationandCameraHandle('self')
+        employeeQrscanSelf()
+        // fromProductScancashbackScanBothLocationandCameraHandle('self')
         navigation.setParams({ openFarmerServices: undefined });
       }
       if (route?.params?.title === CASHBACKSCAN) {
@@ -1498,9 +1712,6 @@ const HomeScreenEmpSDK = ({ route }) => {
           setMarketPriceVisible(response?.data?.response?.userMenuControl["Market Prices"]?.visible)
         }
         else if (response.data.statusCode === HTTP_601) {
-          SimpleToast.show(data?.message || translate("Something_went_wrong"))
-
-          // await logoutMethod()
 
         }
       } catch (error) {
@@ -1552,9 +1763,6 @@ const HomeScreenEmpSDK = ({ route }) => {
         setWeatherVisible(response?.data?.response?.isVisible)
       }
       else if (response.data.statusCode === HTTP_601) {
-        SimpleToast.show(data?.message || translate("Something_went_wrong"))
-
-        // await logoutMethod()
       }
     } catch (error) {
       console.error('Error fetching weather details:', error);
@@ -1633,6 +1841,78 @@ const HomeScreenEmpSDK = ({ route }) => {
 
       if (isConnected) {
         navigation.navigate("CashBackScan", { screenName: value });
+      } else {
+        SimpleToast.show(translate("no_internet_conneccted"));
+      }
+
+    }
+    setProductScanModalOpen(false);
+
+  };
+
+  const employeeQrscanSelf = async () => {
+    // LOCATION PERMISSION
+    const locationPermission = await requestLocationPermission();
+    if (locationPermission !== "granted") {
+      return;
+    }
+    // GPS ENABLE CHECK
+    const isGpsEnable = await checkIfGpsEnabled();
+    if (!isGpsEnable) {
+      return;
+    }
+
+    // CAMERA PERMISSION
+    let cameraPermissionGranted = false;
+
+    if (Platform.OS === "android") {
+      const result = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.CAMERA
+      );
+
+      if (result === PermissionsAndroid.RESULTS.GRANTED) {
+        cameraPermissionGranted = true;
+      } else {
+        Alert.alert(
+          translate("Camera_Permission_Required"),
+          translate("Please_enable_camera_access_QR_codes"),
+          [
+            { text: translate("cancel"), style: "cancel" },
+            { text: translate("open_settings"), onPress: () => Linking.openSettings() }
+          ]
+        );
+        return;
+      }
+
+    } else {
+
+      const status = await request(PERMISSIONS.IOS.CAMERA);
+
+      if (status === RESULTS.GRANTED || status === RESULTS.LIMITED) {
+        cameraPermissionGranted = true;
+      } else {
+        Alert.alert(
+          translate("Camera_Permission_Required"),
+          translate("Please_enable_camera_access_QR_codes"),
+          [
+            { text: translate("cancel"), style: "cancel" },
+            { text: translate("open_settings"), onPress: () => Linking.openSettings() }
+          ]
+        );
+        return;
+      }
+    }
+
+    // FINAL CHECK (BOTH)
+    if (locationPermission === "granted" && cameraPermissionGranted) {
+
+      if (isConnected) {
+        navigation.navigate('QRScannerRn', {
+          type: "self",
+          fellowFarmerName: "",
+          fellowFarmerMobileNumber: "",
+        });
+        // navigation.navigate("CashBackScan", { screenName: value });
       } else {
         SimpleToast.show(translate("no_internet_conneccted"));
       }
@@ -1747,15 +2027,6 @@ const HomeScreenEmpSDK = ({ route }) => {
     }
   };
 
-  useEffect(() => {
-    getEmployeeDashboardapi(
-      selectedDateRange.startDate || '',
-      selectedDateRange.endDate || ''
-    );
-  }, [selectedDateRange]);
-
-
-
   const onRefresh = async () => {
     if (isConnected) {
       // setRefreshing(true);
@@ -1773,7 +2044,7 @@ const HomeScreenEmpSDK = ({ route }) => {
       await goldClubFetchKnowledgeCenterRefresh()
       await fetchSamadhanHistory()
       // await ShowHistory()
-      // await ShowHistoryRefresh()
+      await ShowHistoryRefresh()
       await geSeedAndPopulationCaculator();
       await getYieldCalcutlor();
       await getFertilizerCalc();
@@ -1831,7 +2102,10 @@ const HomeScreenEmpSDK = ({ route }) => {
         SimpleToast.show(translate('no_internet_conneccted'))
       }
     } else if (title === "Scan") {
-      fromProductScancashbackScanBothLocationandCameraHandle('self')
+      // fromProductScancashbackScanBothLocationandCameraHandle('self')
+      employeeQrscanSelf()
+      // setProductScanModalOpen(true)
+      // setFellowFarmerVisible(true)
     }
     else if (title === "Pest Forecast") {
       navigationPest()
@@ -2084,33 +2358,79 @@ const HomeScreenEmpSDK = ({ route }) => {
 
   const metricsList = () => {
     return (
-      <View style={{ backgroundColor: "#fff", borderRadius: 10, marginTop: 10, paddingBottom: 20 }}>
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-          <Text style={[styles.serviceText, { marginLeft: 10, marginVertical: 10, fontFamily: fonts.SemiBold }]}>{employeeDashboardData?.metrics?.sectionTitleTranslated}</Text>
+      <View
+        style={{
+          backgroundColor: "#fff",
+          borderRadius: 10,
+          marginTop: 10,
+          paddingBottom: 20,
+        }}
+      >
+        {/* Header always visible */}
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Text
+            style={[
+              styles.serviceText,
+              {
+                marginLeft: 10,
+                marginVertical: 10,
+                fontFamily: fonts.SemiBold,
+                fontSize: RFValue(18, height),
+              },
+            ]}
+          >
+            {metricsDashboardData?.metrics?.sectionTitleTranslated}
+          </Text>
 
-          {/* Date Range Picker */}
           <TouchableOpacity
             onPress={() => setDateRangeModalVisible(true)}
-            style={[styles.dateRangeBtn, { borderColor: dynamicStyles.primaryColor }]}
+            style={[
+              styles.dateRangeBtn,
+              { borderColor: dynamicStyles.primaryColor },
+            ]}
           >
-            {/* <Text style={[styles.dateRangeBtnText, { color: dynamicStyles.primaryColor, fontFamily: fonts.SemiBold }]}>
-              {selectedDateRange.startDate && selectedDateRange.endDate
-                ? `${selectedDateRange.startDate}  →  ${selectedDateRange.endDate}`
-                : 'Select Date Range'}
-            </Text> */}
-            {selectedDateRange.startDate && selectedDateRange.endDate ?
-              <Text style={[styles.selectText, { fontFamily: fonts.Bold }]}>{`${selectedDateRange.startDate}  -  ${selectedDateRange.endDate}`}</Text>
-              :
-              <Text style={[styles.selectText, { fontFamily: fonts.Regular }]}>Select</Text>
-            }
-            <Image style={styles.calendarIcon} source={require("../../assets/Images/dateRangeCalendarIcon.png")} />
+            {selectedDateRange.startDate &&
+              selectedDateRange.endDate ? (
+              <Text
+                style={[
+                  styles.selectText,
+                  { fontFamily: fonts.Bold },
+                ]}
+              >
+                {`${selectedDateRange.startDate} - ${selectedDateRange.endDate}`}
+              </Text>
+            ) : (
+              <Text
+                style={[
+                  styles.selectText,
+                  {
+                    fontFamily: fonts.Regular,
+                    fontSize: RFValue(14, height),
+                  },
+                ]}
+              >
+                Select
+              </Text>
+            )}
+
+            <Image
+              style={styles.calendarIcon}
+              source={require("../../../assets/Images/dateRangeCalendarIcon.png")}
+            />
           </TouchableOpacity>
         </View>
 
+        {/* Loader OR FlatList */}
         <View style={{ width: "100%" }}>
           <FlatList
             data={
-              employeeDashboardData?.metrics?.sectionItems?.filter(
+              metricsDashboardData?.metrics?.sectionItems?.filter(
                 item => item?.visible === true
               ) || []
             }
@@ -2121,10 +2441,31 @@ const HomeScreenEmpSDK = ({ route }) => {
             contentContainerStyle={{ paddingHorizontal: 8 }}
             showsVerticalScrollIndicator={false}
           />
+
+          {metricLoader && (
+            <View
+              style={{
+                position: "absolute",
+                top: 0,
+                bottom: 0,
+                left: 0,
+                right: 0,
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundColor: "rgba(255,255,255,0.6)",
+                borderRadius: 10,
+              }}
+            >
+              <ActivityIndicator
+                size="large"
+                color={dynamicStyles.primaryColor}
+              />
+            </View>
+          )}
         </View>
       </View>
-    )
-  }
+    );
+  };
 
   const renderFarmerService = (item) => {
     return (
@@ -2148,27 +2489,33 @@ const HomeScreenEmpSDK = ({ route }) => {
       {Platform.OS === 'android' && <StatusBar backgroundColor={dynamicStyles.primaryColor} barStyle={currentTheme.statusBar} />}
       <View style={[styles.headerMainContainer, { backgroundColor: dynamicStyles.primaryColor }]}>
         <View style={{ backgroundColor: dynamicStyles.primaryColor }} edges={['top']}>
-          {dynamicStyles.companyCode === '1100' && <Image source={require('../../assets/Images/staticSubeejIcon.png')} style={styles.subeejIcon} />}
-          {dynamicStyles.companyCode === '1400' && <Image source={require('../../assets/Images/staticPrabathIcon.png')} style={styles.subeejIcon} />}
-          {dynamicStyles.companyCode === '1300' && <Image source={require('../../assets/Images/staticPravardhanIcon.png')} style={styles.subeejIcon} />}
-          {dynamicStyles.companyCode === '1900' && <Image source={require('../../assets/Images/staticLakshmiProgramIcon.png')} style={styles.subeejIcon} />}
+          {dynamicStyles.companyCode === '1100' && <Image source={require('../../../assets/Images/staticSubeejIcon.png')} style={styles.subeejIcon} />}
+          {dynamicStyles.companyCode === '1400' && <Image source={require('../../../assets/Images/staticPrabathIcon.png')} style={styles.subeejIcon} />}
+          {dynamicStyles.companyCode === '1300' && <Image source={require('../../../assets/Images/staticPravardhanIcon.png')} style={styles.subeejIcon} />}
+          {dynamicStyles.companyCode === '1900' && <Image source={require('../../../assets/Images/staticLakshmiProgramIcon.png')} style={styles.subeejIcon} />}
         </View>
         <View style={styles.profileContainer}>
           <View style={styles.profileSubContainer}>
-            <View style={styles.farmerIconContainer}>
-              {userData?.userPic ?
-                <>
-                  {isConnected ? <Image source={{ uri: userData.userPic }} style={userData?.userPic ? styles.farmerIcon1 : styles.farmerIcon} />
-                    : <Image source={defaultImage} style={userData?.userPic ? styles.farmerIcon1 : styles.farmerIcon} />}
-                </>
-                : <Image source={defaultImage} style={userData?.userPic ? styles.farmerIcon1 : styles.farmerIcon} />
-              }
-            </View>
+            <TouchableOpacity onPress={() => navigation.navigate('MoreScreenRn', { companyName: dynamicStyles.companyName })}>
+              <View style={styles.farmerIconContainer}>
+                {/* {userData?.userPic ?
+                  <Image source={{ uri: userData.userPic }} style={userData?.userPic ? styles.farmerIcon1 : styles.farmerIcon} />
+                  : <Image source={defaultImage} style={userData?.userPic ? styles.farmerIcon1 : styles.farmerIcon} />
+                } */}
+                {userData?.userPic ?
+                  <>
+                    {isConnected ? <Image source={{ uri: userData.userPic }} style={userData?.userPic ? styles.farmerIcon1 : styles.farmerIcon} />
+                      : <Image source={defaultImage} style={userData?.userPic ? styles.farmerIcon1 : styles.farmerIcon} />}
+                  </>
+                  : <Image source={defaultImage} style={userData?.userPic ? styles.farmerIcon1 : styles.farmerIcon} />
+                }
+              </View>
+            </TouchableOpacity>
             <View style={{ flexDirection: 'row' }}>
               <View>
                 <View style={styles.greetingSmileContainer}>
                   <Text style={[styles.greetingstText, { color: dynamicStyles.secondaryColor, fontFamily: fonts.Regular }]}>{greeting}</Text>
-                  <Image source={require('../../assets/Images/smileIconImg.png')} style={[styles.smileIcon, { tintColor: dynamicStyles.secondaryColor }]} />
+                  <Image source={require('../../../assets/Images/smileIconImg.png')} style={[styles.smileIcon, { tintColor: dynamicStyles.secondaryColor }]} />
                 </View>
                 <Text style={[styles.userNameText, { color: dynamicStyles.secondaryColor, fontFamily: fonts.SemiBold }]}>{userData?.userName}</Text>
               </View>
@@ -2181,7 +2528,7 @@ const HomeScreenEmpSDK = ({ route }) => {
           <TouchableOpacity onPress={() => onRefresh()} style={{
             alignSelf: "flex-start", marginLeft: 10, marginRight: 5
           }}>
-            <Image source={require("../../assets/Images/RefreshIcon.png")} style={{ height: 30, width: 30, tintColor: dynamicStyles.secondaryColor }} />
+            <Image source={require("../../../assets/Images/RefreshIcon.png")} style={{ height: 30, width: 30, tintColor: dynamicStyles.secondaryColor }} />
           </TouchableOpacity>
         </View>
 
@@ -2201,10 +2548,10 @@ const HomeScreenEmpSDK = ({ route }) => {
                 </View>
                 <View style={styles.line} />
                 <View style={styles.degreenSecondPartContainer}>
-                  <Image source={require('../../assets/Images/cloudeIconImg.png')} style={styles.cloudImgIcon} />
+                  <Image source={require('../../../assets/Images/cloudeIconImg.png')} style={styles.cloudImgIcon} />
                   <View style={styles.locationDetailsMainContainer}>
                     <View style={styles.locationDetailsContainer}>
-                      <Image source={require('../../assets/Images/locationImgIcon.png')} style={styles.locationIcon} />
+                      <Image source={require('../../../assets/Images/locationImgIcon.png')} style={styles.locationIcon} />
                       <Text style={[styles.locationText, { color: dynamicStyles.textColor, fontFamily: fonts.SemiBold }]}>{normalizeText(weatherInfo?.city)}</Text>
                     </View>
                     <Text style={[styles.weatherReportText, { fontFamily: fonts.SemiBold }]}>{weatherInfo?.weather_description}</Text>
@@ -2216,7 +2563,7 @@ const HomeScreenEmpSDK = ({ route }) => {
           </>
         }
 
-        <Image source={require('../../assets/Images/flowerIcon.png')} style={styles.flowerIcon} />
+        <Image source={require('../../../assets/Images/flowerIcon.png')} style={styles.flowerIcon} />
       </View>
       <View style={styles.flatListContainer}>
         <ScrollView
@@ -2225,7 +2572,7 @@ const HomeScreenEmpSDK = ({ route }) => {
         >
           {metricsList()}
 
-          <TouchableOpacity onPress={farmerServiceHandle} style={{ borderRadius: 10, marginVertical: 10, height: width * 0.12, justifyContent: "center", backgroundColor: dynamicStyles.primaryColor, alignItems: "center" }}>
+          <TouchableOpacity onPress={farmerServiceHandle} style={{ borderRadius: 10, marginVertical: 10, height: width * 0.12, justifyContent: "center", backgroundColor: dynamicStyles.primaryColor, alignItems: "center", marginTop: 20 }}>
             <Text style={{ color: dynamicStyles.secondaryColor, fontFamily: fonts.SemiBold, fontSize: 14 }}>{translate('farmer_services')}</Text>
           </TouchableOpacity>
           <View style={{ height: 100 }} />
@@ -2238,7 +2585,7 @@ const HomeScreenEmpSDK = ({ route }) => {
               <View style={styles.modalSelectCalMainContainer}>
                 <Text style={[styles.modalSelectText, { fontFamily: fonts.SemiBold }]}>{employeeDashboardData?.farmerServices?.sectionTitleTranslated || translate('select')}</Text>
                 <TouchableOpacity onPress={farmerServiceHandleClose}>
-                  <Image source={require('../../assets/Images/crossIcon.png')} style={styles.modalCrossIcon} />
+                  <Image source={require('../../../assets/Images/crossIcon.png')} style={styles.modalCrossIcon} />
                 </TouchableOpacity>
               </View>
               <View style={{ height: 300 }}>
@@ -2258,13 +2605,13 @@ const HomeScreenEmpSDK = ({ route }) => {
               <View style={styles.modalSelectCalMainContainer}>
                 <Text style={[styles.modalSelectText, { fontFamily: fonts.SemiBold }]}>{translate('select')}</Text>
                 <TouchableOpacity onPress={closeCalculatorModal}>
-                  <Image source={require('../../assets/Images/crossIcon.png')} style={styles.modalCrossIcon} />
+                  <Image source={require('../../../assets/Images/crossIcon.png')} style={styles.modalCrossIcon} />
                 </TouchableOpacity>
               </View>
               <View style={styles.calculatorOptionsContainer}>
                 <TouchableOpacity onPress={seedScreenNavigation} style={styles.selectedCalculatorContainer}>
                   <View style={[styles.calculatorIconContainer, { borderColor: selectedCalculator === 'Seed' ? dynamicStyles.primaryColor : '#F2F6F9' }]}>
-                    <Image source={require('../../assets/Images/seedcalIcon.png')} style={styles.subeejIcon1} />
+                    <Image source={require('../../../assets/Images/seedcalIcon.png')} style={styles.subeejIcon1} />
                   </View>
                   <Text style={[styles.selectedCalculatorText, { color: selectedCalculator === 'Seed' ? dynamicStyles.primaryColor : '#33527D', fontFamily: fonts.Bold }]}>
                     {translate('seed_population_calculator')}
@@ -2272,7 +2619,7 @@ const HomeScreenEmpSDK = ({ route }) => {
                 </TouchableOpacity>
                 <TouchableOpacity onPress={fertilizerScreenNavigation} style={styles.selectedCalculatorContainer}>
                   <View style={[styles.calculatorIconContainer, { borderColor: selectedCalculator === 'fertilizer' ? dynamicStyles.primaryColor : '#F2F6F9' }]}>
-                    <Image source={require('../../assets/Images/fertilizerIcon.png')} style={styles.subeejIcon1} />
+                    <Image source={require('../../../assets/Images/fertilizerIcon.png')} style={styles.subeejIcon1} />
                   </View>
                   <Text style={[styles.selectedCalculatorText, { color: selectedCalculator === 'fertilizer' ? dynamicStyles.primaryColor : '#33527D', fontFamily: fonts.Bold }]}>
                     {translate('fertilizer_calculator')}
@@ -2280,7 +2627,7 @@ const HomeScreenEmpSDK = ({ route }) => {
                 </TouchableOpacity>
                 <TouchableOpacity onPress={yieldScreenNavigation} style={styles.selectedCalculatorContainer}>
                   <View style={[styles.calculatorIconContainer, { borderColor: selectedCalculator === 'Yield' ? dynamicStyles.primaryColor : '#F2F6F9' }]}>
-                    <Image source={require('../../assets/Images/yieldIcon.png')} style={styles.subeejIcon1} />
+                    <Image source={require('../../../assets/Images/yieldIcon.png')} style={styles.subeejIcon1} />
                   </View>
                   <Text style={[styles.selectedCalculatorText, { color: selectedCalculator === 'Yield' ? dynamicStyles.primaryColor : '#33527D', fontFamily: fonts.Bold }]}>
                     {translate('yield_calculator')}
@@ -2299,14 +2646,14 @@ const HomeScreenEmpSDK = ({ route }) => {
               <View style={styles.modalSelectCalMainContainer}>
                 <Text style={[styles.modalSelectText, { fontFamily: fonts.SemiBold }]}>{translate('select')}</Text>
                 <TouchableOpacity onPress={() => dispatch(setCashBackModal(false))}>
-                  <Image source={require('../../assets/Images/crossIcon.png')} style={styles.modalCrossIcon} />
+                  <Image source={require('../../../assets/Images/crossIcon.png')} style={styles.modalCrossIcon} />
                 </TouchableOpacity>
               </View>
               <View style={styles.calculatorOptionsContainer2}>
                 <TouchableOpacity onPress={() => rewardPointsCashbackNavigation("RewardsScreen", REWARDS)} style={styles.selectedCalculatorContainer2}>
                   <View style={[styles.calculatorIconContainer2, { backgroundColor: cashBackSelected === REWARDS ? dynamicStyles.primaryColor : '#fff', borderColor: cashBackSelected === REWARDS ? dynamicStyles.primaryColor : '#D6D6D6' }]}>
                     <View style={{ flexDirection: "row", alignItems: "center" }}>
-                      <Image source={cashBackSelected === REWARDS ? require('../../assets/Images/rewardsGiftIcon2.png') : require('../../assets/Images/rewardsGiftIcon.png')} style={[styles.subeejIcon2]} />
+                      <Image source={cashBackSelected === REWARDS ? require('../../../assets/Images/rewardsGiftIcon2.png') : require('../../../assets/Images/rewardsGiftIcon.png')} style={[styles.subeejIcon2]} />
                       <Text style={[styles.selectedCalculatorText2, { color: cashBackSelected === REWARDS ? dynamicStyles.secondaryColor : '#000000', fontFamily: fonts.Bold }]}>
                         {translate('Reward_Points')}
                       </Text>
@@ -2316,7 +2663,7 @@ const HomeScreenEmpSDK = ({ route }) => {
                 <TouchableOpacity onPress={() => rewardPointsCashbackNavigation("CashFreeTransactionsActivity", CASHBACK)} style={styles.selectedCalculatorContainer2}>
                   <View style={[styles.calculatorIconContainer2, { backgroundColor: cashBackSelected === CASHBACK ? dynamicStyles.primaryColor : '#fff', borderColor: cashBackSelected === CASHBACK ? dynamicStyles.primaryColor : '#D6D6D6' }]}>
                     <View style={{ flexDirection: "row", alignItems: "center" }}>
-                      <Image source={cashBackSelected === CASHBACK ? require('../../assets/Images/cashbackIcon2.png') : require('../../assets/Images/cashbackIcon.png')} style={[styles.subeejIcon2]} />
+                      <Image source={cashBackSelected === CASHBACK ? require('../../../assets/Images/cashbackIcon2.png') : require('../../../assets/Images/cashbackIcon.png')} style={[styles.subeejIcon2]} />
                       <Text style={[styles.selectedCalculatorText2, { color: cashBackSelected === CASHBACK ? dynamicStyles.secondaryColor : '#000000', fontFamily: fonts.Bold }]}>
                         {translate('Cashback_History')}
                       </Text>
@@ -2339,7 +2686,7 @@ const HomeScreenEmpSDK = ({ route }) => {
                   <View style={styles.modalSelectCalMainContainer}>
                     <Text style={[styles.modalSelectText, { fontFamily: fonts.SemiBold }]}>{translate('select')}</Text>
                     <TouchableOpacity style={{ height: 35, width: 35, borderRadius: 30, borderWidth: 1, borderColor: dynamicStyles.primaryColor, alignItems: "center", justifyContent: "center" }} onPress={handleCloseModal}>
-                      <Image source={require('../../assets/Images/crossIcon.png')} style={[styles.modalCrossIcon, { tintColor: dynamicStyles.primaryColor }]} />
+                      <Image source={require('../../../assets/Images/crossIcon.png')} style={[styles.modalCrossIcon, { tintColor: dynamicStyles.primaryColor }]} />
                     </TouchableOpacity>
                   </View>
                   <View>
@@ -2356,7 +2703,7 @@ const HomeScreenEmpSDK = ({ route }) => {
                   <View style={styles.modalSelectCalMainContainer}>
                     <Text style={[styles.modalSelectText, { fontFamily: fonts.SemiBold }]}>{translate('Fellow_Farmer_Details')}</Text>
                     <TouchableOpacity style={{ height: 35, width: 35, borderRadius: 30, borderWidth: 1, borderColor: dynamicStyles.primaryColor, alignItems: "center", justifyContent: "center" }} onPress={handleCloseModal}>
-                      <Image source={require('../../assets/Images/crossIcon.png')} style={[styles.modalCrossIcon, { tintColor: dynamicStyles.primaryColor }]} />
+                      <Image source={require('../../../assets/Images/crossIcon.png')} style={[styles.modalCrossIcon, { tintColor: dynamicStyles.primaryColor }]} />
                     </TouchableOpacity>
                   </View>
                   <View>
@@ -2390,6 +2737,7 @@ const HomeScreenEmpSDK = ({ route }) => {
           </View>
         </TouchableWithoutFeedback>
       </Modal>
+      {/* </ScreenWrapper> */}
 
 
       {genunityResponse &&
@@ -2425,7 +2773,7 @@ const HomeScreenEmpSDK = ({ route }) => {
         onClose={() => setDateRangeModalVisible(false)}
         onConfirm={({ startDate, endDate }) => {
           setSelectedDateRange({ startDate, endDate });
-          getEmployeeDashboardapi(startDate, endDate);
+          getMetricsDashboardapi(startDate, endDate);
         }}
         primaryColor={dynamicStyles.primaryColor}
         secondayColor={dynamicStyles.secondaryColor}
@@ -2439,7 +2787,7 @@ const HomeScreenEmpSDK = ({ route }) => {
   );
 };
 
-export default HomeScreenEmpSDK;
+export default HomeScreenEmp;
 
 const styles = StyleSheet.create({
   homeMainContainer: {
@@ -2750,7 +3098,7 @@ const styles = StyleSheet.create({
   selectedCalculatorText: {
     fontSize: RFValue(12, height),
     textAlign: 'center',
-    lineHeight: 20,
+    // lineHeight: 20,
   },
   calculatorOptionsContainer: {
     marginTop: height * 0.02,
@@ -2945,13 +3293,15 @@ const styles = StyleSheet.create({
   dateRangeBtn: {
     borderRadius: 10,
     height: 48,
-    justifyContent: 'center',
+    justifyContent: "space-between",
     alignItems: 'center',
     marginVertical: 10,
     backgroundColor: '#F5F5F5',
-    minWidth: 50,
+    minWidth: 110,
     marginRight: 10,
-    paddingHorizontal: 10,
+    paddingLeft: 15,
+    paddingRight: 10,
+    // paddingHorizontal: 10,
     flexDirection: "row"
   },
   dateRangeBtnText: {
@@ -2962,8 +3312,8 @@ const styles = StyleSheet.create({
     fontSize: RFValue(12, height)
   },
   calendarIcon: {
-    height: 15,
-    width: 15,
+    height: 19,
+    width: 19,
     resizeMode: "contain",
     marginLeft: 10
   }
