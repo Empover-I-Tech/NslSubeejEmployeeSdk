@@ -2787,7 +2787,7 @@ const HomeScreenEmpSDK = ({ route }) => {
   );
 };
 
-export default HomeScreenEmp;
+export default HomeScreenEmpSDK;
 
 const styles = StyleSheet.create({
   homeMainContainer: {
