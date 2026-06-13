@@ -50,7 +50,7 @@ const DOWNLOAD_TIMEOUT = 30000; // 30 seconds
 const RETRY_ATTEMPTS = 2;
 
 const HomeScreenEmpSDK = ({ route }) => {
- 
+
   const fonts = useFontStyles()
   const { uploadOfflineHelpDesk, uploadOfflineSeedCalc, uploadOfflineYieldCalc, incrementOfflineCount, decrementOfflineCount, updateOfflineCount } = useOfflineSync();
   const { saveSeedMasterList, saveYieldMasterList, saveSeedCalc, fertilizerMasterList, fertilizerMasterList2 } = useOfflineCalculatorsCRUD();
@@ -102,7 +102,7 @@ const HomeScreenEmpSDK = ({ route }) => {
   const cachedKnowledgeCenter = realm.objects('KnowledgeCenter');
   const cachedGoldClubKnowledgeCenter = realm.objects('GoldCludKnowledgeCenter');
   const cachedSamadhanHistory = realm.objects('SAMADHANHISTORY');
- 
+
   const [weatherTwo, setWeatherTwo] = useState("")
   const [advanceKnVisible, setAdvanceKnVisible] = useState(true)
   const isSyncInProgress = useRef(false);
@@ -2495,21 +2495,15 @@ const HomeScreenEmpSDK = ({ route }) => {
         </View>
         <View style={styles.profileContainer}>
           <View style={styles.profileSubContainer}>
-            <TouchableOpacity onPress={() => navigation.navigate('MoreScreenRn', { companyName: dynamicStyles.companyName })}>
-              <View style={styles.farmerIconContainer}>
-                {/* {userData?.userPic ?
-                  <Image source={{ uri: userData.userPic }} style={userData?.userPic ? styles.farmerIcon1 : styles.farmerIcon} />
-                  : <Image source={defaultImage} style={userData?.userPic ? styles.farmerIcon1 : styles.farmerIcon} />
-                } */}
-                {userData?.userPic ?
-                  <>
-                    {isConnected ? <Image source={{ uri: userData.userPic }} style={userData?.userPic ? styles.farmerIcon1 : styles.farmerIcon} />
-                      : <Image source={defaultImage} style={userData?.userPic ? styles.farmerIcon1 : styles.farmerIcon} />}
-                  </>
-                  : <Image source={defaultImage} style={userData?.userPic ? styles.farmerIcon1 : styles.farmerIcon} />
-                }
-              </View>
-            </TouchableOpacity>
+            <View style={styles.farmerIconContainer}>
+              {userData?.userPic ?
+                <>
+                  {isConnected ? <Image source={{ uri: userData.userPic }} style={userData?.userPic ? styles.farmerIcon1 : styles.farmerIcon} />
+                    : <Image source={defaultImage} style={userData?.userPic ? styles.farmerIcon1 : styles.farmerIcon} />}
+                </>
+                : <Image source={defaultImage} style={userData?.userPic ? styles.farmerIcon1 : styles.farmerIcon} />
+              }
+            </View>
             <View style={{ flexDirection: 'row' }}>
               <View>
                 <View style={styles.greetingSmileContainer}>
