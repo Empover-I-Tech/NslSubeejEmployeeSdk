@@ -625,7 +625,7 @@ const WeatherScreen = ({ route }) => {
           style={[styles.header, { backgroundColor: dynamicStyles.primaryColor,marginBottom:10 }]}
         >
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between",width:"100%" }}>
-            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <TouchableOpacity style={styles.backButton} onPress={() => navigation.popToTop()}>
               <Image source={require('../../../src/assets/images/weatherScreen/newBackButton.png')} style={{
                 height: 20, width: 34, tintColor: dynamicStyles.secondaryColor, marginTop: 15, marginLeft: 10
               }} />

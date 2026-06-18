@@ -12,10 +12,10 @@ import { translate } from '../Localization/Localisation';
 import RenderHTML from 'react-native-render-html';
 import CustomCircularProgress from '../components/CustomCircularProgress';
 import { useFontStyles } from '../hooks/useFontStyles';
-const{height}=Dimensions.get("window")
+const { height } = Dimensions.get("window")
 
 const Remedyrecommendation = ({ route }) => {
-  const fonts=useFontStyles()
+  const fonts = useFontStyles()
   const [diseaseData, setDiseaseData] = useState(route?.params?.data || '')
   // console.log('rrrrrrr', route)
   const [pests, setPests] = useState(route?.params?.data?.pests || '')
@@ -29,7 +29,7 @@ const Remedyrecommendation = ({ route }) => {
   const [loading, setLoading] = useState(false)
   const [loadingMessage, setLoadingMessage] = useState('')
   const [successLoadingMessage, setSuccessLoadingMessage] = useState('')
- 
+
   let [localLatitude, setLocalLatitude] = useState(null)
   let [localLongitude, setLocalLongitude] = useState(null)
   let [localAddress, setLocalAddress] = useState(null)
@@ -178,8 +178,11 @@ const Remedyrecommendation = ({ route }) => {
           const { statusCode, response, message } = APIResponse.data;
 
           if (statusCode === HTTP_OK) {
-            setDiagnosis(response[0]?.diagnosis);
-            setAdvisory(response[0]?.advisory);
+            if (response != null) {
+              setDiagnosis(response[0]?.diagnosis);
+              setAdvisory(response[0]?.advisory);
+            }
+
           } else {
             SimpleToast.show(message || translate('something_went_wrong'));
           }
@@ -212,7 +215,7 @@ const Remedyrecommendation = ({ route }) => {
       <View style={[{ backgroundColor: dynamicStyles.primaryColor }, { paddingStart: 20, paddingEnd: 20, paddingBottom: 20, borderBottomStartRadius: 10, borderBottomEndRadius: 10, paddingTop: Platform.OS == 'ios' ? 60 : 20 }]}>
         <TouchableOpacity style={[{ flexDirection: 'row' }]} onPress={() => navigation.goBack()}>
           <Image source={require('../../src/assets/images/weatherScreen/newBackButton.png')} style={{ height: 20, width: 34, tintColor: dynamicStyles.secondaryColor, marginTop: 3 }} />
-          <Text style={[styles.headerText, { marginLeft: 10, color: dynamicStyles.secondaryColor,fontFamily:fonts.Bold }]}>
+          <Text style={[styles.headerText, { marginLeft: 10, color: dynamicStyles.secondaryColor, fontFamily: fonts.Bold }]}>
             {translate('remedy_recommendation')}
           </Text>
         </TouchableOpacity>
@@ -222,8 +225,8 @@ const Remedyrecommendation = ({ route }) => {
         <View style={{ flex: 1, backgroundColor: 'white', borderRadius: 10, margin: 10, width: "90%", alignSelf: "center", borderRadius: 10, shadowColor: '#000', backgroundColor: "white", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 4, elevation: 2 }}>
           <View style={{ margin: 10, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
             <View style={{ width: "78%" }}>
-              <Text style={[{ color: dynamicStyles.textColor,fontFamily:fonts.Bold, fontSize: 14,lineHeight:30 }]}>{pests}</Text>
-              <Text style={[{ color: dynamicStyles?.textColor,fontSize: 14 ,lineHeight:25,fontFamily:fonts.Medium}]}>{description}</Text>
+              <Text style={[{ color: dynamicStyles.textColor, fontFamily: fonts.Bold, fontSize: 14, lineHeight: 30 }]}>{pests}</Text>
+              <Text style={[{ color: dynamicStyles?.textColor, fontSize: 14, lineHeight: 25, fontFamily: fonts.Medium }]}>{description}</Text>
             </View>
             {diseaseData?.percentage && <CustomCircularProgress
               percentage={diseaseData?.percentage} radius={25} strokeWidth={6} percentageText={diseaseData?.percentage} level={diseaseData?.level}
@@ -231,23 +234,23 @@ const Remedyrecommendation = ({ route }) => {
           </View>
           <View style={{ height: 2, backgroundColor: 'rgba(242, 246, 249, 1)', marginVertical: 7, margin: 10 }} />
           <View style={{ margin: 10 }}>
-            <Text style={[{ color: dynamicStyles?.textColor,fontSize: 14, marginBottom: 10,fontFamily:fonts.Bold }]}>{diagnosis}</Text>
-           <View style={{maxHeight:height*0.55}}>
-            {advisory.length > 0 ? (
-              <FlatList
-                data={advisory}
-                keyExtractor={(_, index) => index.toString()}
-                renderItem={({ item, index }) => (
-                  <View style={{ flexDirection: 'row',width:"95%" }}>
-                    <Text style={[{ color: dynamicStyles?.textColor,fontSize:14  ,lineHeight:26,fontFamily:fonts.Regular}]}>{index + 1}. </Text>
-                    <Text style={[{ color: dynamicStyles?.textColor, fontSize:14,lineHeight:26,fontFamily:fonts.Regular }]}>{item.point}</Text>
-                  </View>
-                )}
-              />
-            ) : (
-              <Text style={[{ color: dynamicStyles?.textColor, marginLeft: 10, margin: 2, fontFamily:fonts.Regular,fontSize: 13 }]}>{translate('not_available')}</Text>
-            )}
-           </View>
+            <Text style={[{ color: dynamicStyles?.textColor, fontSize: 14, marginBottom: 10, fontFamily: fonts.Bold }]}>{diagnosis}</Text>
+            <View style={{ maxHeight: height * 0.55 }}>
+              {advisory?.length > 0 ? (
+                <FlatList
+                  data={advisory}
+                  keyExtractor={(_, index) => index.toString()}
+                  renderItem={({ item, index }) => (
+                    <View style={{ flexDirection: 'row', width: "95%" }}>
+                      <Text style={[{ color: dynamicStyles?.textColor, fontSize: 14, lineHeight: 26, fontFamily: fonts.Regular }]}>{index + 1}. </Text>
+                      <Text style={[{ color: dynamicStyles?.textColor, fontSize: 14, lineHeight: 26, fontFamily: fonts.Regular }]}>{item.point}</Text>
+                    </View>
+                  )}
+                />
+              ) : (
+                <Text style={[{ color: dynamicStyles?.textColor, marginLeft: 10, margin: 2, fontFamily: fonts.Regular, fontSize: 13 }]}>{translate('not_available')}</Text>
+              )}
+            </View>
 
           </View>
         </View>
@@ -262,8 +265,8 @@ const styles = StyleSheet.create({
   gray300bg: { backgroundColor: '#f5f5f5' },
   header: { flexDirection: "row", alignItems: "center", alignSelf: "center", width: "100%", borderBottomLeftRadius: 12, borderBottomRightRadius: 12, height: 60 },
   backButton: { height: 50, width: 50, resizeMode: "contain", marginRight: 10 },
-  headerText: {fontSize: 18 },
- 
+  headerText: { fontSize: 18 },
+
 });
 
 export default Remedyrecommendation;
