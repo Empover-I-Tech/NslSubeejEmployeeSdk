@@ -194,7 +194,7 @@ export async function GetApiHeaders() {
         'languageId': await getFromAsyncStorage(LANGUAGEID),
         'authType': JWTAUTHENTICATION,
         'referralCode': await getFromAsyncStorage(REFERRALCODE),
-        'applicationName' : await getFromAsyncStorage(SDK_AUTH_ID)?subeejSDK:APPLICATION_NAME,
+        'applicationName' : APPLICATION_NAME,
         "companyCode": await getFromAsyncStorage(COMPANYCODE),
         "empHierarchy": await getFromAsyncStorage(EMP_HIERARCHY),
         "clientAppName":await getAppName(),
