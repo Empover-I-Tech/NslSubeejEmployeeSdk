@@ -288,7 +288,7 @@ const KnowledgeCenterPDFView = ({ route }) => {
               source={require('../../assets/Images/previous.png')}
             />
             <Text style={{
-              color: dynamicStyles.secondaryColor, marginLeft: 10, fontSize: 18, fontWeight: 'bold', lineHeight: 22,
+              color: dynamicStyles.secondaryColor, marginLeft: 10, fontSize: 18, fontWeight: 'bold', lineHeight: 24,
               flexShrink: 1,
               flexWrap: 'wrap',
               minWidth: 200
