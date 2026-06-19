@@ -38,6 +38,7 @@ const LoaderScreen = ({ route }) => {
         || languageData[0];
 
     const isConnected = useSelector((state) => state.network.isConnected);
+    console.log("isConnected", isConnected)
     const selectedCompanyData = useSelector(state => state.selectedCompnayAct.selectedCompanyAct)
     console.log("selectedCompanyData", selectedCompanyData)
     const [loaderImage, setLoaderImage] = useState(require('../../assets/Images/SubeejLoader.gif'))
@@ -146,6 +147,7 @@ const LoaderScreen = ({ route }) => {
         console.log("getURL====", getURL)
         const getHeaders = await GetApiHeaders();
         getHeaders.authType = "JSONREQUEST";
+        getHeaders.clientPackageName = "com.nslemployeesdkstestingproject"
         getHeaders["Content-Type"] = "application/json";
         const payload = {
             mobileNumber: mobileNumber,
