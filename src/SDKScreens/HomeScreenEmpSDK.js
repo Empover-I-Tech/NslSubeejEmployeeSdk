@@ -2578,7 +2578,7 @@ const HomeScreenEmpSDK = ({ route }) => {
               <View style={styles.modalSelectCalMainContainer}>
                 <Text style={[styles.modalSelectText, { fontFamily: fonts.SemiBold }]}>{employeeDashboardData?.farmerServices?.sectionTitleTranslated || translate('select')}</Text>
                 <TouchableOpacity onPress={farmerServiceHandleClose}>
-                  <Image source={require('../../../assets/Images/crossIcon.png')} style={styles.modalCrossIcon} />
+                  <Image source={require('../../assets/Images/crossIcon.png')} style={styles.modalCrossIcon} />
                 </TouchableOpacity>
               </View>
               <FlatList nestedScrollEnabled={true} data={employeeDashboardData?.farmerServices?.sectionItems?.filter((item) => item.visible)} renderItem={renderFarmerService} />
