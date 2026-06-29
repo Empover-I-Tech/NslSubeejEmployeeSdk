@@ -41,7 +41,7 @@ const LoaderScreen = ({ route }) => {
     console.log("isConnected", isConnected)
     const selectedCompanyData = useSelector(state => state.selectedCompnayAct.selectedCompanyAct)
     console.log("selectedCompanyData", selectedCompanyData)
-    const [loaderImage, setLoaderImage] = useState(require('../../assets/Images/SubeejLoader.gif'))
+    const [loaderImage, setLoaderImage] = useState(require('../assets/Images/SubeejLoader.gif'))
     const [loadingCount, setLoadingCount] = useState(0);
     const [loadingMessage, setLoadingMessage] = useState('');
     const dispatch = useDispatch()
