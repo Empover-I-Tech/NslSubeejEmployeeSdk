@@ -1,18 +1,18 @@
 import { useEffect, useState } from 'react';
 import { View, Text, Alert } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux';
-import APIConfig, { HTTP_OK, HTTP_SWITCHING_PROTOCOLS, setEnvironment } from "../../src/api/APIConfig";
-import CustomLoader from "../../src/components/CustomLoader"
-import { setCompanyStyle } from "../../src/state/actions/companyStyles";
-import { COMPANYCODE, EMP_DASHBOARD_SCREEN, FIRSTNAME, LANGUAGECODE, LANGUAGEID, LANGUAGENAME, LASTNAME, MOBILENUMBER, ROLDID, ROLENAME, SCREENNAME, SDK_AUTH_ID, SDK_AUTH_TOKEN, USER_ID, USER_IMG, USERNAME } from "../../src/utils";
-import { downloadFileToLocal, GetApiHeaders } from "../../src/utils/helpers";
-import { storeInAsyncStorage } from "../../src/utils/keychainUtils";
+import APIConfig, { HTTP_OK, HTTP_SWITCHING_PROTOCOLS, setEnvironment } from "../src/api/APIConfig";
+import CustomLoader from "../src/components/CustomLoader"
+import { setCompanyStyle } from "../src/state/actions/companyStyles";
+import { COMPANYCODE, EMP_DASHBOARD_SCREEN, FIRSTNAME, LANGUAGECODE, LANGUAGEID, LANGUAGENAME, LASTNAME, MOBILENUMBER, ROLDID, ROLENAME, SCREENNAME, SDK_AUTH_ID, SDK_AUTH_TOKEN, USER_ID, USER_IMG, USERNAME } from "../src/utils";
+import { downloadFileToLocal, GetApiHeaders } from "../src/utils/helpers";
+import { storeInAsyncStorage } from "../src/utils/keychainUtils";
 import { useNavigation } from '@react-navigation/native';
-import { setIsEmployee } from "../../src/state/actions/employeeActions";
-import { changeLanguage, translate } from '../Localization/Localisation';
-import { setSelectedCompanyAct } from '../state/actions/selectedCompanyActions';
+import { setIsEmployee } from "../src/state/actions/employeeActions";
+import { changeLanguage, translate } from '../src/Localization/Localisation';
+import { setSelectedCompanyAct } from '../src/state/actions/selectedCompanyActions';
 import SimpleToast from 'react-native-simple-toast';
-import { FCM_TOKEN } from '../assets/Utils/Utils';
+import { FCM_TOKEN } from '../src/assets/Utils/Utils';
 
 
 const LoaderScreen = ({ route }) => {
