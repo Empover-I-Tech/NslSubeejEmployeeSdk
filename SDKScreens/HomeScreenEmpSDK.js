@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { useDispatch, useSelector, } from 'react-redux';
 import axios from 'axios';
-import { MOBILENUMBER, REFERRALCODE, USER_ID, USERNAME, USER_IMG, STATE_ID, DISTRICT_ID, STATE_NAME, DISTRICT_NAME, LANGUAGEID } from '../utils';
+import { MOBILENUMBER, REFERRALCODE, USER_ID, USERNAME, USER_IMG, STATE_ID, DISTRICT_ID, STATE_NAME, DISTRICT_NAME, LANGUAGEID } from '../src/utils';
 import { GetApiHeaders, getGreetingMessage, normalizeText, downloadFileToLocal } from '../src/utils/helpers';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import APIConfig, { HTTP_601, HTTP_OK } from '../src/api/APIConfig';

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Provider, useSelector } from 'react-redux';
 import { NavigationContainer, NavigationIndependentTree } from '@react-navigation/native';
-import { store, persistor } from '../src/state/store';
+import { store } from '../src/state/store';
 import SubeejNavigator from './SubeejNavigator';
 import { initLocalisation } from '../src/Localization/Localisation';
 import {
