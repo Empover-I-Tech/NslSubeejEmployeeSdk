@@ -408,15 +408,225 @@ const SeedsCalculator = ({ route }) => {
 
     // recently added
     useEffect(() => {
-        if (rowSpacing !== '') {
-            // !retreivedFrmSavedData && 
+        setTimeout(() => {
+            if (rowSpacing !== '') {
+                // !retreivedFrmSavedData && 
+                let plantoPlanLs = plantToPlantList;
+                setPlantSpacing('')
+                setPlantToPlantArr([])
+                // find if single val of row spacing
+                let selectedPlantSpc = plantoPlanLs?.find(item => item.crop === selectedCrop && (item.seasonSoilType === selectedSoil || !selectedSoil) && (rowSpacing != null ? item.selectRowSpacingCm == rowSpacing : true))?.selectPlantSpacingCm;
+                // filter objects as per the selection of crop and soil
+                console.log("selectedPlantSpc", selectedPlantSpc)
+                let plantObj = plantoPlanLs?.filter(item => item.crop === selectedCrop && (item.seasonSoilType === selectedSoil || !selectedSoil) && (rowSpacing != null ? item.selectRowSpacingCm == rowSpacing : true))
+                console.log("selectedPlantSpc", plantObj)
+                if (plantObj !== undefined && plantObj.length > 0) {
+                    plantObj = plantObj.reduce((acc, item) => {    // to avoid duplication i have used this
+                        if (!acc.some(existingItem => existingItem.selectPlantSpacingCm === item.selectPlantSpacingCm)) {
+                            item.code = acc.length + 1;
+                            item.name = item.selectPlantSpacingCm;
+                            acc.push(item);
+                        }
+                        return acc;
+                    }, []);
+                    // set plant arr
+                    setPlantToPlantArr(plantObj)
+                    console.log("plantObj", plantObj + "" + plantObj.length)
+                    if (plantObj.length === 1) {
+                        //set direct value if length is 1
+                        setPlantSpacing(selectedPlantSpc);
+                    }
+                }
+                // callApiRowPlant()
+            }
+        }, 600);
+
+    }, [rowSpacing])
+
+    useEffect(() => {
+        setTimeout(async () => {
+            let list = vrtyOrPlntngList;
+            let rowSpcLst = rowSpacingCmList;
             let plantoPlanLs = plantToPlantList;
+            let areaPlantedValues = areaToPlantedList;
+            let prdctTillerLs = productiveTillersList;
+            let avgGrainPannLs = avgGrainsPerPannicleList;
+            let avgBollWeghtLs = AvgBollWeightList;
+            let avgBollPerPlant = AvgBollsPerPlantList;
+            let grainCobLs = grainYieldCobsList;
+            //reset seed rate and plant population per acre
+            setIdealPlantPopulationOrAcre('')
+            setCottonSeedRate('')
+
+            //GrainYield
+            //reset values   
+            setGrainYield('')
+            setGrainYieldListtt([])
+            // find if single val of row spacing
+            let selectedGrainYieldVal = grainCobLs?.find(item => item.crop === selectedCrop && item.seasonOrSoilType === selectedSoil)?.grainYield5Cobs;
+            // filter objects as per the selection of crop and soil
+            let grainYieldObj = grainCobLs?.filter(item => item.crop === selectedCrop && item.seasonOrSoilType === selectedSoil)
+            if (grainYieldObj !== undefined && grainYieldObj.length > 0) {
+                grainYieldObj = grainYieldObj.reduce((acc, item) => {    // to avoid duplication i have used this
+                    if (!acc.some(existingItem => existingItem.grainYield5Cobs === item.grainYield5Cobs)) {
+                        item.code = acc.length + 1;
+                        item.name = item.grainYield5Cobs;
+                        acc.push(item);
+                    }
+                    return acc;
+                }, []);
+                // set plant arr
+                setGrainYieldListtt(grainYieldObj)
+                if (grainYieldObj.length === 1) {
+                    //set direct value if length is 1
+                    setGrainYield(selectedGrainYieldVal);
+                }
+            }
+
+            //avgBollWeghtLs
+            //reset values   
+            setAvgBollWt('')
+            setAvgBollWtListt([])
+            // find if single val of row spacing
+            let selectedAvgBollWtVal = avgBollWeghtLs?.find(item => item.crop === selectedCrop && item.seasonOrSoilType === selectedSoil)?.avgBollWeight;
+            // filter objects as per the selection of crop and soil
+            let avgBollWtObj = avgBollWeghtLs?.filter(item => item.crop === selectedCrop && item.seasonOrSoilType === selectedSoil)
+            if (avgBollWtObj !== undefined && avgBollWtObj.length > 0) {
+                avgBollWtObj = avgBollWtObj.reduce((acc, item) => {    // to avoid duplication i have used this
+                    if (!acc.some(existingItem => existingItem.avgBollWeight === item.avgBollWeight)) {
+                        item.code = acc.length + 1;
+                        item.name = item.avgBollWeight;
+                        acc.push(item);
+                    }
+                    return acc;
+                }, []);
+                // set plant arr
+                setAvgBollWtListt(avgBollWtObj)
+                if (avgBollWtObj.length === 1) {
+                    //set direct value if length is 1
+                    setAvgBollWt(selectedAvgBollWtVal);
+                }
+            }
+
+            //AvgBollsPerPlant
+            //reset values   
+            setAvgBollsPerPlant('')
+            setAvgBollsPerPlantListtt([])
+            // find if single val of row spacing
+            let selectedAvgBollsPerPlantVal = avgBollPerPlant?.find(item => item.crop === selectedCrop && item.seasonOrSoilType === selectedSoil)?.avgBollsPerPlant;
+            // filter objects as per the selection of crop and soil
+            let avgBollsPerPlantObj = avgBollPerPlant?.filter(item => item.crop === selectedCrop && item.seasonOrSoilType === selectedSoil)
+            if (avgBollsPerPlantObj !== undefined && avgBollsPerPlantObj.length > 0) {
+                avgBollsPerPlantObj = avgBollsPerPlantObj.reduce((acc, item) => {    // to avoid duplication i have used this
+                    if (!acc.some(existingItem => existingItem.avgBollsPerPlant === item.avgBollsPerPlant)) {
+                        item.code = acc.length + 1;
+                        item.name = item.avgBollsPerPlant;
+                        acc.push(item);
+                    }
+                    return acc;
+                }, []);
+                // set plant arr
+                setAvgBollsPerPlantListtt(avgBollsPerPlantObj)
+                if (avgBollsPerPlantObj.length === 1) {
+                    //set direct value if length is 1
+                    setAvgBollsPerPlant(selectedAvgBollsPerPlantVal);
+                }
+            }
+
+
+            //planting system
+            //reset values
+            setListPlantingSystem([])
+            setVarietyOrPlantingSystem('')
+            // find if single val of planting system
+            let selectedVariety = list?.find(item => item.crop === selectedCrop && item.seasonOrSoilType === selectedSoil)?.varietyOrPlantingSys;
+            // filter objects as per the selection of crop and soil
+            let ls = list?.filter(item => item.crop === selectedCrop && item.seasonOrSoilType === selectedSoil)
+            if (ls !== undefined && ls.length > 0) {
+                ls.forEach((item, index) => {
+                    item.code = index + 1;
+                    item.name = item.varietyOrPlantingSys;
+                });
+                // set array of planting system
+                setListPlantingSystem(ls);
+                // Only set VarietyOrPlantingSystem if ls length is 1
+                if (ls.length === 1) {
+                    setVarietyOrPlantingSystem(selectedVariety);
+                }
+            }
+
+            //row spacing 
+            //reset values
+            setRowSpacing('')
+            setListRowSpace([])
+            let selectedRowSpc = rowSpcLst?.find(item =>
+                item.crop === selectedCrop &&
+                (item.seasonSoilType === selectedSoil || !selectedSoil) // Ignore season if not provided
+            )?.selectRowSpacingCm;
+
+            // filter objects as per the selection of crop and season
+            let rowSspc = rowSpcLst?.filter(item =>
+                item.crop === selectedCrop &&
+                (item.seasonSoilType === selectedSoil || !selectedSoil) // Ignore season if not provided
+            );
+            // // find if single val of row spacing
+            // let selectedRowSpc = rowSpcLst?.find(item => item.crop === selectedCrop && item.seasonSoilType === selectedSoil)?.selectRowSpacingCm;
+            // // filter objects as per the selection of crop and soil
+            // let rowSspc = rowSpcLst?.filter(item => item.crop === selectedCrop && item.seasonSoilType === selectedSoil)
+            // if (rowSspc !== undefined && rowSspc.length > 0) {
+            //     rowSspc = rowSspc.reduce((acc, item) => {    // to avoid duplication i have used this
+            //         if (!acc.some(existingItem => existingItem.selectRowSpacingCm === item.selectRowSpacingCm)) {
+            //             item.code = acc.length + 1;
+            //             item.name = item.selectRowSpacingCm;
+            //             acc.push(item);
+            //         }
+            //         return acc;
+            //     }, []);
+            //     // set array of row space
+            //     setListRowSpace(rowSspc);
+            //     // Only set row space if ls length is 1
+            //     if (rowSspc.length === 1) {
+            //         setRowSpacing(selectedRowSpc);
+            //     }
+            // }
+            // REPLACE WITH:
+            if (rowSspc !== undefined && rowSspc.length > 0) {
+                rowSspc = rowSspc.reduce((acc, item) => {
+                    if (!acc.some(existingItem => existingItem.selectRowSpacingCm === item.selectRowSpacingCm)) {
+                        item.code = acc.length + 1;
+                        item.name = item.selectRowSpacingCm;
+                        acc.push(item);
+                    }
+                    return acc;
+                }, []);
+                // set array of row space
+                setListRowSpace(rowSspc);
+                // Only set row space if ls length is 1
+                if (rowSspc.length === 1) {
+                    setRowSpacing(selectedRowSpc);
+                }
+                // ← ADD ONLY THESE 3 LINES:
+                if (retreivedFrmSavedData && selectedRowSpc) {
+                    setRowSpacing(selectedRowSpc);
+                }
+            }
+
+            //plant spacing
+            //reset values
             setPlantSpacing('')
             setPlantToPlantArr([])
             // find if single val of row spacing
-            let selectedPlantSpc = plantoPlanLs?.find(item => item.crop === selectedCrop && (item.seasonSoilType === selectedSoil || !selectedSoil) && (rowSpacing != null ? item.selectRowSpacingCm == rowSpacing : true))?.selectPlantSpacingCm;
-            // filter objects as per the selection of crop and soil
-            let plantObj = plantoPlanLs?.filter(item => item.crop === selectedCrop && (item.seasonSoilType === selectedSoil || !selectedSoil) && (rowSpacing != null ? item.selectRowSpacingCm == rowSpacing : true))
+            let selectedPlantSpc = plantoPlanLs?.find(item =>
+                item.crop === selectedCrop &&
+                (item.seasonSoilType === selectedSoil || !selectedSoil) // Ignore season if not provided
+            )?.selectPlantSpacingCm;
+
+            // filter objects as per the selection of crop and season
+            let plantObj = plantoPlanLs?.filter(item =>
+                item.crop === selectedCrop &&
+                (item.seasonSoilType === selectedSoil || !selectedSoil) // Ignore season if not provided
+            );
+
             if (plantObj !== undefined && plantObj.length > 0) {
                 plantObj = plantObj.reduce((acc, item) => {    // to avoid duplication i have used this
                     if (!acc.some(existingItem => existingItem.selectPlantSpacingCm === item.selectPlantSpacingCm)) {
@@ -433,277 +643,58 @@ const SeedsCalculator = ({ route }) => {
                     setPlantSpacing(selectedPlantSpc);
                 }
             }
-            // callApiRowPlant()
-        }
-    }, [rowSpacing])
 
-    useEffect(() => {
-        let list = vrtyOrPlntngList;
-        let rowSpcLst = rowSpacingCmList;
-        let plantoPlanLs = plantToPlantList;
-        let areaPlantedValues = areaToPlantedList;
-        let prdctTillerLs = productiveTillersList;
-        let avgGrainPannLs = avgGrainsPerPannicleList;
-        let avgBollWeghtLs = AvgBollWeightList;
-        let avgBollPerPlant = AvgBollsPerPlantList;
-        let grainCobLs = grainYieldCobsList;
-        //reset seed rate and plant population per acre
-        setIdealPlantPopulationOrAcre('')
-        setCottonSeedRate('')
-
-        //GrainYield
-        //reset values   
-        setGrainYield('')
-        setGrainYieldListtt([])
-        // find if single val of row spacing
-        let selectedGrainYieldVal = grainCobLs?.find(item => item.crop === selectedCrop && item.seasonOrSoilType === selectedSoil)?.grainYield5Cobs;
-        // filter objects as per the selection of crop and soil
-        let grainYieldObj = grainCobLs?.filter(item => item.crop === selectedCrop && item.seasonOrSoilType === selectedSoil)
-        if (grainYieldObj !== undefined && grainYieldObj.length > 0) {
-            grainYieldObj = grainYieldObj.reduce((acc, item) => {    // to avoid duplication i have used this
-                if (!acc.some(existingItem => existingItem.grainYield5Cobs === item.grainYield5Cobs)) {
-                    item.code = acc.length + 1;
-                    item.name = item.grainYield5Cobs;
-                    acc.push(item);
+            //setAvgGrainsPannicleListtt
+            //reset values   
+            setAvgGrainsPannicle('')
+            setAvgGrainsPannicleListtt([])
+            // find if single val of row spacing
+            let selectedAvgGrainPinnacleVal = avgGrainPannLs?.find(item => item.crop === selectedCrop && item.seasonOrSoilType === selectedSoil)?.avgGrainsPerPannicle;
+            // filter objects as per the selection of crop and soil
+            let avgGrainsPerPannicleObj = avgGrainPannLs?.filter(item => item.crop === selectedCrop && item.seasonOrSoilType === selectedSoil)
+            if (avgGrainsPerPannicleObj !== undefined && avgGrainsPerPannicleObj.length > 0) {
+                avgGrainsPerPannicleObj = avgGrainsPerPannicleObj.reduce((acc, item) => {    // to avoid duplication i have used this
+                    if (!acc.some(existingItem => existingItem.avgGrainsPerPannicle === item.avgGrainsPerPannicle)) {
+                        item.code = acc.length + 1;
+                        item.name = item.avgGrainsPerPannicle;
+                        acc.push(item);
+                    }
+                    return acc;
+                }, []);
+                // set plant arr
+                setAvgGrainsPannicleListtt(avgGrainsPerPannicleObj)
+                if (avgGrainsPerPannicleObj.length === 1) {
+                    //set direct value if length is 1
+                    setAvgGrainsPannicle(selectedAvgGrainPinnacleVal);
                 }
-                return acc;
-            }, []);
-            // set plant arr
-            setGrainYieldListtt(grainYieldObj)
-            if (grainYieldObj.length === 1) {
-                //set direct value if length is 1
-                setGrainYield(selectedGrainYieldVal);
             }
-        }
 
-        //avgBollWeghtLs
-        //reset values   
-        setAvgBollWt('')
-        setAvgBollWtListt([])
-        // find if single val of row spacing
-        let selectedAvgBollWtVal = avgBollWeghtLs?.find(item => item.crop === selectedCrop && item.seasonOrSoilType === selectedSoil)?.avgBollWeight;
-        // filter objects as per the selection of crop and soil
-        let avgBollWtObj = avgBollWeghtLs?.filter(item => item.crop === selectedCrop && item.seasonOrSoilType === selectedSoil)
-        if (avgBollWtObj !== undefined && avgBollWtObj.length > 0) {
-            avgBollWtObj = avgBollWtObj.reduce((acc, item) => {    // to avoid duplication i have used this
-                if (!acc.some(existingItem => existingItem.avgBollWeight === item.avgBollWeight)) {
-                    item.code = acc.length + 1;
-                    item.name = item.avgBollWeight;
-                    acc.push(item);
+            //productive millers
+            //reset values   
+            setProductiveTillers('')
+            setProductiveTillersListt([])
+            // find if single val of row spacing
+            let selectedProdTillerVal = prdctTillerLs?.find(item => item.crop === selectedCrop && item.seasonOrSoilType === selectedSoil)?.productiveTillersPer10Hills;
+            // filter objects as per the selection of crop and soil
+            let productiveTillerObj = prdctTillerLs?.filter(item => item.crop === selectedCrop && item.seasonOrSoilType === selectedSoil)
+            if (productiveTillerObj !== undefined && productiveTillerObj.length > 0) {
+                productiveTillerObj = productiveTillerObj.reduce((acc, item) => {    // to avoid duplication i have used this
+                    if (!acc.some(existingItem => existingItem.productiveTillersPer10Hills === item.productiveTillersPer10Hills)) {
+                        item.code = acc.length + 1;
+                        item.name = item.productiveTillersPer10Hills;
+                        acc.push(item);
+                    }
+                    return acc;
+                }, []);
+                // set plant arr
+                setProductiveTillersListt(productiveTillerObj)
+                if (productiveTillerObj.length === 1) {
+                    //set direct value if length is 1
+                    setProductiveTillers(selectedProdTillerVal);
                 }
-                return acc;
-            }, []);
-            // set plant arr
-            setAvgBollWtListt(avgBollWtObj)
-            if (avgBollWtObj.length === 1) {
-                //set direct value if length is 1
-                setAvgBollWt(selectedAvgBollWtVal);
             }
-        }
-
-        //AvgBollsPerPlant
-        //reset values   
-        setAvgBollsPerPlant('')
-        setAvgBollsPerPlantListtt([])
-        // find if single val of row spacing
-        let selectedAvgBollsPerPlantVal = avgBollPerPlant?.find(item => item.crop === selectedCrop && item.seasonOrSoilType === selectedSoil)?.avgBollsPerPlant;
-        // filter objects as per the selection of crop and soil
-        let avgBollsPerPlantObj = avgBollPerPlant?.filter(item => item.crop === selectedCrop && item.seasonOrSoilType === selectedSoil)
-        if (avgBollsPerPlantObj !== undefined && avgBollsPerPlantObj.length > 0) {
-            avgBollsPerPlantObj = avgBollsPerPlantObj.reduce((acc, item) => {    // to avoid duplication i have used this
-                if (!acc.some(existingItem => existingItem.avgBollsPerPlant === item.avgBollsPerPlant)) {
-                    item.code = acc.length + 1;
-                    item.name = item.avgBollsPerPlant;
-                    acc.push(item);
-                }
-                return acc;
-            }, []);
-            // set plant arr
-            setAvgBollsPerPlantListtt(avgBollsPerPlantObj)
-            if (avgBollsPerPlantObj.length === 1) {
-                //set direct value if length is 1
-                setAvgBollsPerPlant(selectedAvgBollsPerPlantVal);
-            }
-        }
 
 
-        //planting system
-        //reset values
-        setListPlantingSystem([])
-        setVarietyOrPlantingSystem('')
-        // find if single val of planting system
-        let selectedVariety = list?.find(item => item.crop === selectedCrop && item.seasonOrSoilType === selectedSoil)?.varietyOrPlantingSys;
-        // filter objects as per the selection of crop and soil
-        let ls = list?.filter(item => item.crop === selectedCrop && item.seasonOrSoilType === selectedSoil)
-        if (ls !== undefined && ls.length > 0) {
-            ls.forEach((item, index) => {
-                item.code = index + 1;
-                item.name = item.varietyOrPlantingSys;
-            });
-            // set array of planting system
-            setListPlantingSystem(ls);
-            // Only set VarietyOrPlantingSystem if ls length is 1
-            if (ls.length === 1) {
-                setVarietyOrPlantingSystem(selectedVariety);
-            }
-        }
-
-        //row spacing 
-        //reset values
-        setRowSpacing('')
-        setListRowSpace([])
-        let selectedRowSpc = rowSpcLst?.find(item =>
-            item.crop === selectedCrop &&
-            (item.seasonSoilType === selectedSoil || !selectedSoil) // Ignore season if not provided
-        )?.selectRowSpacingCm;
-
-        // filter objects as per the selection of crop and season
-        let rowSspc = rowSpcLst?.filter(item =>
-            item.crop === selectedCrop &&
-            (item.seasonSoilType === selectedSoil || !selectedSoil) // Ignore season if not provided
-        );
-        // // find if single val of row spacing
-        // let selectedRowSpc = rowSpcLst?.find(item => item.crop === selectedCrop && item.seasonSoilType === selectedSoil)?.selectRowSpacingCm;
-        // // filter objects as per the selection of crop and soil
-        // let rowSspc = rowSpcLst?.filter(item => item.crop === selectedCrop && item.seasonSoilType === selectedSoil)
-        if (rowSspc !== undefined && rowSspc.length > 0) {
-            rowSspc = rowSspc.reduce((acc, item) => {    // to avoid duplication i have used this
-                if (!acc.some(existingItem => existingItem.selectRowSpacingCm === item.selectRowSpacingCm)) {
-                    item.code = acc.length + 1;
-                    item.name = item.selectRowSpacingCm;
-                    acc.push(item);
-                }
-                return acc;
-            }, []);
-            // set array of row space
-            setListRowSpace(rowSspc);
-            // Only set row space if ls length is 1
-            if (rowSspc.length === 1) {
-                setRowSpacing(selectedRowSpc);
-            }
-        }
-
-        //plant spacing
-        //reset values
-        setPlantSpacing('')
-        setPlantToPlantArr([])
-        // find if single val of row spacing
-        let selectedPlantSpc = plantoPlanLs?.find(item =>
-            item.crop === selectedCrop &&
-            (item.seasonSoilType === selectedSoil || !selectedSoil) // Ignore season if not provided
-        )?.selectPlantSpacingCm;
-
-        // filter objects as per the selection of crop and season
-        let plantObj = plantoPlanLs?.filter(item =>
-            item.crop === selectedCrop &&
-            (item.seasonSoilType === selectedSoil || !selectedSoil) // Ignore season if not provided
-        );
-
-        if (plantObj !== undefined && plantObj.length > 0) {
-            plantObj = plantObj.reduce((acc, item) => {    // to avoid duplication i have used this
-                if (!acc.some(existingItem => existingItem.selectPlantSpacingCm === item.selectPlantSpacingCm)) {
-                    item.code = acc.length + 1;
-                    item.name = item.selectPlantSpacingCm;
-                    acc.push(item);
-                }
-                return acc;
-            }, []);
-            // set plant arr
-            setPlantToPlantArr(plantObj)
-            if (plantObj.length === 1) {
-                //set direct value if length is 1
-                setPlantSpacing(selectedPlantSpc);
-            }
-        }
-
-        //setAvgGrainsPannicleListtt
-        //reset values   
-        setAvgGrainsPannicle('')
-        setAvgGrainsPannicleListtt([])
-        // find if single val of row spacing
-        let selectedAvgGrainPinnacleVal = avgGrainPannLs?.find(item => item.crop === selectedCrop && item.seasonOrSoilType === selectedSoil)?.avgGrainsPerPannicle;
-        // filter objects as per the selection of crop and soil
-        let avgGrainsPerPannicleObj = avgGrainPannLs?.filter(item => item.crop === selectedCrop && item.seasonOrSoilType === selectedSoil)
-        if (avgGrainsPerPannicleObj !== undefined && avgGrainsPerPannicleObj.length > 0) {
-            avgGrainsPerPannicleObj = avgGrainsPerPannicleObj.reduce((acc, item) => {    // to avoid duplication i have used this
-                if (!acc.some(existingItem => existingItem.avgGrainsPerPannicle === item.avgGrainsPerPannicle)) {
-                    item.code = acc.length + 1;
-                    item.name = item.avgGrainsPerPannicle;
-                    acc.push(item);
-                }
-                return acc;
-            }, []);
-            // set plant arr
-            setAvgGrainsPannicleListtt(avgGrainsPerPannicleObj)
-            if (avgGrainsPerPannicleObj.length === 1) {
-                //set direct value if length is 1
-                setAvgGrainsPannicle(selectedAvgGrainPinnacleVal);
-            }
-        }
-
-        //productive millers
-        //reset values   
-        setProductiveTillers('')
-        setProductiveTillersListt([])
-        // find if single val of row spacing
-        let selectedProdTillerVal = prdctTillerLs?.find(item => item.crop === selectedCrop && item.seasonOrSoilType === selectedSoil)?.productiveTillersPer10Hills;
-        // filter objects as per the selection of crop and soil
-        let productiveTillerObj = prdctTillerLs?.filter(item => item.crop === selectedCrop && item.seasonOrSoilType === selectedSoil)
-        if (productiveTillerObj !== undefined && productiveTillerObj.length > 0) {
-            productiveTillerObj = productiveTillerObj.reduce((acc, item) => {    // to avoid duplication i have used this
-                if (!acc.some(existingItem => existingItem.productiveTillersPer10Hills === item.productiveTillersPer10Hills)) {
-                    item.code = acc.length + 1;
-                    item.name = item.productiveTillersPer10Hills;
-                    acc.push(item);
-                }
-                return acc;
-            }, []);
-            // set plant arr
-            setProductiveTillersListt(productiveTillerObj)
-            if (productiveTillerObj.length === 1) {
-                //set direct value if length is 1
-                setProductiveTillers(selectedProdTillerVal);
-            }
-        }
-
-
-        //Area to be planted (Acres)
-        //reset values   
-        setAreaToPlanted('')
-        setAreaPlantedArr([])
-        // find if single val of row spacing
-        let selectedAreaPlantedVal = areaPlantedValues?.find(item =>
-            item.crop === selectedCrop &&
-            (item.seasonSoilType === selectedSoil || !selectedSoil) // Ignore season if not provided
-        )?.areaPlantedAcres;
-
-        // filter objects as per the selection of crop and season
-        let areaToPlantedObj = areaPlantedValues?.filter(item =>
-            item.crop === selectedCrop &&
-            (item.seasonSoilType === selectedSoil || !selectedSoil) // Ignore season if not provided
-        );
-
-        if (areaToPlantedObj !== undefined && areaToPlantedObj.length > 0) {
-            areaToPlantedObj = areaToPlantedObj.reduce((acc, item) => {    // to avoid duplication i have used this
-                if (!acc.some(existingItem => existingItem.areaPlantedAcres === item.areaPlantedAcres)) {
-                    item.code = acc.length + 1;
-                    item.name = item.areaPlantedAcres;
-                    acc.push(item);
-                }
-                return acc;
-            }, []);
-            // set plant arr
-            setAreaPlantedArr(areaToPlantedObj)
-            if (areaToPlantedObj.length === 1) {
-                //set direct value if length is 1
-                setAreaToPlanted(selectedAreaPlantedVal);
-            }
-        }
-    }, [selectedCrop, selectedSoil])
-
-    useEffect(() => {
-        if (rowSpacing !== '' && plantSpacing !== '') {
-            let areaPlantedValues = areaToPlantedList;
             //Area to be planted (Acres)
             //reset values   
             setAreaToPlanted('')
@@ -712,17 +703,12 @@ const SeedsCalculator = ({ route }) => {
             let selectedAreaPlantedVal = areaPlantedValues?.find(item =>
                 item.crop === selectedCrop &&
                 (item.seasonSoilType === selectedSoil || !selectedSoil) // Ignore season if not provided
-                &&
-                (rowSpacing != null ? item.selectRowSpacingCm === rowSpacing : true) &&
-                (plantSpacing != null ? item.selectPlantSpacingCm === plantSpacing : true)
             )?.areaPlantedAcres;
 
             // filter objects as per the selection of crop and season
             let areaToPlantedObj = areaPlantedValues?.filter(item =>
                 item.crop === selectedCrop &&
                 (item.seasonSoilType === selectedSoil || !selectedSoil) // Ignore season if not provided
-                && (rowSpacing != null ? item.selectRowSpacingCm === rowSpacing : true) &&
-                (plantSpacing != null ? item.selectPlantSpacingCm === plantSpacing : true)
             );
 
             if (areaToPlantedObj !== undefined && areaToPlantedObj.length > 0) {
@@ -741,13 +727,60 @@ const SeedsCalculator = ({ route }) => {
                     setAreaToPlanted(selectedAreaPlantedVal);
                 }
             }
-            callApiRowPlant({
-                "crop": selectedCrop,
-                "seasonOrSoilType": selectedSoil,
-                "rowSpacingCm": rowSpacing,
-                "selectPlantSpacingCm": plantSpacing
-            })
-        }
+        }, 500);
+
+    }, [selectedCrop, selectedSoil])
+
+    useEffect(() => {
+        setTimeout(async () => {
+            if (rowSpacing !== '' && plantSpacing !== '') {
+                let areaPlantedValues = areaToPlantedList;
+                //Area to be planted (Acres)
+                //reset values   
+                setAreaToPlanted('')
+                setAreaPlantedArr([])
+                // find if single val of row spacing
+                let selectedAreaPlantedVal = areaPlantedValues?.find(item =>
+                    item.crop === selectedCrop &&
+                    (item.seasonSoilType === selectedSoil || !selectedSoil) // Ignore season if not provided
+                    &&
+                    (rowSpacing != null ? item.selectRowSpacingCm === rowSpacing : true) &&
+                    (plantSpacing != null ? item.selectPlantSpacingCm === plantSpacing : true)
+                )?.areaPlantedAcres;
+
+                // filter objects as per the selection of crop and season
+                let areaToPlantedObj = areaPlantedValues?.filter(item =>
+                    item.crop === selectedCrop &&
+                    (item.seasonSoilType === selectedSoil || !selectedSoil) // Ignore season if not provided
+                    && (rowSpacing != null ? item.selectRowSpacingCm === rowSpacing : true) &&
+                    (plantSpacing != null ? item.selectPlantSpacingCm === plantSpacing : true)
+                );
+
+                if (areaToPlantedObj !== undefined && areaToPlantedObj.length > 0) {
+                    areaToPlantedObj = areaToPlantedObj.reduce((acc, item) => {    // to avoid duplication i have used this
+                        if (!acc.some(existingItem => existingItem.areaPlantedAcres === item.areaPlantedAcres)) {
+                            item.code = acc.length + 1;
+                            item.name = item.areaPlantedAcres;
+                            acc.push(item);
+                        }
+                        return acc;
+                    }, []);
+                    // set plant arr
+                    setAreaPlantedArr(areaToPlantedObj)
+                    if (areaToPlantedObj.length === 1) {
+                        //set direct value if length is 1
+                        setAreaToPlanted(selectedAreaPlantedVal);
+                    }
+                }
+                callApiRowPlant({
+                    "crop": selectedCrop,
+                    "seasonOrSoilType": selectedSoil,
+                    "rowSpacingCm": rowSpacing,
+                    "selectPlantSpacingCm": plantSpacing
+                })
+            }
+        }, 700);
+
     }, [rowSpacing, plantSpacing])
 
     useEffect(() => {

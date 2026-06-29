@@ -1,54 +1,138 @@
-import { Platform, Text, StatusBar, View, Alert, StyleSheet, Image, TouchableOpacity, ScrollView, FlatList, Dimensions, ToastAndroid } from 'react-native';
-import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { useSelector } from 'react-redux';
-import CustomYieldCalListViewModal from '../components/CustomYieldCalListViewModal';
-import CustomYieldTextInput from '../components/CustomYieldCalTextInput';
-import CustomFertilizerCalBorderInputDropDown from '../components/CustomFertilizerCalBorderInputDropDown';
+import { Platform, Text, StatusBar, View, Alert, StyleSheet, Image, TouchableOpacity, ScrollView, FlatList, Dimensions } from 'react-native';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import CustomListViewModal from '../Modals/CustomListViewModal';
+import CustomTextInput from '../Components/CustomTextInput';
+import { strings } from "../strings/strings";
 import SimpleToast from 'react-native-simple-toast';
-// import CustomLoader from '../Components/CustomLoader';
-// import CustomSuccessLoader from '../Components/CustomSuccessLoader';
-// import CustomErrorLoader from '../Components/CustomErrorLoader';
-// import { GetApiHeaders, GetApiHeaderswithLoginResponse, GetRequest, PostRequest, getNetworkStatus, uploadFormData } from '../NetworkUtils/NetworkUtils';
-import { GetApiHeaders } from '../utils/helpers'
-// import { Colors } from '../assets/Utils/Color';
-// import { USER_ID, filterObjects, readFileToBase64, requestMultiplePermissions, retrieveData } from '../assets/Utils/Utils';
-import APIConfig, { HTTP_OK } from '../api/APIConfig'
+import { GetApiHeaders, GetApiHeaderswithLoginResponse, GetRequest, PostRequest, getNetworkStatus, uploadFormData } from '../NetworkUtils/NetworkUtils';
+import { FIREBASE_VERSION_COLLECTION_NAME, FIREBASE_VERSION_DOC_ID, HTTP_ACCEPTED, HTTP_CREATED, HTTP_OK, configs } from '../helpers/URLConstants';
+import { Colors } from '../assets/Utils/Color';
+import { USER_ID, filterObjects, readFileToBase64, requestMultiplePermissions, retrieveData } from '../assets/Utils/Utils';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { getCompanyStyles } from '../redux/store/slices/CompanyStyleSlice';
+import CustomBorderInputDropDown from '../Components/CustomBorderInputDropDown';
 import { responsiveHeight, responsiveWidth } from 'react-native-responsive-dimensions';
 import ViewShot from 'react-native-view-shot';
 import Share from 'react-native-share';
-import useGetRequestWithJwt from '../api/useGetRequestWithJwt'
-import usePostRequestWithJwt from "../api/usePostRequestWithJwt"
-import PreLoginCustomLoader from '../components/PreLoginCustomLoader';
-import { RFValue } from 'react-native-responsive-fontsize';
-import { translate } from '../Localization/Localisation';
-import { CustomCommonModal } from '../components/CustomCommonModal';
-import realm from './realmOffline/realmConfig';
-import { v4 as uuidv4 } from 'uuid';
-import { useOfflineCalculatorsCRUD } from './realmOffline/useOfflineCalculatorsCRUD';
-import { useOfflineSync } from '../utils/syncUtils';
-import { useFontStyles } from '../hooks/useFontStyles';
-import { ROLDID } from '../utils';
-import { getFromAsyncStorage } from '../utils/keychainUtils';
-const { width, height } = Dimensions.get('window');
+import { translate } from '../Localisation/Localisation';
+import CustomAlert from '../Components/CustomAlert';
+import { updateOfflineCount } from './synchCountUtils';
+import { createStyles } from '../assets/style/createStyles';
+import { BuildStyleOverwrite } from '../assets/style/BuildStyle';
+import { Styles } from '../assets/style/styles';
+import realm from '../realmOffline/realmConfig';
+import CustomButton from '../components/CustomButton';
+import CustomLoader from '../components/CustomLoader';
+
+export const getYieldCalcMasters = async () => {
+    // let realm = new Realm({ path: 'User.realm' });
+
+    if (!realm) {
+        console.log("Realm not initialized");
+        return;
+    }
+    var networkStatus = await getNetworkStatus()
+    if (networkStatus) {
+        try {
+            var getYeildCalcURL = configs.BASE_URL + configs.CALCULATOR.GETYIELDCALCULATOR;
+            var getHeaders = await GetApiHeaders()
+            var APIResponse = await GetRequest(getYeildCalcURL, getHeaders);
+            if (APIResponse != undefined && APIResponse != null) {
+                if (APIResponse.statusCode == HTTP_OK) {
+                    var masterResp = APIResponse.response
+                    console.log('the yield calc master resp is================================>', masterResp)
+                    if (masterResp != undefined && masterResp != null) {
+                        try {
+                            realm.write(() => {
+                                realm.delete(realm.objects('YieldCalculatorResponse'));
+                                realm.create('YieldCalculatorResponse', {
+                                    _id: new Date(),
+                                    data: JSON.stringify(masterResp),
+                                    timestamp: new Date(),
+                                });
+                                console.log('added successfully into realm yield calc')
+                            });
+                        } catch (err) {
+                            console.log(err)
+                        }
+                    }
+                }
+                else {
+                    // Alert.alert(APIResponse?.message)
+                }
+
+            } else {
+            }
+        }
+        catch (error) {
+        }
+    } else {
+    }
+}
+
+export const SaveYieldCalcValues = async (jsonData, dispatch) => {
+    // let realm = new Realm({ path: 'User.realm' });
+
+    if (!realm) {
+        console.log("Realm not initialized");
+        return;
+    }
+    const networkStatus = await getNetworkStatus()
+    if (networkStatus) {
+        try {
+            var getExpctYldURL = configs.BASE_URL + configs.CALCULATOR.saveYieldCalculator;
+            var getHeaders = await GetApiHeaders()
+            const data = JSON.stringify(jsonData);
+            const formData = new FormData();
+            formData.append('jsonData', data);
+            const APIResponse = await uploadFormData(formData, getExpctYldURL, getHeaders);
+            if (APIResponse != undefined && APIResponse != null) {
+                if (APIResponse.statusCode == HTTP_OK) {
+                    try {
+                        realm.write(async () => {
+                            realm.delete(realm.objects('YieldCalSubmit'));
+                        });
+                    } catch (error) {
+                        console.error('Error clearing data of saved calc', error);
+                    }
+                    SimpleToast.show(APIResponse?.message)
+                    updateOfflineCount(dispatch)
+                    return true;
+                } else {
+                    return false;
+                }
+
+            } else {
+                return false;
+            }
+        }
+        catch (error) {
+            return false;
+        }
+    } else {
+        return false
+    }
+}
 
 
-const YieldCalculator = () => {
-    const {
-        saveYieldMasterList,
-        saveYieldCalc,
-        getYieldCalc,
-        deleteYieldCalc,
-        hasYieldCalc,
-    } = useOfflineCalculatorsCRUD();
-    const fonts=useFontStyles()
-    const { incrementOfflineCount, decrementOfflineCount, updateOfflineCount } = useOfflineSync();
+var styles = BuildStyleOverwrite(Styles);
+
+const YieldCalculator = ({ route }) => {
+    styles = useMemo(() => createStyles(), [global.selectedLanguageCode]);
+    // var realm = new Realm({ path: 'User.realm' });
+
+    if (!realm) {
+        console.log("Realm not initialized");
+        return;
+    }
+    const calcType = route?.params?.calcType;
     const viewShotRef = useRef();
-    const dynamicStyles = useSelector(state => state.companyStyles.companyStyles);
-    const isConnected = useSelector(state => state.network.isConnected);
-    const [loaderApi, setLoaderApi] = useState(false)
-    const { fetchData } = useGetRequestWithJwt();
-    const { postData, error, apiError, postStatusCode, sendData, clearPostData } = usePostRequestWithJwt();
+    const dispatch = useDispatch();
+    // const [selectedFilter, setSelectedFilter] = useState(translate('TotalSeed')); // enable this selected filter for tab options enabled
+    const [showAlert, setShowAlert] = useState(false)
+    const companyStyle = useSelector(getCompanyStyles);
+    const [dynamicStyles, setDynamicStyles] = useState(companyStyle.value);
     const [dropDownData, setdropDownData] = useState();
     const [selectedDropDownItem, setSelectedDropDownItem] = useState("");
     const [showDropDowns, setShowDropDowns] = useState(false)
@@ -72,13 +156,15 @@ const YieldCalculator = () => {
     let [yieldNoteDesc, setYieldNoteDesc] = useState('');
     let [GrainYieldListtt, setGrainYieldListtt] = useState([])
     let [AvgBollsPerPlantListtt, setAvgBollsPerPlantListtt] = useState([])
-    let [rowSpacing, setRowSpacing] = useState('')
+    const [rowSpacing, setRowSpacing] = useState('')
     let [plantSpacing, setPlantSpacing] = useState('')
     const [IdealPlantPopulationOrAcre, setIdealPlantPopulationOrAcre] = useState('')
     let [CottonSeedRate, setCottonSeedRate] = useState('')
     let [areaToPlanted, setAreaToPlanted] = useState('')
     let [areaPlantedArr, setAreaPlantedArr] = useState('')
     let [totalSeedRequired, setTotalSeedRequired] = useState('')
+    let [totalSeedRequiredUnits, setTotalSeedRequiredUnits] = useState('')
+    let [seedRateUnits, setSeedRateUnits] = useState('')
     let [AvgBollsPerPlant, setAvgBollsPerPlant] = useState('')
     let [AvgBollWt, setAvgBollWt] = useState('')
     let [GrainYield, setGrainYield] = useState('');
@@ -91,6 +177,7 @@ const YieldCalculator = () => {
     let [secondDoseUrea, setsecondDoseUrea] = useState('')
     const [loading, setLoading] = useState(false)
     const [loadingMessage, setLoadingMessage] = useState('')
+    const [loaderImage, setLoaderImage] = useState(require('../assets/images/neutralloader.gif'))
     const [successLoadingMessage, setSuccessLoadingMessage] = useState('')
     let [yieldCalcRes, setYieldCalcRes] = useState(null)
     let [cropsList, setCropList] = useState(null)
@@ -105,15 +192,21 @@ const YieldCalculator = () => {
     let [AvgBollWeightList, setAvgBollWeightList] = useState(null)
     let [AvgBollsPerPlantList, setAvgBollsPerPlantList] = useState(null)
     let [grainYieldCobsList, setgrainYieldCobsList] = useState(null)
+    //setgrainYieldCobsList
     let [productiveTillers, setProductiveTillers] = useState('')
     let [AvgGrainsPannicle, setAvgGrainsPannicle] = useState('')
-    let [totalSeedRequiredUnits, setTotalSeedRequiredUnits] = useState('')
-    let [seedRateUnits, setSeedRateUnits] = useState('')
-    const [alertModal, setAlertModal] = useState(false)
-    const [alertTextContent, setAlertTextContent] = useState("")
-    const [isNetAvail, setIsNetAvail] = useState(isConnected)
+    const networkStatusval = useSelector(state => state.networkStatus.value)
+    const [alertTitle, setAlertTitle] = useState('');
+    const [showAlertHeader, setShowAlertHeader] = useState(false)
+    const [showAlertHeaderText, setShowAlertHeaderText] = useState(false)
+    const [alertMessage, setAlertMessage] = useState("");
+    const [showAlertYesButton, setShowAlertYesButton] = useState(false)
+    const [showAlertNoButton, setShowAlertNoButton] = useState(false)
+    const [showAlertyesButtonText, setShowAlertyesButtonText] = useState(false)
+    const [showAlertNoButtonText, setShowAlertNoButtonText] = useState(false)
+    const [isProcessing, setIsProcessing] = useState(false);
+
     const navigation = useNavigation()
-    const [roleId,setRoleId]=useState("")
 
     const roundToNearestInteger = (value) => {
         return Math.round(value).toString();
@@ -180,7 +273,7 @@ const YieldCalculator = () => {
                 idealPlantPopulationPerAcre: roundToNearestInteger(idealPlantPopulationPerAcre),
             };
 
-            if (crop.toLowerCase() === 'cotton') {
+            if (crop.toLowerCase() === CROP_NAME_COTTON.toLowerCase()) {
                 let cottonSeedRatePktsPerAcre = idealPlantPopulationPerAcre / 5000;
                 result.actualCottonSeedRatePktsPerAcre = cottonSeedRatePktsPerAcre.toString();
                 result.cottonSeedRatePktsPerAcre = roundToOneDecimalPlace(cottonSeedRatePktsPerAcre);
@@ -209,7 +302,7 @@ const YieldCalculator = () => {
             const areaPlanted = parseFloat(areaPlantedAcres);
             let totalSeedRequiredKgPerPkt;
 
-            if (crop.toLowerCase() === 'cotton') {
+            if (crop.toLowerCase() === CROP_NAME_COTTON.toLowerCase()) {
                 const cottonSeedRate = parseFloat(cottonSeedRatePktsPerAcre);
                 totalSeedRequiredKgPerPkt = Math.ceil((cottonSeedRate * areaPlanted) * 2) / 2;
             } else {
@@ -224,7 +317,7 @@ const YieldCalculator = () => {
                 actualTotalSeedRequiredKgPerPkt: totalSeedRequiredKgPerPkt.toString(),
                 totalSeedRequiredKgPerPkt: totalSeedRequiredKgPerPktStr,
                 totalSeedRequiredUnits:
-                    crop.toLowerCase() === "cotton"
+                    crop.toLowerCase() === CROP_NAME_COTTON.toLowerCase()
                         ? totalSeedRequired <= 1.0
                             ? COTTON_TOTAL_SEED_REQUIRED_UNITS_QUANTITY_1
                             : COTTON_TOTAL_SEED_REQUIRED_UNITS
@@ -274,7 +367,7 @@ const YieldCalculator = () => {
                 expectedYieldQtlPerAcre = (idealPlantPopulation * grainYield / 5) * 0.8 / 1000 / 100;
             }
 
-            const expectedYieldQtlPerAcreStr = crop.toLowerCase() === "cotton"
+            const expectedYieldQtlPerAcreStr = crop.toLowerCase() === CROP_NAME_COTTON.toLowerCase()
                 ? roundToOneDecimalPlace(expectedYieldQtlPerAcre)
                 : roundToNearestInteger(expectedYieldQtlPerAcre);
 
@@ -294,9 +387,9 @@ const YieldCalculator = () => {
         // these two below conditions 
         // !retreivedFrmSavedData && setSelectedSoil('') 
         // !retreivedFrmSavedData && setVarietyOrPlantingSystem('')
+        setSelectedSoil('')
         setTotalSeedRequiredUnits('')
         setSeedRateUnits('')
-        setSelectedSoil('')
         setVarietyOrPlantingSystem('')
         setListPlantingSystem([])
         //area to planted reset
@@ -324,28 +417,10 @@ const YieldCalculator = () => {
         setExpectedYieldQtlPerAcre('')
         setTotalSeedRequired('')
     }
-
-    useFocusEffect(
-        useCallback(() => {
-            const getRoleId = async () => {
-                const roleId = await getFromAsyncStorage(ROLDID)
-                setRoleId(roleId)
-            }
-            getRoleId();
-        }, [])
-    );
-
     useEffect(() => {
         !retreivedFrmSavedData && resetValues()
         setSeaonsArray()
     }, [selectedCrop])
-
-    const alertCloseHandle = () => {
-        if (alertTextContent == translate('submitted_successfully') || alertTextContent == translate('Data_saved_offline')) {
-            navigation.goBack()
-        }
-        setAlertModal(false)
-    }
 
     let setSeaonsArray = () => {
         let a = allSeasonsList;
@@ -764,7 +839,7 @@ const YieldCalculator = () => {
 
 
     useEffect(() => {
-        if (CottonSeedRate !== '' && areaToPlanted !== '') {
+        if (CottonSeedRate !== '' && areaToPlanted !== '' && actualSeedRateKgPerAcre !== '') {
             // !retreivedFrmSavedData && 
             callApiGETTOTALSEED()
         }
@@ -820,26 +895,18 @@ const YieldCalculator = () => {
         }, 1000)
     }, [IdealPlantPopulationOrAcre, AvgBollsPerPlant, AvgBollWt, productiveTillers, AvgGrainsPannicle, GrainYield, VarietyOrPlantingSystem])
 
-
-
     let saveAPI = async () => {
-        // var networkStatus = await getNetworkStatus()
-        if (isConnected) {
+        var networkStatus = await getNetworkStatus()
+        if (networkStatus) {
             try {
                 setLoading(true)
-                setLoaderApi(true)
-                setLoadingMessage(translate("please_wait_getting_data"))
-                var url = APIConfig.BASE_URL_NVM + APIConfig.CALCULATOR.saveYieldCalculator;
-                var headers = await GetApiHeaders();
-                headers['Content-Type'] = 'multipart/form-data'
-                delete headers.authType
-                var getUserID = headers.userId
-                console.log(typeof Number.parseInt(getUserID), "finfkjlsk;sl;sdl=-=-=-=-=>", getUserID)
-
-                // console.log(typeof Number.parseInt(getUserID),"finfkjlsk;sl;sdl=-=-=-=-=>" )
+                setLoadingMessage(translate('please_wait_getting_data'))
+                var getExpctYldURL = configs.BASE_URL + configs.CALCULATOR.saveYieldCalculator;
+                var getHeaders = await GetApiHeaders();
+                var getUserID = (await retrieveData(USER_ID))
                 const jsonData = {
-                     "id": getUserID,
-                    "farmerId": getUserID,
+                    "id": getUserID,
+                    "retailerId": getUserID,
                     "crop": selectedCrop,
                     "season": selectedSoil,
                     "seasonSoilType": selectedSoil,
@@ -866,127 +933,53 @@ const YieldCalculator = () => {
                 };
                 const formData = new FormData();
                 formData.append('jsonData', JSON.stringify(jsonData));
-                console.log(JSON.stringify(jsonData), "formmmmmmmmmmmmmmmmmmmmmmmmmmmdataaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+                console.log(formData, "formmmmmmmmmmmmmmmmmmmmmmmmmmmdataaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
 
-                const APIResponse = await sendData(url, formData, headers, false);
-                console.log("SAVERESPO-=-=-=>", APIResponse)
+                const APIResponse = await uploadFormData(formData, getExpctYldURL, getHeaders);
 
                 // var APIResponse = await PostRequest(getExpctYldURL, getHeaders, body);
                 if (APIResponse != undefined && APIResponse != null) {
                     setTimeout(() => {
-                        setLoaderApi(false);
                         setLoadingMessage()
                         setLoading(false)
-                    }, 500);
+                    }, 200);
                     setTimeout(() => {
                         if (APIResponse.statusCode == HTTP_OK) {
-                            var dashboardResp = APIResponse.data
+                            var dashboardResp = APIResponse
                             console.log(dashboardResp, "save apiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii<<<<<<<<<<<<<<<<<<<")
                             setLoadingMessage()
-                            //  SimpleToast.show(dashboardResp?.message)
-
-
-                            const seedCalcRes = realm.objects('YieldMaster');
-                            console.log("fetched yield values", seedCalcRes);
-                            let data = seedCalcRes[0]?.YieldMastersList;
-
-                            const masterResp = JSON.parse(data); // this is a JS object
-                            console.log("master respect", masterResp);
-
-                            const YieldjsonData = {
-                                // "id": getUserID,
-                                "farmerId": Number.parseInt(getUserID),
-                                "crop": selectedCrop,
-                                "season": selectedSoil,
-                                "seasonSoilType": selectedSoil,
-                                "varietyTypeOrPlantingSystem": VarietyOrPlantingSystem,
-                                "selectRowTorowSpacingCm": rowSpacing,
-                                "selectPlantToplantSpacingCm": plantSpacing,
-                                "idealPlantPopulationPerAcre": IdealPlantPopulationOrAcre,
-                                "cottonSeedRatePktsPerAcre": CottonSeedRate,
-                                "seedRateKgPerAcre": CottonSeedRate,
-                                "areaPlantedAcres": areaToPlanted,
-                                "totalSeedRequiredKgPerPkt": totalSeedRequired,
-                                "avgBollsPerPlant": AvgBollsPerPlant,
-                                "avgBollWeight": AvgBollWt,
-                                "productiveTillersPer10Hills": productiveTillers,
-                                "avgGrainsPerPannicle": AvgGrainsPannicle,
-                                "grainYield5Cobs": GrainYield,
-                                "expectedYieldQtlPerAcre": ExpectedYieldQtlPerAcre,
-                                "actualExpectedYieldQtlPerAcre": actualExpectedYieldQtlPerAcre,
-                                "actualSeedRateKgPerAcre": actualSeedRateKgPerAcre,
-                                "actualCottonSeedRatePktsPerAcre": actualSeedRateKgPerAcre,
-                                "actualIdealPlantPopulationPerAcre": actualIdealPlantPopulationPerAcre,
-                                "actualTotalSeedRequiredKgPerPkt": actualTotalSeedRequiredKgPerPkt,
-                                // "farmerId": 202
-                            };
-
-                            masterResp.YieldCalculatoroExist = JSON.stringify(YieldjsonData);
-                            // let YieldMastersId;
-                            // YieldMastersId  = uuidv4();
-                            // try {
-                            //   realm.write(() => {
-                            //     realm.delete(realm.objects('YieldMaster'));
-                            //     realm.create('YieldMaster', {
-                            //       _id: YieldMastersId,
-                            //       YieldMastersList: JSON.stringify(masterResp),
-                            //       timestamp: new Date(),
-                            //     });
-                            //     alert("saved successfully");
-                            //   });
-                            // } catch (err) {
-                            //   console.log(err);
-                            // }
-                            saveYieldMasterList(masterResp);
-                            SimpleToast.show(translate("submitted_successfully"))
-                            // setAlertTextContent(translate('submitted_successfully'))
-                            // setAlertModal(true)
+                            setTimeout(() => {
+                                SimpleToast.show(dashboardResp?.message)
+                            }, 500);
                         }
                         else {
                             setLoadingMessage(APIResponse?.message ?? "")
                             setLoading(false)
-                            // Alert.alert(APIResponse?.message)
-                            setAlertModal(true)
-                            setAlertTextContent(APIResponse?.message)
+                            Alert.alert(APIResponse?.message)
                         }
                     }, 500);
 
                 } else {
                     setTimeout(() => {
-                        setLoaderApi(false);
-                        setLoadingMessage()
                         setLoading(false)
-                        if (Platform.OS == "ios") {
-                            SimpleToast.show(translate("Something_went_wrong"));
-                        } else {
-                            ToastAndroid.show(translate("Something_went_wrong"), ToastAndroid.SHORT);
-                        }
+                        setLoadingMessage()
                     }, 500);
                 }
             }
             catch (error) {
                 setTimeout(() => {
-                    setLoaderApi(false);
-                    setLoadingMessage()
                     setLoading(false)
+                    setSuccessLoadingMessage(error.message)
                 }, 1000);
             }
         } else {
-            setLoaderApi(false);
-            setLoadingMessage()
-            setLoading(false)
-            //   SimpleToast.show(translate("no_internet_conneccted"))
-
-            const seedCalcRes = realm.objects('YieldMaster');
-            console.log("fetched yield values", seedCalcRes);
-            let data = seedCalcRes[0]?.YieldMastersList;
-
-            const masterResp = JSON.parse(data); // this is a JS object
-            var headers = await GetApiHeaders();
-            var getUserID = headers.userId
+            const seedCalcRes = realm.objects('YieldCalculatorResponse');
+            let data = seedCalcRes[0]?.data;
+            const masterResp = JSON.parse(data);
+            var getUserID = (await retrieveData(USER_ID))
             const jsonData = {
-                 "id": getUserID,
-                "farmerId": getUserID,
+                "id": getUserID,
+                "retailerId": getUserID,
                 "crop": selectedCrop,
                 "season": selectedSoil,
                 "seasonSoilType": selectedSoil,
@@ -1009,40 +1002,105 @@ const YieldCalculator = () => {
                 "actualCottonSeedRatePktsPerAcre": actualSeedRateKgPerAcre,
                 "actualIdealPlantPopulationPerAcre": actualIdealPlantPopulationPerAcre,
                 "actualTotalSeedRequiredKgPerPkt": actualTotalSeedRequiredKgPerPkt,
-                // "farmerId": 202
             };
 
             masterResp.YieldCalculatoroExist = JSON.stringify(jsonData);
-            // let YieldMastersId;
-            // YieldMastersId = uuidv4();
-            // try {
-            //     realm.write(() => {
-            //         realm.delete(realm.objects('YieldMaster'));
-            //         realm.create('YieldMaster', {
-            //             _id: YieldMastersId,
-            //             YieldMastersList: JSON.stringify(masterResp),
-            //             timestamp: new Date(),
-            //         });
-            //     });
-            // } catch (err) {
-            //     console.log(err);
-            // }
-
             saveYieldMasterList(masterResp);
-            const yieldStringfyObject = JSON.stringify(jsonData);
+            const yieldStringfyObject = jsonData;
             const saveData = saveYieldCalc(yieldStringfyObject);
             if (saveData) {
-                // incrementOfflineCount(1)
-                updateOfflineCount()
-                setAlertTextContent(translate('Data_saved_offline'))
-                setAlertModal(true)
+                updateOfflineCount(dispatch)
+                navigation.goBack()
+                SimpleToast.show(translate('Data_saved_offline'), SimpleToast.LONG)
             }
-
         }
     }
 
+
+    const saveYieldCalc = (payloadObj) => {
+        try {
+            realm.write(() => {
+                realm.delete(realm.objects('YieldCalSubmit'));
+                realm.create(
+                    'YieldCalSubmit',
+                    {
+                        _id: 'YieldCalcSingleRecord',
+                        data: JSON.stringify(payloadObj)
+                    },
+                );
+            });
+            console.log('Saved/Updated YieldCalc:', payloadObj);
+            return true;
+        } catch (error) {
+            console.error('Failed to save YieldCalc:', error);
+            return false;
+        }
+    };
+
+    const saveYieldMasterList = (masterResp) => {
+        try {
+            realm.write(() => {
+                realm.delete(realm.objects('YieldCalculatorResponse'));
+                realm.create('YieldCalculatorResponse', {
+                    _id: new Date(),
+                    data: JSON.stringify(masterResp),
+                    timestamp: new Date(),
+                });
+
+            });
+            console.log("yield master list saved.");
+            return true;
+        } catch (error) {
+            console.error('Failed to save yield master list:', error);
+            return false;
+        }
+    };
+
     let callExpctYield = async (bodyDetails) => {
         // var networkStatus = await getNetworkStatus()
+        // if (networkStatus) {
+        //     try {
+        //         setLoading(true)
+        //         setLoadingMessage(translate('please_wait_getting_data'))
+        //         var getExpctYldURL = configs.BASE_URL + configs.CALCULATOR.GETEXPECTEDYIELDQTL;
+        //         var getHeaders = await GetApiHeaders();
+        //         var body = bodyDetails;
+        //         var APIResponse = await PostRequest(getExpctYldURL, getHeaders, body);
+        //         if (APIResponse != undefined && APIResponse != null) {
+        //             setTimeout(() => {
+        //                 setLoadingMessage()
+        //                 setLoading(false)
+        //             }, 500);
+        //             setTimeout(() => {
+        //                 if (APIResponse.statusCode == HTTP_OK) {
+        //                     var dashboardResp = APIResponse.response
+        //                     console.log(dashboardResp, "////////////////////////////")
+        //                     setLoadingMessage()
+        //                     setExpectedYieldQtlPerAcre(dashboardResp?.expectedYieldQtlPerAcre) 
+        //                     setActualExpectedYieldQtlPerAcre(dashboardResp?.actualExpectedYieldQtlPerAcre)
+        //                 }
+        //                 else {
+        //                     setLoadingMessage(APIResponse?.message ?? "")
+        //                     setLoading(false)
+        //                     Alert.alert(APIResponse?.message)
+        //                 }
+        //             }, 500);
+
+        //         } else {
+        //             setTimeout(() => {
+        //                 setLoading(false)
+        //                 setLoadingMessage()
+        //             }, 500);
+        //         }
+        //     }
+        //     catch (error) {
+        //         setTimeout(() => {
+        //             setLoading(false)
+        //             setSuccessLoadingMessage(error.message)
+        //         }, 1000);
+        //     }
+        // } else {
+        // SimpleToast.show(translate('no_internet_conneccted'))
         let dashboardResp = await getExpectedYieldQtl(
             selectedCrop,
             actualIdealPlantPopulationPerAcre,
@@ -1056,299 +1114,197 @@ const YieldCalculator = () => {
         )
         setExpectedYieldQtlPerAcre(dashboardResp?.expectedYieldQtlPerAcre)
         setActualExpectedYieldQtlPerAcre(dashboardResp?.actualExpectedYieldQtlPerAcre)
-        return;
-
-        if (isConnected) {
-            try {
-                setLoading(true)
-                setLoadingMessage(translate("please_wait_getting_data"))
-                var url = APIConfig.BASE_URL_NVM + APIConfig.CALCULATOR.GETEXPECTEDYIELDQTL;
-                var headers = await GetApiHeaders();
-                var payload = bodyDetails;
-                // var APIResponse = await sendData(url, headers, body);
-                var APIResponse = await sendData(url, payload, headers, false);
-                console.log("POSTOAPOAPSOAP=-=-=->", APIResponse)
-                if (APIResponse != undefined && APIResponse != null) {
-                    setTimeout(() => {
-                        setLoadingMessage()
-                        setLoading(false)
-                    }, 500);
-                    setTimeout(() => {
-                        if (APIResponse.statusCode == HTTP_OK) {
-                            var dashboardResp = APIResponse.data.response
-                            console.log(dashboardResp, "////////////////////////////")
-                            setLoadingMessage()
-                            setExpectedYieldQtlPerAcre(dashboardResp?.expectedYieldQtlPerAcre)
-                            setActualExpectedYieldQtlPerAcre(dashboardResp?.actualExpectedYieldQtlPerAcre)
-                        }
-                        else {
-                            setLoadingMessage(APIResponse?.message ?? "")
-                            setLoading(false)
-                            // Alert.alert(APIResponse?.message)
-                            setAlertModal(true)
-                            setAlertTextContent(APIResponse?.message)
-                        }
-                    }, 500);
-
-                } else {
-                    setTimeout(() => {
-                        setLoading(false)
-                        setLoadingMessage()
-                    }, 500);
-                }
-            }
-            catch (error) {
-                setTimeout(() => {
-                    setLoading(false)
-                    setSuccessLoadingMessage(error.message)
-                }, 1000);
-            }
-        } else {
-           // SimpleToast.show(translate("no_internet_conneccted"))
-            let dashboardResp = await getExpectedYieldQtl(
-                selectedCrop,
-                actualIdealPlantPopulationPerAcre,
-                productiveTillers,
-                AvgGrainsPannicle,
-                AvgBollsPerPlant,
-                AvgBollWt,
-                GrainYield,
-                selectedSoil,
-                VarietyOrPlantingSystem,
-            )
-            setExpectedYieldQtlPerAcre(dashboardResp?.expectedYieldQtlPerAcre)
-            setActualExpectedYieldQtlPerAcre(dashboardResp?.actualExpectedYieldQtlPerAcre)
-        }
+        // }
     }
     let callApiGETTOTALSEED = async () => {
-        // var networkStatus = await getNetworkStatus()
+        var networkStatus = await getNetworkStatus()
+        // if (networkStatus) {
+        //     try {
+        //         setLoading(true)
+        //         setLoadingMessage(translate('please_wait_getting_data'))
+        //         var getTotalSeedReqURL = configs.BASE_URL + configs.CALCULATOR.GETTOTALSEEDREQUIREDKGPERPKT;
+        //         var getHeaders = await GetApiHeaders();
+        //         var body = selectedCrop === 'Cotton' ? {
+        //             "crop": selectedCrop,
+        //             'actualCottonSeedRatePktsPerAcre': actualSeedRateKgPerAcre,
+        //             "areaPlantedAcres": areaToPlanted
+        //         } : {
+        //             "crop": selectedCrop,
+        //             'actualSeedRateKgPerAcre': actualSeedRateKgPerAcre,
+        //             "areaPlantedAcres": areaToPlanted
+        //         }
+        //         var APIResponse = await PostRequest(getTotalSeedReqURL, getHeaders, body);
+        //         if (APIResponse != undefined && APIResponse != null) {
+        //             setTimeout(() => {
+        //                 setLoadingMessage()
+        //                 setLoading(false)
+        //             }, 500);
+        //             setTimeout(() => {
+        //                 if (APIResponse.statusCode == HTTP_OK) {
+        //                     var dashboardResp = APIResponse.response
+        //                     console.log(dashboardResp, "////////////////////////////")
+        //                     setLoadingMessage()
+        //                     setTotalSeedRequired(dashboardResp?.totalSeedRequiredKgPerPkt)
+        //                     setTotalSeedRequiredUnits(dashboardResp?.totalSeedRequiredUnits)
+        //                     setActualTotalSeedRequiredKgPerPkt(dashboardResp?.actualTotalSeedRequiredKgPerPkt)
+        //                 }
+        //                 else {
+        //                     setLoadingMessage(APIResponse?.message ?? "")
+        //                     setLoading(false)
+        //                     Alert.alert(APIResponse?.message)
+        //                 }
+        //             }, 500);
 
+        //         } else {
+        //             setTimeout(() => {
+        //                 setLoading(false)
+        //                 setLoadingMessage()
+        //             }, 500);
+        //         }
+        //     }
+        //     catch (error) {
+        //         setTimeout(() => {
+        //             setLoading(false)
+        //             setSuccessLoadingMessage(error.message)
+        //         }, 1000);
+        //     }
+        // } else {
+        // SimpleToast.show(translate('no_internet_conneccted'))
         let dashboardResp = await getTotalSeedRequiredKgPerPkt(selectedCrop, actualSeedRateKgPerAcre, actualSeedRateKgPerAcre, areaToPlanted)
         setTotalSeedRequired(dashboardResp?.totalSeedRequiredKgPerPkt)
         setTotalSeedRequiredUnits(dashboardResp?.totalSeedRequiredUnits)
         setActualTotalSeedRequiredKgPerPkt(dashboardResp?.actualTotalSeedRequiredKgPerPkt)
-        return;
-
-        if (isConnected) {
-            try {
-                setLoading(true)
-                setLoadingMessage(translate("please_wait_getting_data"))
-                var url = APIConfig.BASE_URL_NVM + APIConfig.CALCULATOR.GETTOTALSEEDREQUIREDKGPERPKT;
-                var headers = await GetApiHeaders();
-                var payload = selectedCrop === 'Cotton' ? {
-                    "crop": selectedCrop,
-                    'actualCottonSeedRatePktsPerAcre': actualSeedRateKgPerAcre,
-                    "areaPlantedAcres": areaToPlanted
-                } : {
-                    "crop": selectedCrop,
-                    'actualSeedRateKgPerAcre': actualSeedRateKgPerAcre,
-                    "areaPlantedAcres": areaToPlanted
-                }
-                var APIResponse = await sendData(url, payload, headers, false);
-                console.log("STEP1-=-=-=-=-=>", APIResponse)
-                if (APIResponse != undefined && APIResponse != null) {
-                    setTimeout(() => {
-                        setLoadingMessage()
-                        setLoading(false)
-                    }, 500);
-                    setTimeout(() => {
-                        if (APIResponse.statusCode == HTTP_OK) {
-                            var dashboardResp = APIResponse.data.response
-                            console.log(dashboardResp, "////////////////////////////")
-                            setLoadingMessage()
-                            setTotalSeedRequired(dashboardResp?.totalSeedRequiredKgPerPkt)
-                            setActualTotalSeedRequiredKgPerPkt(dashboardResp?.actualTotalSeedRequiredKgPerPkt)
-                            setTotalSeedRequiredUnits(dashboardResp?.totalSeedRequiredUnits)
-
-
-                        }
-                        else {
-                            setLoadingMessage(APIResponse?.message ?? "")
-                            setLoading(false)
-                            // Alert.alert(APIResponse?.message)
-                            setAlertModal(true)
-                            setAlertTextContent(APIResponse?.message)
-                        }
-                    }, 500);
-
-                } else {
-                    setTimeout(() => {
-                        setLoading(false)
-                        setLoadingMessage()
-                    }, 500);
-                }
-            }
-            catch (error) {
-                setTimeout(() => {
-                    setLoading(false)
-                    setSuccessLoadingMessage(error.message)
-                }, 1000);
-            }
-        } else {
-          //  SimpleToast.show(translate("no_internet_conneccted"))
-            let dashboardResp = await getTotalSeedRequiredKgPerPkt(selectedCrop, actualSeedRateKgPerAcre, actualSeedRateKgPerAcre, areaToPlanted)
-            setTotalSeedRequired(dashboardResp?.totalSeedRequiredKgPerPkt)
-            setTotalSeedRequiredUnits(dashboardResp?.totalSeedRequiredUnits)
-            setActualTotalSeedRequiredKgPerPkt(dashboardResp?.actualTotalSeedRequiredKgPerPkt)
-        }
+        // }
     }
 
     let callApiRowPlant = async () => {
-        // var networkStatus = await getNetworkStatus()
+        //   var networkStatus = await getNetworkStatus()
+        //   if (networkStatus) {
+        //     try {
+
+        //         setLoading(true)
+        //         setLoadingMessage(translate('please_wait_getting_data'))
+
+        //   var getYieldRatesURL = configs.BASE_URL + configs.CALCULATOR.GETYIELDANDSEEDRATES;
+        //   var getHeaders = await GetApiHeaders();
+        //   var body = {
+        //     "crop": selectedCrop,
+        //     "selectRowToRowSpacingCm":rowSpacing,
+        //     "selectPlantToplantSpacingCm": plantSpacing
+        // }
+        //   var APIResponse = await PostRequest(getYieldRatesURL, getHeaders, body);
+        //       if (APIResponse != undefined && APIResponse != null) {
+        //         setTimeout(() => {
+        //           setLoadingMessage()
+        //           setLoading(false)
+        //         }, 500);
+        //         setTimeout(() => {
+        //           if (APIResponse.statusCode == HTTP_OK) {
+        //               var dashboardResp = APIResponse.response
+        //               console.log(dashboardResp,"////////////////////////////")
+        //               setLoadingMessage()
+        //               setActualIdealPlantPopulationPerAcre(dashboardResp?.actualIdealPlantPopulationPerAcre)
+        //               setActualSeedRateKgPerAcre(selectedCrop === 'Cotton' ? dashboardResp?.actualCottonSeedRatePktsPerAcre : dashboardResp?.actualSeedRateKgPerAcre)
+        //               setIdealPlantPopulationOrAcre(dashboardResp?.idealPlantPopulationPerAcre)
+        //                 setCottonSeedRate(selectedCrop === 'Cotton' ? dashboardResp?.cottonSeedRatePktsPerAcre : dashboardResp?.seedRateKgPerAcre)
+        //                 setSeedRateUnits(dashboardResp?.seedRateUnits)
+        //           }
+        //           else {
+        //             setLoadingMessage(APIResponse?.message ?? "")
+        //             setLoading(false)
+        //             Alert.alert(APIResponse?.message)
+        //           }
+        //         }, 500);
+
+        //       } else {
+        //         setTimeout(() => {
+        //           setLoading(false)
+        //           setLoadingMessage()
+        //         }, 500);
+        //       }
+        //     }
+        //     catch (error) {
+        //       setTimeout(() => {
+        //         setLoading(false)
+        //         setSuccessLoadingMessage(error.message)
+        //       }, 1000);
+        //     }
+        //   } else {
+        // SimpleToast.show(translate('no_internet_conneccted'))
         let dashboardResp = await getYieldAndSeedRates(selectedCrop, rowSpacing, plantSpacing)
-            setActualIdealPlantPopulationPerAcre(dashboardResp?.actualIdealPlantPopulationPerAcre)
-            setActualSeedRateKgPerAcre(selectedCrop === 'Cotton' ? dashboardResp?.actualCottonSeedRatePktsPerAcre : dashboardResp?.actualSeedRateKgPerAcre)
-            setIdealPlantPopulationOrAcre(dashboardResp?.idealPlantPopulationPerAcre)
-            setCottonSeedRate(selectedCrop === 'Cotton' ? dashboardResp?.cottonSeedRatePktsPerAcre : dashboardResp?.seedRateKgPerAcre)
-            setSeedRateUnits(dashboardResp?.seedRateUnits)
-        return;
-        
-        if (isConnected) {
-            try {
-
-                setLoading(true)
-                setLoadingMessage(translate("please_wait_getting_data"))
-
-                var url = APIConfig.BASE_URL_NVM + APIConfig.CALCULATOR.GETYIELDANDSEEDRATES;
-
-                var headers = await GetApiHeaders();
-                var payload = {
-                    "crop": selectedCrop,
-                    "selectRowToRowSpacingCm": rowSpacing,
-                    "selectPlantToplantSpacingCm": plantSpacing
-                }
-                var APIResponse = await sendData(url, payload, headers, false);
-                console.log("STEP=-=-=>2", APIResponse.data.response)
-                if (APIResponse != undefined && APIResponse != null) {
-                    setTimeout(() => {
-                        setLoadingMessage()
-                        setLoading(false)
-                    }, 500);
-                    setTimeout(() => {
-                        if (APIResponse.statusCode == HTTP_OK) {
-                            var dashboardResp = APIResponse.data.response
-                            console.log(dashboardResp, "////////////////////////////")
-                            setLoadingMessage()
-                            setActualIdealPlantPopulationPerAcre(dashboardResp?.actualIdealPlantPopulationPerAcre)
-                            setActualSeedRateKgPerAcre(selectedCrop === 'Cotton' ? dashboardResp?.actualCottonSeedRatePktsPerAcre : dashboardResp?.actualSeedRateKgPerAcre)
-                            setIdealPlantPopulationOrAcre(dashboardResp?.idealPlantPopulationPerAcre)
-                            setCottonSeedRate(selectedCrop === 'Cotton' ? dashboardResp?.cottonSeedRatePktsPerAcre : dashboardResp?.seedRateKgPerAcre)
-                            setSeedRateUnits(dashboardResp?.seedRateUnits)
-
-                            // setIdealPlantPopulationOrAcre(dashboardResp.idealPlantPopulationPerAcre)
-                            // setCottonSeedRate(selectedCrop === 'Cotton' ? dashboardResp.cottonSeedRatePktsPerAcre : dashboardResp.seedRateKgPerAcre)
-                        }
-                        else {
-                            setLoadingMessage(APIResponse?.message ?? "")
-                            setLoading(false)
-                            // Alert.alert(APIResponse?.message)
-                            setAlertModal(true)
-                            setAlertTextContent(APIResponse?.message)
-                        }
-                    }, 500);
-
-                } else {
-                    setTimeout(() => {
-                        setLoading(false)
-                        setLoadingMessage()
-                    }, 500);
-                }
-            }
-            catch (error) {
-                setTimeout(() => {
-                    setLoading(false)
-                    setSuccessLoadingMessage(error.message)
-                }, 1000);
-            }
-        } else {
-            //SimpleToast.show(translate("no_internet_conneccted"))
-            let dashboardResp = await getYieldAndSeedRates(selectedCrop, rowSpacing, plantSpacing)
-            setActualIdealPlantPopulationPerAcre(dashboardResp?.actualIdealPlantPopulationPerAcre)
-            setActualSeedRateKgPerAcre(selectedCrop === 'Cotton' ? dashboardResp?.actualCottonSeedRatePktsPerAcre : dashboardResp?.actualSeedRateKgPerAcre)
-            setIdealPlantPopulationOrAcre(dashboardResp?.idealPlantPopulationPerAcre)
-            setCottonSeedRate(selectedCrop === 'Cotton' ? dashboardResp?.cottonSeedRatePktsPerAcre : dashboardResp?.seedRateKgPerAcre)
-            setSeedRateUnits(dashboardResp?.seedRateUnits)
-        }
+        setActualIdealPlantPopulationPerAcre(dashboardResp?.actualIdealPlantPopulationPerAcre)
+        setActualSeedRateKgPerAcre(selectedCrop === 'Cotton' ? dashboardResp?.actualCottonSeedRatePktsPerAcre : dashboardResp?.actualSeedRateKgPerAcre)
+        setIdealPlantPopulationOrAcre(dashboardResp?.idealPlantPopulationPerAcre)
+        setCottonSeedRate(selectedCrop === 'Cotton' ? dashboardResp?.cottonSeedRatePktsPerAcre : dashboardResp?.seedRateKgPerAcre)
+        setSeedRateUnits(dashboardResp?.seedRateUnits)
+        //   }
     }
 
-    const getYieldCalcutlor = async () => {
-        // var networkStatus = await getNetworkStatus()
-        if (isConnected) {
+    const getYieldCalc = async () => {
+        var networkStatus = await getNetworkStatus()
+        if (networkStatus) {
             try {
-                setLoaderApi(true);
                 setLoading(true)
-                setLoadingMessage(translate("please_wait_getting_data"))
+                setLoadingMessage(translate('please_wait_getting_data'))
 
-                var url = APIConfig.BASE_URL_NVM + APIConfig.CALCULATOR.GETYIELDCALCULATOR;
-                var headers = await GetApiHeaders()
+                var getYeildCalcURL = configs.BASE_URL + configs.CALCULATOR.GETYIELDCALCULATOR;
+                var getHeaders = await GetApiHeaders()
 
-                var APIResponse = await fetchData(url, headers);
-                console.log("CALLED=-=-=-=-=--=->", APIResponse)
-
+                var APIResponse = await GetRequest(getYeildCalcURL, getHeaders);
                 if (APIResponse != undefined && APIResponse != null) {
                     setTimeout(() => {
                         setLoadingMessage()
                         setLoading(false)
                     }, 500);
                     if (APIResponse.statusCode == HTTP_OK) {
-                        let YieldMastersId;
-                        YieldMastersId = uuidv4();
-                        var masterResp = APIResponse.data
-                        console.log("masterResponse data is", masterResp);
-                        saveYieldMasterList(masterResp);
-                        // try {
-                        //     realm.write(() => {
-                        //         realm.delete(realm.objects('YieldMaster'));
-                        //         realm.create('YieldMaster', {
-                        //             _id: YieldMastersId,
-                        //             YieldMastersList: JSON.stringify(masterResp),
-                        //             timestamp: new Date(),
-                        //         });
-                        //         console.log('added successfully into realm yield calc')
-                        //     });
-                        // } catch (err) {
-                        //     console.log(err)
-                        // }
-                        //  need to add offline masters
-
+                        var masterResp = APIResponse.response
                         console.log('the yield resp is================================>', masterResp)
                         if (masterResp != undefined && masterResp != null) {
+                            try {
+                                realm.write(() => {
+                                    realm.delete(realm.objects('YieldCalculatorResponse'));
+                                    realm.create('YieldCalculatorResponse', {
+                                        _id: new Date(),
+                                        data: JSON.stringify(masterResp),
+                                        timestamp: new Date(),
+                                    });
+                                    console.log('added successfully into realm yield calc')
+                                });
+                            } catch (err) {
+                                console.log(err)
+                            }
                             //   setShowCustomActionSheet(false)
                             if (JSON.parse(masterResp.YieldCalculatoroExist).id) {
                                 setRetreivedFrmSavedData(true)
                                 setTimeout(async () => {
                                     let wholeData = JSON.parse(masterResp?.YieldCalculatoroExist);
-                                    console.log(wholeData?.seasonSoilType, 'wholeData?.seasonSoilType', wholeData)
-                                    if (wholeData?.seasonSoilType) {
+                                    if (wholeData?.seasonSoilType && wholeData?.areaPlantedAcres) {
                                         setSelectedCrop(wholeData?.crop);
                                         setSelectedSoil(wholeData?.seasonSoilType);
-
-                                        setSeedRateUnits(wholeData?.seedRateUnits)
-                                        setTotalSeedRequiredUnits(wholeData?.totalSeedRequiredUnits)
-
                                         // setVarietyOrPlantingSystem(wholeData?.varietyTypeOrPlantingSystem);
                                         setRowSpacing(wholeData?.selectRowTorowSpacingCm);
                                         setPlantSpacing(wholeData?.selectPlantToplantSpacingCm);
                                         setIdealPlantPopulationOrAcre(wholeData?.idealplantPopulationPerAcre)
                                         setCottonSeedRate(wholeData?.cottonSeedRatePktsPerAcre);
-                                        // setAreaToPlanted(wholeData?.areaPlantedAcres);
+                                        setAreaToPlanted(wholeData?.areaPlantedAcres);
+                                        setSeedRateUnits(wholeData?.seedRateUnits)
+                                        setTotalSeedRequiredUnits(wholeData?.totalSeedRequiredUnits)
+                                        setActualSeedRateKgPerAcre(wholeData?.crop === 'Cotton' ? wholeData?.actualCottonSeedRatePktsPerAcre : wholeData?.actualSeedRateKgPerAcre)
                                         setTotalSeedRequired(wholeData?.totalSeedRequiredKgPerPkt);
                                         setAvgBollsPerPlant(wholeData?.avgBollsPerPlant)
-                                        //set new values start
-                                        setActualExpectedYieldQtlPerAcre(wholeData?.actualExpectedYieldQtlPerAcre)
-                                        setActualSeedRateKgPerAcre(wholeData?.actualSeedRateKgPerAcre)
-                                        setActualIdealPlantPopulationPerAcre(wholeData?.actualIdealPlantPopulationPerAcre)
-                                        setActualTotalSeedRequiredKgPerPkt(wholeData?.actualTotalSeedRequiredKgPerPkt)
-                                        //end
                                         // setAvgBollWt(wholeData?.avgBollWeight);
                                         // setProductiveTillers(wholeData?.productiveTillersPer10Hills);
                                         // setAvgGrainsPannicle(wholeData?.avgGrainsPerPannicle)
                                         // setGrainYield(wholeData?.grainYield5Cobs)
                                         setExpectedYieldQtlPerAcre(wholeData?.expectedYieldQtlPerAcre)
-                                        // setYieldNote(masterResp?.yieldCalculatorTitle)
-                                        // setYieldNoteDesc(masterResp?.yieldCalculatorDescription)
-                                        setYieldNote(translate('Note'))
-                                        setYieldNoteDesc(translate('noteDesc'))
+                                        //set new values start
+                                        setActualExpectedYieldQtlPerAcre(wholeData?.actualExpectedYieldQtlPerAcre)
+                                        // setActualSeedRateKgPerAcre(wholeData?.actualSeedRateKgPerAcre)
+                                        setActualIdealPlantPopulationPerAcre(wholeData?.actualIdealPlantPopulationPerAcre)
+                                        setActualTotalSeedRequiredKgPerPkt(wholeData?.actualTotalSeedRequiredKgPerPkt)
+                                        //end
+                                        setYieldNote(masterResp?.yieldCalculatorTitle)
+                                        setYieldNoteDesc(masterResp?.yieldCalculatorDescription)
 
                                         // set dropdowns
                                         setYieldCalcRes(masterResp)
@@ -1434,15 +1390,16 @@ const YieldCalculator = () => {
                                             setRowSpacing(wholeData?.selectRowTorowSpacingCm);
                                         }
                                         //end
+
                                         setPlantToPlantList(masterResp?.selectPlantToplantSpacingCmList)
                                         let plantoPlanLs = masterResp?.selectPlantToplantSpacingCmList;
                                         // staart setting plant to plant values
                                         setPlantSpacing('')
                                         setPlantToPlantArr([])
                                         // find if single val of row spacing
-                                        let selectedPlantSpc = plantoPlanLs?.find(item => item.crop === wholeData?.crop && item.seasonOrSoilType === wholeData?.seasonSoilType)?.selectPlantToplantSpacingCm;
+                                        let selectedPlantSpc = plantoPlanLs?.find(item => item.crop === wholeData?.crop && item.seasonOrSoilType === wholeData?.seasonSoilType && (wholeData?.selectRowTorowSpacingCm != null ? item.selectRowToRowSpacingCm == wholeData?.selectRowTorowSpacingCm : true))?.selectPlantToplantSpacingCm;
                                         // filter objects as per the selection of crop and soil
-                                        let plantObj = plantoPlanLs?.filter(item => item.crop === wholeData?.crop && item.seasonOrSoilType === wholeData?.seasonSoilType)
+                                        let plantObj = plantoPlanLs?.filter(item => item.crop === wholeData?.crop && item.seasonOrSoilType === wholeData?.seasonSoilType && (wholeData?.selectRowTorowSpacingCm != null ? item.selectRowToRowSpacingCm == wholeData?.selectRowTorowSpacingCm : true))
                                         if (plantObj !== undefined && plantObj.length > 0) {
                                             plantObj = plantObj.reduce((acc, item) => {    // to avoid duplication i have used this
                                                 if (!acc.some(existingItem => existingItem.selectPlantToplantSpacingCm === item.selectPlantToplantSpacingCm)) {
@@ -1470,7 +1427,6 @@ const YieldCalculator = () => {
                                         // find if single val of row spacing
                                         let selectedAreaPlantedVal = areaPlantedValues?.find(item => item.crop === wholeData?.crop && item.seasonOrSoilType === wholeData?.seasonSoilType)?.areaPlantedAcres;
                                         // filter objects as per the selection of crop and soil
-                                        // let areaToPlantedObj = areaPlantedValues?.filter(item => item.crop === wholeData?.crop && item.seasonOrSoilType === wholeData?.seasonSoilType)
                                         let areaToPlantedObj = areaPlantedValues?.filter(item => item.crop === wholeData?.crop && item.seasonOrSoilType === wholeData?.seasonSoilType
                                             && (wholeData?.selectRowTorowSpacingCm != null ? item.selectRowToRowSpacingCm == wholeData?.selectRowTorowSpacingCm : true)
                                             && (wholeData?.selectPlantToplantSpacingCm != null ? item.selectPlantToplantSpacingCm == wholeData?.selectPlantToplantSpacingCm : true) &&
@@ -1501,14 +1457,12 @@ const YieldCalculator = () => {
                                         setProductiveTillers('')
                                         setProductiveTillersListt([])
                                         // find if single val of row spacing
-                                        // let selectedProdTillerVal = prdctTillerLs?.find(item => item.crop === wholeData?.crop && item.seasonOrSoilType === wholeData?.seasonSoilType)?.productiveTillersPer10Hills;
                                         let selectedProdTillerVal = prdctTillerLs?.find(item => item.crop === wholeData?.crop && item.seasonOrSoilType === wholeData?.seasonSoilType
                                             && (rowSpacing != null ? item.selectRowToRowSpacingCm === rowSpacing : true) &&
                                             (plantSpacing != null ? item.selectPlantToplantSpacingCm === plantSpacing : true) &&
                                             (item.varietyOrPlantingSys ? item.varietyOrPlantingSys.includes(VarietyOrPlantingSystem) : true)
                                         )?.productiveTillersPer10Hills;
                                         // filter objects as per the selection of crop and soil
-                                        // let productiveTillerObj = prdctTillerLs?.filter(item => item.crop === wholeData?.crop && item.seasonOrSoilType === wholeData?.seasonSoilType)
                                         let productiveTillerObj = prdctTillerLs?.filter(item => item.crop === wholeData?.crop && item.seasonOrSoilType === wholeData?.seasonSoilType
                                             && (wholeData?.selectRowTorowSpacingCm != null ? item.selectRowToRowSpacingCm == wholeData?.selectRowTorowSpacingCm : true)
                                             && (wholeData?.selectPlantToplantSpacingCm != null ? item.selectPlantToplantSpacingCm == wholeData?.selectPlantToplantSpacingCm : true) &&
@@ -1541,7 +1495,6 @@ const YieldCalculator = () => {
                                         // find if single val of row spacing
                                         let selectedAvgGrainPinnacleVal = avgGrainPannLs?.find(item => item.crop === wholeData?.crop && item.seasonOrSoilType === wholeData?.seasonSoilType)?.avgGrainsPerPannicle;
                                         // filter objects as per the selection of crop and soil
-                                        // let avgGrainsPerPannicleObj = avgGrainPannLs?.filter(item => item.crop === wholeData?.crop && item.seasonOrSoilType === wholeData?.seasonSoilType)
                                         let avgGrainsPerPannicleObj = avgGrainPannLs?.filter(item => item.crop === wholeData?.crop && item.seasonOrSoilType === wholeData?.seasonSoilType
                                             && (wholeData?.selectRowTorowSpacingCm != null ? item.selectRowToRowSpacingCm == wholeData?.selectRowTorowSpacingCm : true)
                                             && (wholeData?.selectPlantToplantSpacingCm != null ? item.selectPlantToplantSpacingCm == wholeData?.selectPlantToplantSpacingCm : true) &&
@@ -1574,7 +1527,6 @@ const YieldCalculator = () => {
                                         // find if single val of row spacing
                                         let selectedAvgBollWtVal = avgBollWeghtLs?.find(item => item.crop === wholeData?.crop && item.seasonOrSoilType === wholeData?.seasonSoilType)?.avgBollWeight;
                                         // filter objects as per the selection of crop and soil
-                                        // let avgBollWtObj = avgBollWeghtLs?.filter(item => item.crop === wholeData?.crop && item.seasonOrSoilType === wholeData?.seasonSoilType)
                                         let avgBollWtObj = avgBollWeghtLs?.filter(item => item.crop === wholeData?.crop && item.seasonOrSoilType === wholeData?.seasonSoilType
                                             && (wholeData?.selectRowTorowSpacingCm != null ? item.selectRowToRowSpacingCm == wholeData?.selectRowTorowSpacingCm : true)
                                             && (wholeData?.selectPlantToplantSpacingCm != null ? item.selectPlantToplantSpacingCm == wholeData?.selectPlantToplantSpacingCm : true) &&
@@ -1607,7 +1559,6 @@ const YieldCalculator = () => {
                                         // find if single val of row spacing
                                         let selectedAvgBollsPerPlantVal = avgBollPerPlant?.find(item => item.crop === wholeData?.crop && item.seasonOrSoilType === wholeData?.seasonSoilType)?.avgBollsPerPlant;
                                         // filter objects as per the selection of crop and soil
-                                        // let avgBollsPerPlantObj = avgBollPerPlant?.filter(item => item.crop === wholeData?.crop && item.seasonOrSoilType === wholeData?.seasonSoilType)
                                         let avgBollsPerPlantObj = avgBollPerPlant?.filter(item => item.crop === wholeData?.crop && item.seasonOrSoilType === wholeData?.seasonSoilType
                                             && (wholeData?.selectRowTorowSpacingCm != null ? item.selectRowToRowSpacingCm == wholeData?.selectRowTorowSpacingCm : true)
                                             && (wholeData?.selectPlantToplantSpacingCm != null ? item.selectPlantToplantSpacingCm == wholeData?.selectPlantToplantSpacingCm : true) &&
@@ -1640,7 +1591,6 @@ const YieldCalculator = () => {
                                         // find if single val of row spacing
                                         let selectedGrainYieldVal = grainCobLs?.find(item => item.crop === wholeData?.crop && item.seasonOrSoilType === wholeData?.seasonSoilType)?.grainYield5Cobs;
                                         // filter objects as per the selection of crop and soil
-                                        // let grainYieldObj = grainCobLs?.filter(item => item.crop === wholeData?.crop && item.seasonOrSoilType === wholeData?.seasonSoilType)
                                         let grainYieldObj = grainCobLs?.filter(item => item.crop === wholeData?.crop && item.seasonOrSoilType === wholeData?.seasonSoilType
                                             && (wholeData?.selectRowTorowSpacingCm != null ? item.selectRowToRowSpacingCm == wholeData?.selectRowTorowSpacingCm : true)
                                             && (wholeData?.selectPlantToplantSpacingCm != null ? item.selectPlantToplantSpacingCm == wholeData?.selectPlantToplantSpacingCm : true) &&
@@ -1692,17 +1642,13 @@ const YieldCalculator = () => {
                                 setAvgBollWeightList(masterResp?.avgBollWeightList)
                                 setAvgBollsPerPlantList(masterResp?.avgBollsPerPlantList)
                                 setgrainYieldCobsList(masterResp?.grainYield5CobsList)
-                                // setYieldNote(masterResp?.yieldCalculatorTitle)
-                                // setYieldNoteDesc(masterResp?.yieldCalculatorDescription)
-                                setYieldNote(translate('Note'))
-                                        setYieldNoteDesc(translate('noteDesc'))
+                                setYieldNote(masterResp?.yieldCalculatorTitle)
+                                setYieldNoteDesc(masterResp?.yieldCalculatorDescription)
                             }
                         }
                     }
                     else {
-                        // Alert.alert(APIResponse?.message)
-                        setAlertModal(true)
-                        setAlertTextContent(APIResponse?.message)
+                        Alert.alert(APIResponse?.message)
                     }
 
                 } else {
@@ -1715,56 +1661,93 @@ const YieldCalculator = () => {
             catch (error) {
                 setTimeout(() => {
                     setLoading(false)
-                    setLoaderApi(false);
                     setSuccessLoadingMessage(error.message)
                 }, 1000);
                 SimpleToast.show(error.message)
             }
         } else {
-            setLoading(false)
-            setLoaderApi(false);
-            setSuccessLoadingMessage("")
-            SimpleToast.show(translate("no_internet_conneccted"))
+            SimpleToast.show(translate('no_internet_conneccted'))
         }
     }
 
-    // useEffect(() => {
-    //     getYieldCalc()
-    // }, []);
+    const uploadOfflineSeedCalc = async (jsonData) => {
+        const networkStatus = await getNetworkStatus()
+        if (!networkStatus) {
+            return false;
+        }
+        if (networkStatus) {
+            try {
+                var getExpctYldURL = configs.BASE_URL + configs.CALCULATOR.saveYieldCalculator;
+                var getHeaders = await GetApiHeaders()
+                const data = JSON.stringify(jsonData);
+                const formData = new FormData();
+                formData.append('jsonData', data);
+                const APIResponse = await uploadFormData(formData, getExpctYldURL, getHeaders);
+                if (APIResponse != undefined && APIResponse != null) {
+                    if (APIResponse.statusCode == HTTP_OK) {
+                        try {
+                            realm.write(async () => {
+                                realm.delete(realm.objects('YieldCalSubmit'));
+                            });
+                        } catch (error) {
+                            console.error('Error clearing data of saved calc', error);
+                        }
+                        SimpleToast.show(APIResponse?.message)
+                        return true;
+                    } else {
+                        return false;
+                    }
+
+                } else {
+                    return false;
+                }
+            }
+            catch (error) {
+                return false;
+            }
+        } else {
+            return false
+        }
+    }
 
 
     useFocusEffect(
         React.useCallback(() => {
-            let getData = () => {
-                if (isNetAvail) {
-                    const yieldCalcData = realm.objects('YieldMaster');
-                    const YieldArray = Array.from(yieldCalcData);
-                    if (YieldArray != undefined && yieldCalcData.length !== 0) {
-                        checkRealData()
-                    }else{
-                        getYieldCalcutlor()
-                    }
-                 
-                } else {
-                    checkRealData()
-                }
+            const yieldCalcData = realm.objects('YieldCalculatorResponse');
+            if (yieldCalcData.length !== 0) {
+                checkRealData();
+                //   if(networkStatusval){
+                // setLoading(true)
+                //   }
+            } else {
+                getYieldCalc()
             }
-            getData()
+            // let getData = async () => {
+            //     const seedCalcRes = realm.objects('YieldCalSubmit');
+            //     const seedData = seedCalcRes[0]?.data;
+            //     if (!networkStatusval) {
+            // checkRealData();
+            //         return;
+            //     }
+            //     if (seedData) {
+            //         let parseIt = JSON.parse(seedData)
+            //         const wasUploaded = await uploadOfflineSeedCalc(parseIt);
+            // }
+            //     getYieldCalc();
+            // };
+            // getData()
             return () => {
                 console.log('Screen is no longer focused!');
             };
-        }, [isNetAvail])
+        }, [networkStatusval])
     );
 
     let checkRealData = async () => {
-        const yieldCalcData = realm.objects('YieldMaster');
-        const YieldArray = Array.from(yieldCalcData);
-        if (YieldArray != undefined && yieldCalcData.length !== 0) {
-
-            let data = yieldCalcData[0]?.YieldMastersList;
-            const masterResp = JSON.parse(data);
-            
-            if (JSON.parse(masterResp.YieldCalculatoroExist).crop) {
+        const yieldCalcData = realm.objects('YieldCalculatorResponse');
+        if (yieldCalcData.length !== 0) {
+            let data = yieldCalcData[0];
+            const masterResp = JSON.parse(data?.data);
+            if (JSON.parse(masterResp.YieldCalculatoroExist).id) {
                 setRetreivedFrmSavedData(true)
                 setTimeout(async () => {
                     let wholeData = JSON.parse(masterResp?.YieldCalculatoroExist);
@@ -1793,10 +1776,8 @@ const YieldCalculator = () => {
                         setActualIdealPlantPopulationPerAcre(wholeData?.actualIdealPlantPopulationPerAcre)
                         setActualTotalSeedRequiredKgPerPkt(wholeData?.actualTotalSeedRequiredKgPerPkt)
                         //end
-                        // setYieldNote(masterResp?.yieldCalculatorTitle)
-                        // setYieldNoteDesc(masterResp?.yieldCalculatorDescription)
-                        setYieldNote(translate('Note'))
-                                        setYieldNoteDesc(translate('noteDesc'))
+                        setYieldNote(masterResp?.yieldCalculatorTitle)
+                        setYieldNoteDesc(masterResp?.yieldCalculatorDescription)
 
                         // set dropdowns
                         setYieldCalcRes(masterResp)
@@ -1878,7 +1859,7 @@ const YieldCalculator = () => {
                             // Only set row space if ls length is 1
                             //  if (rowSspc.length === 1) {
                             //  setRowSpacing(selectedRowSpc);
-                            //  } else
+                            //  } else 
                             setRowSpacing(wholeData?.selectRowTorowSpacingCm);
                         }
                         //end
@@ -1913,7 +1894,7 @@ const YieldCalculator = () => {
                         setAreaPlantedList(masterResp?.areaPlantedAcresList)
                         //start setting area planted list
                         let areaPlantedValues = masterResp?.areaPlantedAcresList;
-                        //reset values  
+                        //reset values   
                         setAreaToPlanted('')
                         setAreaPlantedArr([])
                         // find if single val of row spacing
@@ -1945,7 +1926,7 @@ const YieldCalculator = () => {
                         setProductiveTillersList(masterResp?.productiveTillersPer10HillsList)
                         // start productive tillers list and value
                         let prdctTillerLs = masterResp?.productiveTillersPer10HillsList;
-                        //reset values  
+                        //reset values   
                         setProductiveTillers('')
                         setProductiveTillersListt([])
                         // find if single val of row spacing
@@ -1981,7 +1962,7 @@ const YieldCalculator = () => {
                         setAgGrainsPerPannicleList(masterResp?.avgGrainsPerPannicleList)
                         // set avg grains list and value
                         let avgGrainPannLs = masterResp?.avgGrainsPerPannicleList;
-                        //reset values  
+                        //reset values   
                         setAvgGrainsPannicle('')
                         setAvgGrainsPannicleListtt([])
                         // find if single val of row spacing
@@ -2011,9 +1992,9 @@ const YieldCalculator = () => {
                         }
                         //end
                         setAvgBollWeightList(masterResp?.avgBollWeightList)
-                        // start setting avg boll weight
+                        // start setting avg boll weight 
                         let avgBollWeghtLs = masterResp?.avgBollWeightList;
-                        //reset values  
+                        //reset values   
                         setAvgBollWt('')
                         setAvgBollWtListt([])
                         // find if single val of row spacing
@@ -2045,7 +2026,7 @@ const YieldCalculator = () => {
                         setAvgBollsPerPlantList(masterResp?.avgBollsPerPlantList)
                         // start avg bolls per plant
                         let avgBollPerPlant = masterResp?.avgBollsPerPlantList;
-                        //reset values  
+                        //reset values   
                         setAvgBollsPerPlant('')
                         setAvgBollsPerPlantListtt([])
                         // find if single val of row spacing
@@ -2077,7 +2058,7 @@ const YieldCalculator = () => {
                         setgrainYieldCobsList(masterResp?.grainYield5CobsList)
                         // start grain yield list
                         let grainCobLs = masterResp?.grainYield5CobsList;
-                        //reset values  
+                        //reset values   
                         setGrainYield('')
                         setGrainYieldListtt([])
                         // find if single val of row spacing
@@ -2106,14 +2087,16 @@ const YieldCalculator = () => {
                             // }
                         }
 
-                        // end
+                        // end 
                         // setYieldNote(masterResp?.yieldCalculatorTitle)
                         // setArraysList()
 
                     }
                 }, 100)
                 // selectedRowSpc
-            }else {
+            }
+            // console.log(JSON.parse(masterResp.YieldCalculatoroExist).id,"???",JSON.stringify(masterResp.YieldCalculatoroExist).id)
+            else {
                 setYieldCalcRes(masterResp)
                 let cropLis = masterResp.cropList
                 cropLis.forEach((crop, index) => {
@@ -2133,76 +2116,26 @@ const YieldCalculator = () => {
                 setAvgBollWeightList(masterResp?.avgBollWeightList)
                 setAvgBollsPerPlantList(masterResp?.avgBollsPerPlantList)
                 setgrainYieldCobsList(masterResp?.grainYield5CobsList)
-                // setYieldNote(masterResp?.yieldCalculatorTitle)
-                // setYieldNoteDesc(masterResp?.yieldCalculatorDescription)
-                setYieldNote(translate('Note'))
-                                        setYieldNoteDesc(translate('noteDesc'))
+                setYieldNote(masterResp?.yieldCalculatorTitle)
+                setYieldNoteDesc(masterResp?.yieldCalculatorDescription)
             }
         }
         else {
-            // showAlertWithMessage(translate('oopsNoInternet'), true, true, translate('oopsNoInternetDesc'), false, true, translate('ok'), translate('ok'))
-            SimpleToast.show("No internet");
+            showAlertWithMessage(translate('oopsNoInternet'), true, true, translate('oopsNoInternetDesc'), false, true, translate('ok'), translate('ok'))
         }
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // const changeDropDownData = (dropDownData, type, selectedItem) => {
-    //     setShowDropDowns(true);
-    //     setdropDownData(dropDownData);
-    //     setDropDownType(type);
-    //     setSelectedDropDownItem(selectedItem);
-    // }
-
-    // const onSelectItem = (itemdata, setStateFn) => {
-    //     if (itemdata != null) {
-    //         setStateFn(itemdata?.name);
-    //         setShowDropDowns(false);
-    //     }
-    // };
-
-    // const takeScreenshot = async () => {
-    //     try {
-    //         const uri = await viewShotRef.current.capture();
-    //         const shareOptions = {
-    //             title: 'Share via',
-    //             message: `${strings.Note} ${strings.noteDesc}`,
-    //             url: uri,
-    //             // social: Share.Social.WHATSAPP,
-    //         };
-    //         Share.open(shareOptions);
-    //     } catch (error) {
-    //         console.error('Failed to capture screenshot:', error);
-    //     }
-    // };
-
-    // let showStatus = () => {
-    //     if (selectedCrop === 'Cotton') {
-    //         return selectedCrop !== '' && selectedSoil !== '' && VarietyOrPlantingSystem !== '' && rowSpacing !== '' && plantSpacing !== '' && IdealPlantPopulationOrAcre !== '' && CottonSeedRate !== '' && areaToPlanted !== '' && totalSeedRequired !== '' && AvgBollsPerPlant !== '' && AvgBollWt !== '' && ExpectedYieldQtlPerAcre !== ''
-    //     }
-    //     if (selectedCrop === 'Maize') {
-    //         return selectedCrop !== '' && selectedSoil !== '' && rowSpacing !== '' && plantSpacing !== '' && IdealPlantPopulationOrAcre !== '' && CottonSeedRate !== '' && areaToPlanted !== '' && totalSeedRequired !== '' && GrainYield !== '' && ExpectedYieldQtlPerAcre !== ''
-    //     }
-    //     else {
-    //         return selectedCrop !== '' && selectedSoil !== '' && VarietyOrPlantingSystem !== '' && rowSpacing !== '' && plantSpacing !== '' && IdealPlantPopulationOrAcre !== '' && CottonSeedRate !== '' && areaToPlanted !== '' && totalSeedRequired !== '' && productiveTillers !== '' && AvgGrainsPannicle !== '' && ExpectedYieldQtlPerAcre !== ''
-    //     }
-    // }
+    const showAlertWithMessage = (title, header, heaertext, message, yesBtn, noBtn, yesText, noText) => {
+        setAlertTitle(title);
+        setShowAlertHeader(header);
+        setShowAlertHeaderText(heaertext)
+        setAlertMessage(message);
+        setShowAlertYesButton(yesBtn);
+        setShowAlertNoButton(noBtn);
+        setShowAlertyesButtonText(yesText);
+        setShowAlertNoButtonText(noText);
+        setShowAlert(true)
+    }
 
     const changeDropDownData = (dropDownData, type, selectedItem) => {
         setShowDropDowns(true);
@@ -2218,34 +2151,27 @@ const YieldCalculator = () => {
         }
     };
 
-    const sharingRef = useRef(false);
-    const [isSharing, setIsSharing] = useState(false);
-
     const takeScreenshot = async () => {
-        if (sharingRef.current) return;
-        sharingRef.current = true;
-        setIsSharing(true);
-        try {
-            const uri = await viewShotRef.current.capture();
-            const shareOptions = {
-                title: 'Share via',
-                message: `${translate("Note")} ${translate("noteDesc")}`,
-                url: uri,
-            };
-            await Share.open(shareOptions);
-        } catch (error) {
-            if (
-                error?.message?.includes('User did not share') ||
-                error?.message?.includes('User cancelled')
-            ) {
-                console.log('Share cancelled');
-            } else {
+        if (isProcessing) return; // prevent multiple clicks
+        setIsProcessing(true);
+
+        setTimeout(async () => {
+            try {
+                const uri = await viewShotRef.current.capture();
+                const shareOptions = {
+                    title: 'Share via',
+                    message: `${translate('Note')} ${yieldNoteDesc}`,
+                    url: uri,
+                    // social: Share.Social.WHATSAPP,
+                };
+                Share.open(shareOptions);
+            } catch (error) {
                 console.error('Failed to capture screenshot:', error);
+            } finally {
+                setIsProcessing(false);
             }
-        } finally {
-            sharingRef.current = false;
-            setIsSharing(false);
-        }
+        }, 200);
+
     };
 
     let showStatus = () => {
@@ -2261,126 +2187,140 @@ const YieldCalculator = () => {
     }
 
 
+
     return (
-        <View style={{ flex: 1, backgroundColor: dynamicStyles.primaryColor }} edges={['top']}>
-            <View style={styles.flexFull}>
-                {Platform.OS === 'android' && <StatusBar backgroundColor={dynamicStyles.primaryColor} barStyle='dark-content' />}
-
-                <View style={[styles.header, { backgroundColor: dynamicStyles.primaryColor }]}>
-                    <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-                        <Image source={require("../../assets/Images/samadhanBackIcon.png")} style={[styles.backIcon, { tintColor: dynamicStyles.secondaryColor }]} />
-                    </TouchableOpacity>
-                    <Text style={[styles.headerText, { color: dynamicStyles.secondaryColor,fontFamily:fonts.SemiBold }]}>
-                        {translate("yield_calculator")}
-                    </Text>
-                </View>
-
-                <ScrollView>
-                    <ViewShot ref={viewShotRef} style={styles.viewShot} captureMode="mount" options={{ format: 'jpg', quality: 0.9 }} onCapture={(uri) => console.log("Auto-Captured URI:", uri)}>
-                        <View style={styles.contentContainer}>
-                            <View style={styles.contentSubContainer}>
-                                <Text style={[styles.selectedCropText, { color: dynamicStyles.textColor,fontFamily:fonts.Regular }]}  >
-                                    {translate("selectCrop")}
-                                </Text>
-                                <CustomFertilizerCalBorderInputDropDown
-                                    defaultValue={selectedCrop != undefined && selectedCrop != translate("select") ? selectedCrop : translate("select")}
-                                    IsRequired={true}
-                                    // disabled={selectedFilter === strings.YieldCalculator}
-                                    placeholder={translate("selectCrop")}
-                                    onFocus={() => {
-                                        changeDropDownData(cropsList, "select crop yield calculator", selectedCrop)
-                                        // selectedFilter === strings.TotalSeed &&  changeDropDownData(cropsList, translate("yieldOne"), selectedCrop)
-                                        setRetreivedFrmSavedData(false)
-                                    }}
-                                />
-                                <Text style={[styles.selectedCropText2, { color: dynamicStyles.textColor,fontFamily:fonts.Regular }]}  >
-                                    {translate("yieldTwo")}
-                                </Text>
-                                <CustomFertilizerCalBorderInputDropDown
-                                    defaultValue={selectedSoil != undefined && selectedSoil != translate("select") ? selectedSoil : translate("select")}
-                                    IsRequired={true}
-                                    // disabled={selectedFilter === strings.YieldCalculator}
-                                    placeholder={translate("yieldTwo")}
-                                    onFocus={() => {
-                                        changeDropDownData(seasonsalList, "Select Season/Soil Type", selectedSoil)
-                                        // selectedFilter === strings.TotalSeed && changeDropDownData(seasonsalList, translate("yieldTwo"), selectedSoil)
-                                        setRetreivedFrmSavedData(false)
-                                    }}
-                                />
-                                {selectedCrop !== 'Maize' &&
-                                    <>
-                                        <Text style={[styles.selectedCropText2, { color: dynamicStyles.textColor,fontFamily:fonts.Regular }]}  >
-                                            {translate("yieldThree")}
-                                        </Text>
-                                        <CustomFertilizerCalBorderInputDropDown
-                                            // width={[{ width: '92%' }, styles['centerItems']]}
-                                            defaultValue={VarietyOrPlantingSystem != undefined && VarietyOrPlantingSystem != translate("select") ? VarietyOrPlantingSystem : translate("select")}
-                                            IsRequired={true}
-                                            disabled={listPlantingSystem.length === 1}
-                                            // disabled={selectedFilter === strings.YieldCalculator}
-                                            placeholder={translate("yieldThree")}
-                                            onFocus={() => {
-                                                listPlantingSystem.length !== 1 && changeDropDownData(listPlantingSystem, "Variety Type/Planting System", VarietyOrPlantingSystem)
-                                                // changeDropDownData(listPlantingSystem, translate("yieldThree"), VarietyOrPlantingSystem)
-                                                // selectedFilter === strings.TotalSeed && changeDropDownData(listPlantingSystem, translate("yieldThree"), VarietyOrPlantingSystem)
-                                            }}
-                                        />
-                                    </>
-                                }
-                                <Text style={[styles.selectedCropText2, { color: dynamicStyles.textColor,fontFamily:fonts.Regular }]}  >
-                                    {translate("yieldFour")}
-                                </Text>
-                                <CustomFertilizerCalBorderInputDropDown
-                                    // width={[{ width: '92%' }, styles['centerItems']]}
-                                    defaultValue={rowSpacing != undefined && rowSpacing != translate("select") ? rowSpacing : translate("select")}
-                                    IsRequired={true}
-                                    disabled={listRowSpace.length === 1}
-                                    // disabled={selectedFilter === strings.YieldCalculator}
-                                    placeholder={translate("yieldFour")}
-                                    onFocus={() => {
-                                        listRowSpace.length !== 1 && changeDropDownData(listRowSpace, "Select Row to Row Spacing(cms)", rowSpacing)
-                                        // changeDropDownData(listRowSpace, translate("yieldFour"), rowSpacing)
-                                        // selectedFilter === strings.TotalSeed && changeDropDownData(listRowSpace, translate("yieldFour"), rowSpacing)
-                                    }}
-                                />
-                                <Text style={[styles.selectedCropText2, { color: dynamicStyles.textColor,fontFamily:fonts.Regular }]}  >
-                                    {translate("yieldFive")}
-                                </Text>
-                                <CustomFertilizerCalBorderInputDropDown
-                                    // width={[{ width: '92%' }, styles['centerItems']]}
-                                    defaultValue={plantSpacing != undefined && plantSpacing != translate("select") ? plantSpacing : translate("select")}
-                                    IsRequired={true}
-                                    disabled={PlantToPlantArr.length === 1}
-                                    // disabled={selectedFilter === strings.YieldCalculator}
-                                    placeholder={translate("yieldFive")}
-                                    onFocus={() => {
-                                        PlantToPlantArr.length !== 1 && changeDropDownData(PlantToPlantArr, "Select Plant to Plant Spacing(cms)", plantSpacing)
-                                        // changeDropDownData(PlantToPlantArr, translate("yieldFive"), plantSpacing)
-                                        // selectedFilter === strings.TotalSeed &&  changeDropDownData(PlantToPlantArr, translate("yieldFive"), plantSpacing)
-                                    }}
-                                />
-
-                                <View style={{ marginTop: 10, paddingHorizontal: 15, }}>
-                                    <View style={{ flexDirection: "row", alignItems: "center" }}>
-                                        <View style={{ width: '60%' }}>
-                                            <Text style={[{ color: dynamicStyles.textColor }, { fontFamily:fonts.Regular,fontSize: RFValue(15, height) }]}  >
-                                                {translate("IdealPlantPopulationOrAcre")}
-                                            </Text>
-                                        </View>
-                                        <Text style={[{ color: dynamicStyles.textColor, fontSize: RFValue(14, 680),fontFamily:fonts.Regular }]}  >
-                                            {":  "}
-                                        </Text>
-                                        <Text style={[{ color: IdealPlantPopulationOrAcre ? dynamicStyles.textColor : "grey" }, { fontFamily:fonts.SemiBold,fontSize: RFValue(17, height) }]}  >
-                                            {IdealPlantPopulationOrAcre ? IdealPlantPopulationOrAcre : 0}
+        <View style={[styleSheetStyles.flexFull, styleSheetStyles.gray300bg]}>
+            {Platform.OS === 'android' && <StatusBar backgroundColor={dynamicStyles.primaryColor} barStyle='dark-content' />}
+            <View style={[{ backgroundColor: dynamicStyles.primaryColor }, { borderBottomStartRadius: 10, borderBottomEndRadius: 10, padding: 15 }]}>
+                <TouchableOpacity style={[styles['flex_direction_row'], { alignItems: 'center' }]} onPress={() => navigation.goBack()}>
+                    <Image style={[{ tintColor: dynamicStyles.secondaryColor }, { height: 15, width: 20 }]} source={require('../assets/images/previous.png')}></Image>
+                    <Text style={[styles['margin_left_10'], { color: dynamicStyles.secondaryColor }, styles['font_size_18_bold'], Platform.OS === 'ios' && { minHeight: 25 }]}>{calcType}</Text>
+                </TouchableOpacity>
+            </View>
+            <ScrollView style={{ bottom: 10 }}>
+                <ViewShot ref={viewShotRef} style={styleSheetStyles.viewShot} captureMode="mount" options={{ format: 'jpg', quality: 0.9 }}>
+                    <View style={{
+                        backgroundColor: "#fff",
+                        width: "90%",
+                        alignSelf: "center",
+                        elevation: 5,
+                        borderRadius: 5,
+                        marginTop: 10,
+                        marginBottom: responsiveHeight(3),
+                        paddingBottom: responsiveHeight(3),
+                    }}>
+                        <View style={[{
+                            // borderWidth: 1,
+                            // borderColor: 'rgba(180, 180, 180, 0.5)',
+                            // width: '92%',
+                            alignSelf: "center",
+                            // borderRadius: 10,
+                            // paddingTop: 10,
+                            // paddingBottom: 20,
+                            marginTop: 15,
+                            paddingBottom: 5,
+                        }]}>
+                            <Text style={[{ color: dynamicStyles.textColor }, styles['font_size_14_regular'], styles['top_5'], { marginBottom: 0.5, marginLeft: 0, marginTop: 0 }]}  >
+                                {translate('selectCrop')}
+                            </Text>
+                            <CustomBorderInputDropDown
+                                width={[{ width: '92%' }, styles['centerItems']]}
+                                defaultValue={selectedCrop != undefined && selectedCrop != translate('select') ? selectedCrop : translate('select')}
+                                IsRequired={true}
+                                // disabled={selectedFilter === translate('YieldCalculator')}
+                                placeholder={translate('selectCrop')}
+                                onFocus={() => {
+                                    changeDropDownData(cropsList, strings.yieldOne, selectedCrop)
+                                    // selectedFilter === strings.TotalSeed &&  changeDropDownData(cropsList, strings.yieldOne, selectedCrop)
+                                    setRetreivedFrmSavedData(false)
+                                }}
+                            />
+                            <Text style={[{ color: dynamicStyles.textColor }, styles['font_size_14_regular'], styles['top_5'], { marginBottom: 0.5, marginLeft: 0, marginTop: 10 }]}  >
+                                {translate('yieldTwo')}
+                            </Text>
+                            <CustomBorderInputDropDown
+                                width={[{ width: '92%' }, styles['centerItems']]}
+                                defaultValue={selectedSoil != undefined && selectedSoil != translate('select') ? selectedSoil : translate('select')}
+                                IsRequired={true}
+                                // disabled={selectedFilter === translate('YieldCalculator')}
+                                placeholder={translate('yieldTwo')}
+                                onFocus={() => {
+                                    changeDropDownData(seasonsalList, strings.yieldTwo, selectedSoil)
+                                    // selectedFilter === strings.TotalSeed && changeDropDownData(seasonsalList, strings.yieldTwo, selectedSoil)
+                                    setRetreivedFrmSavedData(false)
+                                }}
+                            />
+                            {selectedCrop !== 'Maize' &&
+                                <>
+                                    <Text style={[{ color: dynamicStyles.textColor }, styles['font_size_14_regular'], styles['top_5'], { marginBottom: 0.5, marginLeft: 0, marginTop: 10 }]}  >
+                                        {translate('yieldThree')}
+                                    </Text>
+                                    <CustomBorderInputDropDown
+                                        width={[{ width: '92%' }, styles['centerItems']]}
+                                        defaultValue={VarietyOrPlantingSystem != undefined && VarietyOrPlantingSystem != translate('select') ? VarietyOrPlantingSystem : translate('select')}
+                                        IsRequired={true}
+                                        disabled={listPlantingSystem.length === 1}
+                                        // disabled={selectedFilter === translate('YieldCalculator')}
+                                        placeholder={translate('yieldThree')}
+                                        onFocus={() => {
+                                            listPlantingSystem.length !== 1 && changeDropDownData(listPlantingSystem, strings.yieldThree, VarietyOrPlantingSystem)
+                                            // selectedFilter === strings.TotalSeed && changeDropDownData(listPlantingSystem, strings.yieldThree, VarietyOrPlantingSystem)
+                                        }}
+                                    />
+                                </>
+                            }
+                            <Text style={[{ color: dynamicStyles.textColor }, styles['font_size_14_regular'], styles['top_5'], { marginBottom: 0.5, marginLeft: 0, marginTop: 10 }]}  >
+                                {translate('yieldFour')}
+                            </Text>
+                            <CustomBorderInputDropDown
+                                width={[{ width: '92%' }, styles['centerItems']]}
+                                defaultValue={rowSpacing != undefined && rowSpacing != translate('select') ? rowSpacing : translate('select')}
+                                value={rowSpacing != undefined && rowSpacing != translate('select') ? rowSpacing : translate('select')}
+                                IsRequired={true}
+                                disabled={listRowSpace.length === 1}
+                                // disabled={selectedFilter === translate('YieldCalculator')}
+                                placeholder={translate('yieldFour')}
+                                onFocus={() => {
+                                    listRowSpace.length !== 1 && changeDropDownData(listRowSpace, strings.yieldFour, rowSpacing)
+                                    // selectedFilter === strings.TotalSeed && changeDropDownData(listRowSpace, strings.yieldFour, rowSpacing)
+                                }}
+                            />
+                            <Text style={[{ color: dynamicStyles.textColor }, styles['font_size_14_regular'], styles['top_5'], { marginBottom: 0.5, marginLeft: 0, marginTop: 10 }]}  >
+                                {translate('yieldFive')}
+                            </Text>
+                            <CustomBorderInputDropDown
+                                width={[{ width: '92%' }, styles['centerItems']]}
+                                defaultValue={plantSpacing != undefined && plantSpacing != translate('select') ? plantSpacing : translate('select')}
+                                IsRequired={true}
+                                disabled={PlantToPlantArr.length === 1}
+                                // disabled={selectedFilter === translate('YieldCalculator')}
+                                placeholder={translate('yieldFive')}
+                                onFocus={() => {
+                                    PlantToPlantArr.length !== 1 && changeDropDownData(PlantToPlantArr, strings.yieldFive, plantSpacing)
+                                    // selectedFilter === strings.TotalSeed &&  changeDropDownData(PlantToPlantArr, strings.yieldFive, plantSpacing)
+                                }}
+                            />
+                            <View style={[styles['margin_top_10']]}>
+                                <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 2.5, marginTop: 10, minHeight: responsiveHeight(5) }}>
+                                    <View style={{ width: '55%' }}>
+                                        <Text style={[{ color: dynamicStyles.textColor }, styles['font_size_14_regular']]}  >
+                                            {translate('IdealPlantPopulationOrAcre')}
                                         </Text>
                                     </View>
-                                    {/* <CustomYieldTextInput
-                                    // style={[styles['margin_top_20'], styles['centerItems']]}
-                                    labelName={translate("IdealPlantPopulationOrAcre")}
+                                    <Text style={[{ color: dynamicStyles.textColor }, styles['font_size_14_regular']]}  >
+                                        {translate('dots')}
+                                    </Text>
+                                    <Text style={[{ color: IdealPlantPopulationOrAcre ? dynamicStyles.textColor : 'rgba(180, 180, 180, 1)' }, { marginLeft: 10, }, styles['font_size_20_bold']]}  >
+                                        {IdealPlantPopulationOrAcre ? IdealPlantPopulationOrAcre : 0}
+                                    </Text>
+                                </View>
+                                {/* <CustomTextInput
+                                    style={[styles['margin_top_20'], styles['centerItems']]}
+                                    labelName={translate('IdealPlantPopulationOrAcre')}
                                     IsRequired={false}
                                     maxLength={30}
                                     keyboardType='number-pad'
-                                    placeholder={translate("IdealPlantPopulationOrAcre")}
+                                    placeholder={translate('IdealPlantPopulationOrAcre')}
                                     value={IdealPlantPopulationOrAcre}
                                     editable={false}
                                     addSpace={true}
@@ -2392,321 +2332,292 @@ const YieldCalculator = () => {
                                     }}
                                     onEndEditing={event => { }}
                                 /> */}
-                                </View>
                             </View>
+                        </View>
 
-                            <View>
-                                {
-                                    //    selectedFilter === strings.TotalSeed && 
-                                    <>
-                                        <View>
-                                            <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 15 }}>
-                                                <View style={{ width: '60%', }}>
-                                                    <Text style={[{ color: dynamicStyles.textColor }, { fontFamily:fonts.Regular, fontSize: RFValue(14, height) }]}  >
-                                                        {selectedCrop === 'Cotton' ? translate("Cotton_Seed_Rate") : translate("SeedRateKg")}
-                                                    </Text>
-                                                </View>
-                                                <Text style={[{ color: dynamicStyles.textColor, fontSize: RFValue(14, height),fontFamily:fonts.Regular }]}  >
-                                                    {":"}
-                                                </Text>
-                                                <Text style={[{ color: CottonSeedRate ? dynamicStyles.textColor : "grey" }, {fontFamily:fonts.SemiBold, marginLeft: 10, fontSize: RFValue(17, height) }]}  >{CottonSeedRate ? CottonSeedRate : 0}  <Text style={[{ fontWeight: "400", color: dynamicStyles.textColor, marginLeft: 5, fontSize: RFValue(14, height) },]}  >
-                                                    {/* {selectedCrop === 'Cotton' ? 'pkt' : 'kg'} */}
-                                                    {seedRateUnits}
-                                                </Text>
+
+                        <View>
+
+
+                            {
+                                //    selectedFilter === translate('TotalSeed') && 
+                                <>
+                                    <View style={[styles['margin_top_10']]}>
+                                        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: -1, marginTop: 5, marginLeft: 15 }}>
+                                            <View style={{ width: '52.5%' }}>
+                                                <Text style={[{ color: dynamicStyles.textColor }, styles['font_size_14_regular']]}  >
+                                                    {selectedCrop === 'Cotton' ? translate('CottonSeedRate') : translate('SeedRateKgAc')}
                                                 </Text>
                                             </View>
-                                            {/* <CustomYieldTextInput
-                                            // style={[styles['margin_top_20'], styles['centerItems']]}
-                                            labelName={selectedCrop === 'Cotton' ? translate("Cotton_Seed_Rate") : translate("SeedRateKg")}
-                                            IsRequired={false}
-                                            maxLength={30}
-                                            keyboardType='number-pad'
-                                            placeholder={selectedCrop === 'Cotton' ? translate("Cotton_Seed_Rate") : translate("SeedRateKg")}
-                                            value={CottonSeedRate}
-                                            editable={false}
-                                            addSpace={true}
-                                            onFocus={() => {
-                                            }}
-                                            onChangeText={(text) => {
-                                                var enteredNumber = text
-                                                    .replace(/[^0-9.]/g, '')
-                                                    .replace(/(\..*)\./g, '$1');
-                                                setCottonSeedRate(enteredNumber)
-                                            }}
-                                            onEndEditing={event => { }}
-                                        /> */}
+                                            <Text style={[{ color: dynamicStyles.textColor }, styles['font_size_14_regular']]}  >
+                                                {translate('dots')}
+                                            </Text>
+                                            <Text style={[{ color: CottonSeedRate ? dynamicStyles.textColor : 'rgba(180, 180, 180, 1)' }, { marginLeft: 10, }, styles['font_size_20_bold']]}  >
+                                                {CottonSeedRate ? CottonSeedRate : 0}
+                                            </Text>
+                                            <Text style={[{ color: dynamicStyles.textColor, marginLeft: 5, }, styles['font_size_14_regular']]}  >
+                                                {seedRateUnits}
+                                            </Text>
                                         </View>
-
-                                        <CustomYieldTextInput
-                                            // style={[styles['margin_top_20'], styles['centerItems']]}
-                                            labelName={translate("yieldSix")}
-                                            IsRequired={false}
-                                            maxLength={30}
-                                            keyboardType='number-pad'
-                                            placeholder={translate("yieldSix")}
-                                            value={areaToPlanted}
-                                            editable={true}
-                                            addSpace={true}
-                                            onFocus={() => {
-                                            }}
-                                            onChangeText={(text) => {
-                                                var enteredNumber = text.replace(/[^0-9]/g, '');
-                                                setAreaToPlanted(enteredNumber)
-                                            }}
-                                            onEndEditing={event => { }}
-                                        />
-                                        <View style={{ marginTop: 10 }}>
-                                            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: -1, marginTop: 15, marginLeft: 15 }}>
-                                                {/* <View style={{ width: '60%' }}> */}
-                                                <Text style={[{ color: dynamicStyles.textColor }, { fontSize: RFValue(14, height), fontFamily:fonts.Regular }]}  >
-                                                    {translate("totalSeedRequired")}
-                                                </Text>
-                                                {/* </View> */}
-                                                <Text style={[{ color: dynamicStyles.textColor, marginLeft: 5, fontSize: RFValue(14, height),fontFamily:fonts.Regular }]}  >
-                                                    {": "}
-                                                </Text>
-                                                <Text style={[{ color: totalSeedRequired ? dynamicStyles.textColor : "grey" }, {fontFamily:fonts.SemiBold, marginLeft: 10, fontSize: RFValue(17, height) }]}  >
-                                                    {totalSeedRequired ? totalSeedRequired : 0}
-                                                </Text>
-                                                <Text style={[{ color: dynamicStyles.textColor, marginLeft: 5, fontSize: RFValue(14, height),fontFamily:fonts.Regular },]}  >
-                                                    {/* {selectedCrop === 'Cotton' ? 'pkt' : 'kg'} */}
-                                                    {totalSeedRequiredUnits}
-                                                </Text>
-                                            </View>
-
-                                            {/* <CustomYieldTextInput
-                                            // style={[styles['margin_top_20'], styles['centerItems']]}
-                                            labelName={translate("totalSeedRequired")}
-                                            IsRequired={false}
-                                            maxLength={30}
-                                            keyboardType='number-pad'
-                                            placeholder={translate("totalSeedRequired")}
-                                            value={totalSeedRequired}
-                                            editable={false}
-                                            addSpace={true}
-                                            onFocus={() => {
-                                            }}
-                                            onChangeText={(text) => {
-                                                var enteredNumber = text.replace(/[^0-9]/g, '');
-                                                setTotalSeedRequired(enteredNumber)
-                                            }}
-                                            onEndEditing={event => { }}
-                                        /> */}
-                                        </View>
-                                    </>}
-
-                                {/* {selectedCrop === 'Cotton' ? selectedFilter !== strings.TotalSeed && <View> */}
-                                {selectedCrop === 'Cotton' ? <View>
-                                    <Text style={[styles.selectedCropText4, { color: dynamicStyles.textColor,fontFamily:fonts.Regular }]}  >
-                                        {translate("AvgBollsPerPlant")}
-                                    </Text>
-                                    <CustomFertilizerCalBorderInputDropDown
-                                        // width={[{ width: '92%' }, styles['centerItems']]}
-                                        defaultValue={AvgBollsPerPlant != undefined && AvgBollsPerPlant != translate("select") ? AvgBollsPerPlant : translate("select")}
-                                        IsRequired={true}
-                                        disabled={AvgBollsPerPlantListtt.length === 1}
-                                        placeholder={translate("AvgBollsPerPlant")}
-                                        onFocus={() => {
-                                            // changeDropDownData(AvgBollsPerPlantListtt, translate("AvgBollsPerPlant"), AvgBollsPerPlant)
-                                            AvgBollsPerPlantListtt.length !== 1 && changeDropDownData(AvgBollsPerPlantListtt, "Avg Bolls per plant(Count on 10plants)", AvgBollsPerPlant)
-                                        }}
-                                    />
-                                    <Text style={[styles.selectedCropText5, { color: dynamicStyles.textColor,fontFamily:fonts.Regular }]}  >
-                                        {translate("AvgBollWt")}
-                                    </Text>
-                                    <CustomFertilizerCalBorderInputDropDown
-                                        // width={[{ width: '92%' }, styles['centerItems']]}
-                                        defaultValue={AvgBollWt != undefined && AvgBollWt != translate("select") ? AvgBollWt : translate("select")}
-                                        IsRequired={true}
-                                        placeholder={translate("AvgBollWt")}
-                                        disabled={AvgBollWtListt.length === 1}
-                                        onFocus={() => {
-                                            AvgBollWtListt.length !== 1 && changeDropDownData(AvgBollWtListt, "Avg Boll wt(Weight 5 bolls per Plant on 5 Plants)", AvgBollWt)
-                                        }}
-                                    />
-                                </View> : selectedCrop === 'Maize' ?
-                                    // </View> : selectedCrop === 'Maize' ? selectedFilter !== strings.TotalSeed &&
-                                    <View>
-                                        <Text style={[styles.selectedCropText4, { color: dynamicStyles.textColor,fontFamily:fonts.Regular }]}  >
-                                            {translate("GrainYield")}
-                                        </Text>
-                                        <CustomFertilizerCalBorderInputDropDown
-                                            // width={[{ width: '92%' }, styles['centerItems']]}
-                                            defaultValue={GrainYield != undefined && GrainYield != translate("select") ? GrainYield : translate("select")}
-                                            IsRequired={true}
-                                            placeholder={translate("GrainYield")}
-                                            disabled={GrainYieldListtt.length === 1}
-                                            onFocus={() => {
-                                                GrainYieldListtt.length !== 1 && changeDropDownData(GrainYieldListtt, "Grain yield (5cobs)", GrainYield)
-                                            }}
-                                        />
                                     </View>
-                                    : <View>
-                                        {/* : selectedFilter !== strings.TotalSeed && <View> */}
-                                        <Text style={[styles.selectedCropText4, { color: dynamicStyles.textColor,fontFamily:fonts.Regular }]}  >
-                                            {translate("productiveTillers")}
-                                        </Text>
-                                        <CustomFertilizerCalBorderInputDropDown
-                                            // width={[{ width: '92%' }, styles['centerItems']]}
-                                            defaultValue={productiveTillers != undefined && productiveTillers != translate("select") ? productiveTillers : translate("select")}
-                                            IsRequired={true}
-                                            placeholder={translate("productiveTillers")}
-                                            disabled={productiveTillersListt.length === 1}
-                                            onFocus={() => {
-                                                productiveTillersListt.length !== 1 && changeDropDownData(productiveTillersListt, "Total number of productive tillers on 10 hills", productiveTillers)
-                                            }}
-                                        />
-                                        <Text style={[styles.selectedCropText5, { color: dynamicStyles.textColor,fontFamily:fonts.Regular }]}  >
-                                            {translate("AvgGrainsPannicle")}
-                                        </Text>
-                                        <CustomFertilizerCalBorderInputDropDown
-                                            // width={[{ width: '92%' }, styles['centerItems']]}
-                                            defaultValue={AvgGrainsPannicle != undefined && AvgGrainsPannicle != translate("select") ? AvgGrainsPannicle : translate("select")}
-                                            IsRequired={true}
-                                            placeholder={translate("AvgGrainsPannicle")}
-                                            disabled={AvgGrainsPannicleListtt.length === 1}
-                                            onFocus={() => {
-                                                AvgGrainsPannicleListtt.length !== 1 && changeDropDownData(AvgGrainsPannicleListtt, "Avg grains per pannicle (Count on 10 pannicles)", AvgGrainsPannicle)
-                                            }}
-                                        />
-                                    </View>}
-
-                                {
-                                    //    selectedFilter !== strings.TotalSeed && 
-                                    <View style={{ marginTop: 10 }}>
-                                        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 2.5, marginLeft: 15, marginTop: 10 }}>
-                                            {/* <View style={{ width: '62%' }}> */}
-                                            <Text style={[{ color: dynamicStyles.textColor }, { fontSize: RFValue(14, height), fontFamily:fonts.Regular }]}  >
-                                                {translate("ExpectedYieldQtlPerAcre")}
-                                            </Text>
-                                            {/* </View> */}
-                                            <Text style={[{ color: dynamicStyles.textColor, marginLeft: 5, fontSize: RFValue(14, height),fontFamily:fonts.Regular }]}  >
-                                                {": "}
-                                            </Text>
-                                            <Text style={[{ color: ExpectedYieldQtlPerAcre ? dynamicStyles.textColor : "grey" }, {fontFamily:fonts.SemiBold, marginLeft: 10, fontSize: RFValue(17, height) }]}  >
-                                                {ExpectedYieldQtlPerAcre ? ExpectedYieldQtlPerAcre : 0}
-                                            </Text>
-                                        </View>
-                                        {/* <CustomYieldTextInput
-                                        // style={[styles['margin_top_20'], styles['centerItems']]}
-                                        labelName={translate("ExpectedYieldQtlPerAcre")}
+                                    <CustomTextInput
+                                        style={[styles['margin_top_20'], styles['centerItems']]}
+                                        labelName={translate('yieldSix')}
                                         IsRequired={false}
                                         maxLength={30}
                                         keyboardType='number-pad'
-                                        placeholder={translate("ExpectedYieldQtlPerAcre")}
-                                        value={ExpectedYieldQtlPerAcre}
-                                        editable={false}
+                                        placeholder={translate('yieldSix')}
+                                        value={areaToPlanted}
+                                        editable={true}
                                         addSpace={true}
                                         onFocus={() => {
                                         }}
                                         onChangeText={(text) => {
-                                            var enteredNumber = text
-                                                .replace(/[^0-9.]/g, '')
-                                                .replace(/(\..*)\./g, '$1');
-                                            setExpectedYieldQtlPerAcre(enteredNumber)
+                                            var enteredNumber = text.replace(/[^0-9]/g, '');
+                                            setAreaToPlanted(enteredNumber)
                                         }}
                                         onEndEditing={event => { }}
-                                    /> */}
-                                    </View>}
-                                {
-                                    showDropDowns &&
-                                    <CustomYieldCalListViewModal
-                                        dropDownType={dropDownType}
-                                        listItems={dropDownData}
-                                        selectedItem={selectedDropDownItem}
-                                        onSelectedCropCal={(item) => onSelectItem(item, setSelectedCrop)}
-                                        onSelectedSoilType={(item) => onSelectItem(item, setSelectedSoil)}
-                                        onSelectedPlantingType={(item) => onSelectItem(item, setVarietyOrPlantingSystem)}
-                                        onSelectedRowSpacing={(item) => onSelectItem(item, setRowSpacing)}
-                                        onSelectedPlantSpacing={(item) => onSelectItem(item, setPlantSpacing)}
-                                        onSelectedAreaToPlanted={(item) => onSelectItem(item, setAreaToPlanted)}
-                                        onSelectedAvgBollsPerPlant={(item) => onSelectItem(item, setAvgBollsPerPlant)}
-                                        onSelectedsetAvgBollWt={(item) => onSelectItem(item, setAvgBollWt)}
-                                        onSelectedGrainYield={(item) => onSelectItem(item, setGrainYield)}
-                                        onSelectedProductiveTillers={(item) => onSelectItem(item, setProductiveTillers)}
-                                        onSelectedAvgGrainsPannicle={(item) => onSelectItem(item, setAvgGrainsPannicle)}
-
-                                        closeModal={() => setShowDropDowns(false)}
                                     />
-                                }
-                                <Text style={[styles.selectedCropText6, { color: dynamicStyles.textColor ,fontFamily:fonts.Regular}]}  >
-                                    {yieldNote}
-                                </Text>
-                                <Text style={[styles.selectedCropText7, { color: dynamicStyles.textColor,fontFamily:fonts.Regular }]}  >
-                                    {yieldNoteDesc}
-                                </Text>
-                            </View>
+                                    <View style={[styles['margin_top_10']]}>
+                                        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: -1, marginTop: 15, marginLeft: 15 }}>
+                                            {/* <View style={{ width: '60%' }}> */}
+                                            <Text style={[{ color: dynamicStyles.textColor }, styles['font_size_14_regular']]}  >
+                                                {translate('totalSeedRequired')}
+                                            </Text>
+                                            {/* </View> */}
+                                            <Text style={[{ color: dynamicStyles.textColor, marginLeft: 5, }, styles['font_size_14_regular']]}  >
+                                                {translate('dots')}
+                                            </Text>
+                                            <Text style={[{ color: totalSeedRequired ? dynamicStyles.textColor : 'rgba(180, 180, 180, 1)' }, { marginLeft: 10, }, styles['font_size_20_bold']]}  >
+                                                {totalSeedRequired ? totalSeedRequired : 0}
+                                            </Text>
+                                            <Text style={[{ color: dynamicStyles.textColor, marginLeft: 5, }, styles['font_size_14_regular']]}  >
+                                                {totalSeedRequiredUnits}
+                                                {/* {selectedCrop === 'Cotton' ? Number(totalSeedRequired) > 1 ? 'pkts' :  'pkt' :  Number(totalSeedRequired) > 1 ? 'kgs' : 'kg'} */}
+                                            </Text>
+                                        </View>
+                                        {/* <CustomTextInput
+                                    style={[styles['margin_top_20'], styles['centerItems']]}
+                                    labelName={translate('totalSeedRequired')}
+                                    IsRequired={false}
+                                    maxLength={30}
+                                    keyboardType='number-pad'
+                                    placeholder={translate('totalSeedRequired')}
+                                    value={totalSeedRequired}
+                                    editable={false}
+                                    addSpace={true}
+                                    onFocus={() => {
+                                    }}
+                                    onChangeText={(text) => {
+                                        var enteredNumber = text.replace(/[^0-9]/g, '');
+                                        setTotalSeedRequired(enteredNumber)
+                                    }}
+                                    onEndEditing={event => { }}
+                                /> */}
+                                    </View>
+                                </>}
 
+                            {/* {selectedCrop === 'Cotton' ? selectedFilter !== translate('TotalSeed') && <View> */}
+                            {selectedCrop === 'Cotton' ? <View>
+                                <Text style={[{ color: dynamicStyles.textColor }, styles['font_size_14_regular'], styles['top_5'], { marginBottom: 0.5, marginLeft: 15, marginTop: 15 }]}  >
+                                    {translate('AvgBollsPerPlant')}
+                                </Text>
+                                <CustomBorderInputDropDown
+                                    width={[{ width: '92%' }, styles['centerItems']]}
+                                    defaultValue={AvgBollsPerPlant != undefined && AvgBollsPerPlant != translate('select') ? AvgBollsPerPlant : translate('select')}
+                                    IsRequired={true}
+                                    disabled={AvgBollsPerPlantListtt.length === 1}
+                                    placeholder={translate('AvgBollsPerPlant')}
+                                    onFocus={() => {
+                                        AvgBollsPerPlantListtt.length !== 1 && changeDropDownData(AvgBollsPerPlantListtt, strings.AvgBollsPerPlant, AvgBollsPerPlant)
+                                    }}
+                                />
+                                <Text style={[{ color: dynamicStyles.textColor }, styles['font_size_14_regular'], styles['top_5'], { marginBottom: 0.5, marginLeft: 15, marginTop: 10 }]}  >
+                                    {translate('AvgBollWt')}
+                                </Text>
+                                <CustomBorderInputDropDown
+                                    width={[{ width: '92%' }, styles['centerItems']]}
+                                    defaultValue={AvgBollWt != undefined && AvgBollWt != translate('select') ? AvgBollWt : translate('select')}
+                                    IsRequired={true}
+                                    placeholder={translate('AvgBollWt')}
+                                    disabled={AvgBollWtListt.length === 1}
+                                    onFocus={() => {
+                                        AvgBollWtListt.length !== 1 && changeDropDownData(AvgBollWtListt, strings.AvgBollWt, AvgBollWt)
+                                    }}
+                                />
+                            </View> : selectedCrop === 'Maize' ?
+                                // </View> : selectedCrop === 'Maize' ? selectedFilter !== translate('TotalSeed') &&
+                                <View>
+                                    <Text style={[{ color: dynamicStyles.textColor }, styles['font_size_14_regular'], styles['top_5'], { marginBottom: 0.5, marginLeft: 15, marginTop: 15 }]}  >
+                                        {translate('GrainYield')}
+                                    </Text>
+                                    <CustomBorderInputDropDown
+                                        width={[{ width: '92%' }, styles['centerItems']]}
+                                        defaultValue={GrainYield != undefined && GrainYield != translate('select') ? GrainYield : translate('select')}
+                                        IsRequired={true}
+                                        placeholder={translate('GrainYield')}
+                                        disabled={GrainYieldListtt.length === 1}
+                                        onFocus={() => {
+                                            GrainYieldListtt.length !== 1 && changeDropDownData(GrainYieldListtt, strings.GrainYield, GrainYield)
+                                        }}
+                                    />
+                                </View>
+                                : <View>
+                                    {/* : selectedFilter !== translate('TotalSeed') && <View> */}
+                                    <Text style={[{ color: dynamicStyles.textColor }, styles['font_size_14_regular'], styles['top_5'], { marginBottom: 0.5, marginLeft: 15, marginTop: 15 }]}  >
+                                        {translate('productiveTillers')}
+                                    </Text>
+                                    <CustomBorderInputDropDown
+                                        width={[{ width: '92%' }, styles['centerItems']]}
+                                        defaultValue={productiveTillers != undefined && productiveTillers != translate('select') ? productiveTillers : translate('select')}
+                                        IsRequired={true}
+                                        placeholder={translate('productiveTillers')}
+                                        disabled={productiveTillersListt.length === 1}
+                                        onFocus={() => {
+                                            productiveTillersListt.length !== 1 && changeDropDownData(productiveTillersListt, strings.productiveTillers, productiveTillers)
+                                        }}
+                                    />
+                                    <Text style={[{ color: dynamicStyles.textColor }, styles['font_size_14_regular'], styles['top_5'], { marginBottom: 0.5, marginLeft: 15, marginTop: 10 }]}  >
+                                        {translate('AvgGrainsPannicle')}
+                                    </Text>
+                                    <CustomBorderInputDropDown
+                                        width={[{ width: '92%' }, styles['centerItems']]}
+                                        defaultValue={AvgGrainsPannicle != undefined && AvgGrainsPannicle != translate('select') ? AvgGrainsPannicle : translate('select')}
+                                        IsRequired={true}
+                                        disabled={AvgGrainsPannicleListtt.length === 1}
+                                        placeholder={translate('AvgGrainsPannicle')}
+                                        onFocus={() => {
+                                            AvgGrainsPannicleListtt.length !== 1 && changeDropDownData(AvgGrainsPannicleListtt, strings.AvgGrainsPannicle, AvgGrainsPannicle)
+                                        }}
+                                    />
+                                </View>}
+
+                            {
+                                //    selectedFilter !== translate('TotalSeed') && 
+                                <View style={[styles['margin_top_10']]}>
+                                    <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 2.5, marginLeft: 15, marginTop: 10 }}>
+                                        {/* <View style={{ width: '62%' }}> */}
+                                        <Text style={[{ color: dynamicStyles.textColor }, styles['font_size_14_regular']]}  >
+                                            {translate('ExpectedYieldQtlPerAcre')}
+                                        </Text>
+                                        {/* </View> */}
+                                        <Text style={[{ color: dynamicStyles.textColor, marginLeft: 5, }, styles['font_size_14_regular']]}  >
+                                            {translate('dots')}
+                                        </Text>
+                                        <Text style={[{ color: ExpectedYieldQtlPerAcre ? dynamicStyles.textColor : 'rgba(180, 180, 180, 1)' }, { marginLeft: 10, }, styles['font_size_20_bold']]}  >
+                                            {ExpectedYieldQtlPerAcre ? ExpectedYieldQtlPerAcre : 0}
+                                        </Text>
+                                    </View>
+                                    {/* <CustomTextInput
+                                    style={[styles['margin_top_20'], styles['centerItems']]}
+                                    labelName={translate('ExpectedYieldQtlPerAcre')}
+                                    IsRequired={false}
+                                    maxLength={30}
+                                    keyboardType='number-pad'
+                                    placeholder={translate('ExpectedYieldQtlPerAcre')}
+                                    value={ExpectedYieldQtlPerAcre}
+                                    editable={false}
+                                    addSpace={true}
+                                    onFocus={() => {
+                                    }}
+                                    onChangeText={(text) => {
+                                        var enteredNumber = text
+                                            .replace(/[^0-9.]/g, '')
+                                            .replace(/(\..*)\./g, '$1');
+                                        setExpectedYieldQtlPerAcre(enteredNumber)
+                                    }}
+                                    onEndEditing={event => { }}
+                                /> */}
+                                </View>}
+                            {
+                                showDropDowns &&
+                                <CustomListViewModal
+                                    dropDownType={dropDownType}
+                                    listItems={dropDownData}
+                                    selectedItem={selectedDropDownItem}
+                                    onSelectedCropCal={(item) => onSelectItem(item, setSelectedCrop)}
+                                    onSelectedSoilType={(item) => onSelectItem(item, setSelectedSoil)}
+                                    onSelectedPlantingType={(item) => onSelectItem(item, setVarietyOrPlantingSystem)}
+                                    onSelectedRowSpacing={(item) => onSelectItem(item, setRowSpacing)}
+                                    onSelectedPlantSpacing={(item) => onSelectItem(item, setPlantSpacing)}
+                                    onSelectedAreaToPlanted={(item) => onSelectItem(item, setAreaToPlanted)}
+                                    onSelectedAvgBollsPerPlant={(item) => onSelectItem(item, setAvgBollsPerPlant)}
+                                    onSelectedsetAvgBollWt={(item) => onSelectItem(item, setAvgBollWt)}
+                                    onSelectedGrainYield={(item) => onSelectItem(item, setGrainYield)}
+                                    onSelectedProductiveTillers={(item) => onSelectItem(item, setProductiveTillers)}
+                                    onSelectedAvgGrainsPannicle={(item) => onSelectItem(item, setAvgGrainsPannicle)}
+
+                                    closeModal={() => setShowDropDowns(false)}
+                                />
+                            }
+                            <Text style={[{ color: dynamicStyles.textColor }, styles['font_size_14_semibold'], styles['top_5'], { marginBottom: 2.5, marginLeft: 15, marginTop: 20 }]}  >
+                                {yieldNote}
+                            </Text>
+                            <Text style={[{ color: dynamicStyles.textColor }, styles['font_size_14_regular'], { marginBottom: 2.5, marginLeft: 15, marginTop: 5, width: "90%", textAlign: "left" }]}  >
+                                {yieldNoteDesc}
+                            </Text>
                         </View>
-                    </ViewShot>
-                </ScrollView>
-                {roleId != 1 &&
-                    <View style={styles.container}>
-                        <TouchableOpacity disabled={selectedCrop === ''} onPress={() => {
-                            resetValues()
-                            setSelectedCrop('')
-                        }} style={[styles.button, { backgroundColor: selectedCrop === '' ? 'rgba(255, 255, 255, 1)' : dynamicStyles.secondaryColor, borderColor: selectedCrop === '' ? "grey" : dynamicStyles.primaryColor }]}>
-                            <Text style={[styles.buttonText, { color: selectedCrop === '' ? "grey" : dynamicStyles.primaryColor, fontFamily: fonts.Regular }]}>{translate("Clear")}</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={() => { saveAPI() }}
-
-                            disabled={!showStatus()} style={[styles.button, styles.saveButton, { borderColor: !showStatus() ? "grey" : dynamicStyles.primaryColor, backgroundColor: !showStatus() ? "grey" : dynamicStyles.primaryColor, }]}>
-                            <Text style={[styles.buttonText, { color: !showStatus() ? "#fff" : dynamicStyles.secondaryColor, fontFamily: fonts.Regular }]}>{translate("save")}</Text>
-                        </TouchableOpacity>
                     </View>
-                }
-
-                {/* <TouchableOpacity style={{borderRadius:10,justifyContent:"center",alignItems:"center",width:"85%",height:45,alignSelf:"center",marginVertical:10,backgroundColor:!showStatus()?"grey":dynamicStyles.primaryColor}} disabled={!showStatus()} onPress={() => { takeScreenshot() }}>
-                <Text style={{fontSize:RFValue(14,680),color:!showStatus() ? "#fff" : dynamicStyles.secondaryColor,textAlign:"center"}}>{strings.Share}</Text>
-            </TouchableOpacity> */}
-                <TouchableOpacity disabled={!showStatus() || isSharing} onPress={() => takeScreenshot()}
-                    style={{ marginVertical: 10, borderRadius: 8, marginBottom: 20, alignItems: "center", justifyContent: "center", alignSelf: "center", height: 50, backgroundColor: !showStatus() ? "#D6D6D6" : dynamicStyles.primaryColor, width: "85%" }}>
-                    <Text style={{ textAlign: "center", color: !showStatus() ? "#000" : dynamicStyles.secondaryColor, fontSize: RFValue(14, 680), fontFamily:fonts.Bold }}>{translate("Share")}</Text>
-                    <Image source={require("../../assets/Images/whatsAppImgIcon.png")} style={styles.whatsAppIcon} />
+                </ViewShot>
+                {loading && <CustomLoader loading={loading} message={loadingMessage} loaderImage={loaderImage} />}
+                {/* {successLoading && <CustomSuccessLoader loading={successLoading} message={successLoadingMessage} />} */}
+                {/* {errorLoading && <CustomErrorLoader loading={errorLoading} message={errorLoadingMessage} />} */}
+            </ScrollView>
+            {<View style={styleSheetStyles.container}>
+                <TouchableOpacity disabled={selectedCrop === ''} onPress={() => {
+                    resetValues()
+                    setSelectedCrop('')
+                }} style={[styleSheetStyles.button, styleSheetStyles.clearButton, { borderColor: selectedCrop === '' ? Colors.lightGray : dynamicStyles.iconPrimaryColor }]}>
+                    <Text style={[styles['font_size_14_semibold'], { color: selectedCrop === '' ? Colors.lightGray : dynamicStyles.iconPrimaryColor }]}>{translate('Clear')}</Text>
                 </TouchableOpacity>
-               
-                <CustomCommonModal
-                    modalVisible={alertModal}
-                    modalClose={alertCloseHandle}
-                    ErrorText={alertTextContent}
-                    ButtonText={translate("ok")}
-                    ButtonFun={alertCloseHandle}
-                />
-                {loading && <PreLoginCustomLoader />}
-
-            </View>
+                <TouchableOpacity onPress={() => { saveAPI() }} disabled={!showStatus()} style={[styleSheetStyles.button, styleSheetStyles.saveButton, { borderColor: Colors.lightGray, backgroundColor: !showStatus() ? Colors.lightGray : dynamicStyles.primaryColor, }]}>
+                    <Text style={[styles['font_size_14_semibold'], { color: !showStatus() ? Colors.white : dynamicStyles.secondaryColor }]}>{translate('Save')}</Text>
+                </TouchableOpacity>
+            </View>}
+            {!isProcessing && <View style={{ bottom: 10 }}>
+                <CustomButton shouldDisable={!showStatus()} title={translate('Share')} onPress={() => { takeScreenshot() }}
+                    addIcon={showStatus()}
+                    buttonBg={!showStatus() ? Colors.lightGray : dynamicStyles.primaryColor}
+                    titleTextColor={!showStatus() ? Colors.white : dynamicStyles.secondaryColor}
+                    btnWidth={'90%'}
+                    textAlign='center' />
+            </View>}
+            {
+                showAlert &&
+                <CustomAlert
+                    onPressClose={() => { handleCancelAlert() }}
+                    title={alertTitle}
+                    showHeader={showAlertHeader}
+                    showHeaderText={showAlertHeaderText}
+                    message={alertMessage}
+                    onPressOkButton={() => { handleCancelAlert() }}
+                    onPressNoButton={() => { handleCancelAlert() }}
+                    showYesButton={showAlertYesButton}
+                    showNoButton={showAlertNoButton}
+                    yesButtonText={showAlertyesButtonText}
+                    noButtonText={showAlertNoButtonText} />
+            }
         </View>
-
     );
 };
 
-const styles = StyleSheet.create({
+const styleSheetStyles = StyleSheet.create({
     viewShot: {
         width: '100%',
         height: '100%',
     },
-
-    flexFull: {
-        flex: 1,
-        backgroundColor: '#f5f5f5'
-    },
-
+    flexFull: { flex: 1 },
+    gray300bg: { backgroundColor: '#f5f5f5' },
     header: { flexDirection: "row", alignItems: "center", alignSelf: "center", width: "100%", borderBottomLeftRadius: 12, borderBottomRightRadius: 12, height: 60 },
     backButton: { height: 50, width: 50, resizeMode: "contain", marginRight: 10 },
-    headerText: {
-        fontSize: RFValue(16, height),
-        alignSelf: "center",
-        // lineHeight: 30
-    },
     container: {
+        top: 5,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        width: '85%',
+        width: '90%',
         alignSelf: 'center',
     },
-    tabTxt: {fontSize: 14, fontWeight: "500" },
     tabBtn: { width: "50%", height: "100%", borderRadius: 5, alignItems: "center", justifyContent: "center" },
     tabMain: {
         height: 45, width: responsiveWidth(90), alignSelf: "center", marginTop: responsiveHeight(2), borderRadius: 5, marginBottom: responsiveHeight(0.5),
@@ -2715,11 +2626,11 @@ const styles = StyleSheet.create({
     button: {
         width: '45%',
         borderRadius: 8,
-        height: 50,
         padding: 10,
         alignItems: 'center',
         justifyContent: 'center',
         borderWidth: 1,
+        bottom: 10
     },
     clearButton: {
         backgroundColor: 'rgba(255, 255, 255, 1)',
@@ -2729,103 +2640,6 @@ const styles = StyleSheet.create({
         // 
         // 
     },
-    buttonText: {
-        fontSize: 14,
-    },
-
-    backIcon: {
-        height: 20,
-        width: 34,
-        marginTop: 15,
-        marginLeft: 10
-    },
-
-    contentContainer: {
-        backgroundColor: "#fff",
-        width: "90%",
-        alignSelf: "center",
-        elevation: 5,
-        borderRadius: 5,
-        marginTop: 10,
-        marginBottom: responsiveHeight(3),
-        paddingBottom: responsiveHeight(3),
-    },
-
-    contentSubContainer: {
-        // borderWidth: 1,
-        // borderColor: 'rgba(180, 180, 180, 0.5)',
-        width: '100%',
-        // alignSelf: "center",
-        // borderRadius: 10,
-        paddingTop: 10,
-        // paddingBottom: 20,
-        marginTop: 15,
-    },
-
-    selectedCropText: {
-        marginBottom: 2.5,
-        marginLeft: 15,
-        fontSize: RFValue(15, height),
-    },
-
-    selectedCropText2: {
-        marginBottom: 2.5,
-        marginLeft: 15,
-        fontSize: RFValue(15, height),
-        top: 5
-    },
-
-    selectedCropText3: {
-        marginBottom: 0.5,
-        fontWeight: "400",
-        marginLeft: 15,
-        fontSize: RFValue(15, height),
-        top: 5,
-        marginTop: 20
-    },
-
-    selectedCropText4: {
-        marginBottom: 0.5,
-        marginLeft: 15,
-        fontSize: RFValue(15, height),
-        top: 5,
-        marginTop: 15
-    },
-
-    selectedCropText5: {
-        marginBottom: 0.5,
-        marginLeft: 15,
-        fontSize: RFValue(15, height),
-        top: 5,
-        marginTop: 10
-    },
-
-    selectedCropText6: {
-        marginBottom: 2.5,
-        marginLeft: 15,
-        fontSize: RFValue(15, height),
-        top: 5,
-        marginTop: 20
-    },
-
-    selectedCropText7: {
-        marginBottom: 2.5,
-        marginLeft: 15,
-        fontSize: RFValue(15, height),
-        top: 5,
-        marginTop: 5,
-        width: "90%",
-        textAlign: "left"
-    },
-
-    whatsAppIcon: {
-        height: 30,
-        width: 30,
-        resizeMode: "contain",
-        position: "absolute",
-        right: width * 0.05
-    }
-
 });
 
 export default YieldCalculator;

@@ -332,7 +332,8 @@ const AdvancedKnowledgeCenter = () => {
               source={require('../../assets/Images/previous.png')}
             />
             <Text style={{
-              color: dynamicStyles.secondaryColor, marginLeft: 10, fontSize: 18, fontWeight: 'bold', lineHeight : 24,
+              color: dynamicStyles.secondaryColor, marginLeft: 10, fontSize: 18, fontWeight: 'bold', 
+               lineHeight : Platform.OS == 'ios' ? 30 : 24,
               flexShrink: 1,
               flexWrap: 'wrap',
               minWidth: 200

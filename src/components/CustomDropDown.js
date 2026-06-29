@@ -64,7 +64,7 @@ const RnStyles = StyleSheet.create({
         color: "#5D5D5D",
         fontSize:RFValue(14,height),
         fontWeight: "500",
-        lineHeight: 18,
+       lineHeight : Platform.OS == 'ios' ? 24 : 18,
         marginTop: 20
     },
 
