@@ -439,6 +439,8 @@ const RaiseComplaintScreen = () => {
 
     const navigateSamadhanScreen = async () => {
         setSuccessModal(false)
+        navigation.pop()
+        return
         const screenName = await getFromAsyncStorage(SCREENNAME)
         const isEmployee = (screenName == EMP_DASHBOARD_SCREEN);
         if (isEmployee) {
