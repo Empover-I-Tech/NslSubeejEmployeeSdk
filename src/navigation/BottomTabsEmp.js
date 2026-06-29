@@ -57,7 +57,7 @@ const BottomTabsNavigatorEmp = () => {
         },
         tabBarLabelStyle: {
           fontSize: 11,
-          fontFamily: 'Poppins-Regular',
+          fontFamily: 'NotoSans-Regular',
         },
       }}
     >

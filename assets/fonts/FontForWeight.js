@@ -1,19 +1,5 @@
 import { Platform } from 'react-native';
 
-export function FontForWeightPoppins(weight) {
-    if (Platform.OS == 'android') {
-        return 'Poppins-' + weight;
-    } else if (Platform.OS == 'ios') {
-        if (weight === '') {
-            return 'Poppins';
-        }
-        return 'Poppins-' + weight[0].toUpperCase() + weight.slice(1).toLowerCase();
-    }
-}
-
-
- 
- 
 export function CalculateFontSize(sz) {
   return sz;
 }
