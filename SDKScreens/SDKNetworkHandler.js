@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
-import NoInternetOverlay from '../screens/NoInternetOverlay';
-import { getNetworkStatus } from '../api/NetworkUtils';
+import NoInternetOverlay from '../src/screens/NoInternetOverlay';
+import { getNetworkStatus } from '../src/api/NetworkUtils';
 
 const SDKNetworkHandler = () => {
   const [isConnected, setIsConnected] = useState(true);

@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import { Provider, useSelector } from 'react-redux';
 import { NavigationContainer, NavigationIndependentTree } from '@react-navigation/native';
-import { store, persistor } from '../state/store';
+import { store, persistor } from '../src/state/store';
 import SubeejNavigator from './SubeejNavigator';
-import { initLocalisation } from '../Localization/Localisation';
+import { initLocalisation } from '../src/Localization/Localisation';
 import {
     SafeAreaProvider,
     SafeAreaView,

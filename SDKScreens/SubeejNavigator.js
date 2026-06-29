@@ -3,32 +3,32 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import LoaderScreen from './LoaderScreen';
 import HomeScreenEmpSDK from './HomeScreenEmpSDK';
-import BottomTabsNavigatorEmp from '../navigation/BottomTabsEmp';
+import BottomTabsNavigatorEmp from '../src/navigation/BottomTabsEmp';
 
-import FertilizerSeeds from '../screens/FertilizerSeeds';
-import YieldCalculator from '../screens/YieldCalculator';
-import SeedsCalculator from '../screens/SeedsCalculator';
+import FertilizerSeeds from '../src/screens/FertilizerSeeds';
+import YieldCalculator from '../src/screens/YieldCalculator';
+import SeedsCalculator from '../src/screens/SeedsCalculator';
 
-import SamadhanScreen from '../screens/SamadhanScreen';
-import RaiseComplaintScreen from '../screens/RaiseComplaintScreen';
+import SamadhanScreen from '../src/screens/SamadhanScreen';
+import RaiseComplaintScreen from '../src/screens/RaiseComplaintScreen';
 
-import QRScannerRn from '../screens/QRScannerRn';
+import QRScannerRn from '../src/screens/QRScannerRn';
 
-import WeatherScreen from '../screens/Weather/WeatherScreen';
-import Location from '../components/Location';
-import Agronomy from '../screens/Agronomy';
-import KnowledgeCenterRn from '../screens/KnowledgeCenterRn';
+import WeatherScreen from '../src/screens/Weather/WeatherScreen';
+import Location from '../src/components/Location';
+import Agronomy from '../src/screens/Agronomy';
+import KnowledgeCenterRn from '../src/screens/KnowledgeCenterRn';
 
-import CropDesiesDetection from '../screens/CropDiagnostics/CropDesiesDetection';
-import CropDiagonstic from '../screens/CropDiagnostics/CropDiagonstic';
-import Remedyrecommendation from '../screens/Remedyrecommendation';
-import NearByScreen from '../screens/NearByScreen';
-import NearByRetailersScreen from '../screens/NearByRetailersScreen';
+import CropDesiesDetection from '../src/screens/CropDiagnostics/CropDesiesDetection';
+import CropDiagonstic from '../src/screens/CropDiagnostics/CropDiagonstic';
+import Remedyrecommendation from '../src/screens/Remedyrecommendation';
+import NearByScreen from '../src/screens/NearByScreen';
+import NearByRetailersScreen from '../src/screens/NearByRetailersScreen';
 
-import AdvancedKnowledgeCenter from '../screens/AdvancedKnowledgeCenter';
-import KnowledgeCenterPDFView from '../screens/KnowledgeCenterPDFView';
-import KnowledgeCenterDocsList from '../screens/KnowledgeCenterDocsList';
-import CashBackScan from '../screens/CashbackProgram/CashbackScan';
+import AdvancedKnowledgeCenter from '../src/screens/AdvancedKnowledgeCenter';
+import KnowledgeCenterPDFView from '../src/screens/KnowledgeCenterPDFView';
+import KnowledgeCenterDocsList from '../src/screens/KnowledgeCenterDocsList';
+import CashBackScan from '../src/screens/CashbackProgram/CashbackScan';
 
 
 const Stack = createNativeStackNavigator();

@@ -1,4 +1,4 @@
-import React, { use, useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   TextInput, StatusBar, Dimensions, View, TouchableWithoutFeedback, Linking, Platform, Image, TouchableOpacity,
   StyleSheet, Text, FlatList, Modal, ScrollView, PermissionsAndroid, Alert, Pressable, ActivityIndicator
@@ -6,45 +6,45 @@ import {
 import { useDispatch, useSelector, } from 'react-redux';
 import axios from 'axios';
 import { MOBILENUMBER, REFERRALCODE, USER_ID, USERNAME, USER_IMG, STATE_ID, DISTRICT_ID, STATE_NAME, DISTRICT_NAME, LANGUAGEID } from '../utils';
-import { GetApiHeaders, getGreetingMessage, normalizeText, downloadFileToLocal } from '../utils/helpers';
+import { GetApiHeaders, getGreetingMessage, normalizeText, downloadFileToLocal } from '../src/utils/helpers';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import APIConfig, { HTTP_601, HTTP_OK } from '../api/APIConfig';
+import APIConfig, { HTTP_601, HTTP_OK } from '../src/api/APIConfig';
 import { RefreshControl } from 'react-native-gesture-handler';
-import { translate } from '../Localization/Localisation';
+import { translate } from '../src/Localization/Localisation';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { check, request, PERMISSIONS, RESULTS, openSettings } from 'react-native-permissions';
-import { setCompanyStyle } from '../state/actions/companyStyles';
+import { setCompanyStyle } from '../src/state/actions/companyStyles';
 import Geolocation from 'react-native-geolocation-service';
 import SimpleToast from 'react-native-simple-toast';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
-import { setLocationActions } from '../state/actions/locationActions';
-import realm from '../screens/realmOffline/realmConfig';
+import { setLocationActions } from '../src/state/actions/locationActions';
+import realm from '../src/screens/realmOffline/realmConfig';
 import { v4 as uuidv4 } from 'uuid';
 import RNFS from 'react-native-fs';
-import useGetRequestWithJwt from '../api/useGetRequestWithJwt';
-import { CASHBACK, CASHBACKSCAN, CASHBACKSCAN2, DOWNLOAD_FOLDER_PATH, FIELDACTIVITYQR, REWARDS, USERMENUCONTROL, compareVersions, processComplaintImages, retrieveData, storeData } from '../assets/Utils/Utils';
-import { useOfflineSync } from '../utils/syncUtils';
-import { useOfflineCalculatorsCRUD } from '../screens/realmOffline/useOfflineCalculatorsCRUD';
-import { helpDeskRaiseCRUD } from '../screens/realmOffline/helpDeskRaiseCRUD';
-import { useFontStyles } from '../hooks/useFontStyles';
-import { setWeatherTitle } from '../state/actions/weatherTitleActions';
-import { setMarketpriceData } from '../state/actions/marketPricesList';
-import { setTabMenuControl } from '../state/actions/tabmenuControl';
-import GenuineCheckModal from '../screens/CashbackProgram/GenuineCheckModal';
-import { setCashBackModal } from '../state/actions/cashBackModal';
-import { setCashBackSuccessModal } from '../state/actions/cashBackSuccessModal';
-import GenuinityModal from '../screens/CashbackProgram/GenuinityModalComponent';
-import DateRangePickerModal from '../components/DateRangePickerModal';
+import useGetRequestWithJwt from '../src/api/useGetRequestWithJwt';
+import { CASHBACK, CASHBACKSCAN, CASHBACKSCAN2, DOWNLOAD_FOLDER_PATH, REWARDS, USERMENUCONTROL, processComplaintImages, retrieveData, storeData } from '../src/assets/Utils/Utils';
+import { useOfflineSync } from '../src/utils/syncUtils';
+import { useOfflineCalculatorsCRUD } from '../src/screens/realmOffline/useOfflineCalculatorsCRUD';
+import { helpDeskRaiseCRUD } from '../src/screens/realmOffline/helpDeskRaiseCRUD';
+import { useFontStyles } from '../src/hooks/useFontStyles';
+import { setWeatherTitle } from '../src/state/actions/weatherTitleActions';
+import { setMarketpriceData } from '../src/state/actions/marketPricesList';
+import { setTabMenuControl } from '../src/state/actions/tabmenuControl';
+import GenuineCheckModal from '../src/screens/CashbackProgram/GenuineCheckModal';
+import { setCashBackModal } from '../src/state/actions/cashBackModal';
+import { setCashBackSuccessModal } from '../src/state/actions/cashBackSuccessModal';
+import GenuinityModal from '../src/screens/CashbackProgram/GenuinityModalComponent';
+import DateRangePickerModal from '../src/components/DateRangePickerModal';
 const { width, height } = Dimensions.get('window');
-const defaultImage = require('../../assets/Images/farmerIconImg.png');
-import { setCashBackSuccessGenuineModal } from '../state/actions/cashBackSuccessGenuineModal';
-import { CustomCommonModal } from '../components/CustomCommonModal';
-import PreLoginCustomLoader from '../components/PreLoginCustomLoader';
-import { setNearBy } from '../state/actions/nearByAction';
-import { setTabEmpMenuControl } from '../state/actions/tabempmenuControl';
-import Others from '../utils/Others';
-import Services from '../utils/Services';
-import { getFromAsyncStorage, storeInAsyncStorage } from '../utils/keychainUtils';
+const defaultImage = require('../assets/Images/farmerIconImg.png');
+import { setCashBackSuccessGenuineModal } from '../src/state/actions/cashBackSuccessGenuineModal';
+import { CustomCommonModal } from '../src/components/CustomCommonModal';
+import PreLoginCustomLoader from '../src/components/PreLoginCustomLoader';
+import { setNearBy } from '../src/state/actions/nearByAction';
+import { setTabEmpMenuControl } from '../src/state/actions/tabempmenuControl';
+import Others from '../src/utils/Others';
+import Services from '../src/utils/Services';
+import { getFromAsyncStorage, storeInAsyncStorage } from '../src/utils/keychainUtils';
 
 const DOWNLOAD_TIMEOUT = 30000; // 30 seconds
 const RETRY_ATTEMPTS = 2;
@@ -2420,7 +2420,7 @@ const HomeScreenEmpSDK = ({ route }) => {
 
             <Image
               style={styles.calendarIcon}
-              source={require("../../assets/Images/dateRangeCalendarIcon.png")}
+              source={require("../assets/Images/dateRangeCalendarIcon.png")}
             />
           </TouchableOpacity>
         </View>
@@ -2488,10 +2488,10 @@ const HomeScreenEmpSDK = ({ route }) => {
       {Platform.OS === 'android' && <StatusBar backgroundColor={dynamicStyles.primaryColor} barStyle={currentTheme.statusBar} />}
       <View style={[styles.headerMainContainer, { backgroundColor: dynamicStyles.primaryColor }]}>
         <View style={{ backgroundColor: dynamicStyles.primaryColor }} edges={['top']}>
-          {dynamicStyles.companyCode === '1100' && <Image source={require('../../assets/Images/staticSubeejIcon.png')} style={styles.subeejIcon} />}
-          {dynamicStyles.companyCode === '1400' && <Image source={require('../../assets/Images/staticPrabathIcon.png')} style={styles.subeejIcon} />}
-          {dynamicStyles.companyCode === '1300' && <Image source={require('../../assets/Images/staticPravardhanIcon.png')} style={styles.subeejIcon} />}
-          {dynamicStyles.companyCode === '1900' && <Image source={require('../../assets/Images/staticLakshmiProgramIcon.png')} style={styles.subeejIcon} />}
+          {dynamicStyles.companyCode === '1100' && <Image source={require('../assets/Images/staticSubeejIcon.png')} style={styles.subeejIcon} />}
+          {dynamicStyles.companyCode === '1400' && <Image source={require('../assets/Images/staticPrabathIcon.png')} style={styles.subeejIcon} />}
+          {dynamicStyles.companyCode === '1300' && <Image source={require('../assets/Images/staticPravardhanIcon.png')} style={styles.subeejIcon} />}
+          {dynamicStyles.companyCode === '1900' && <Image source={require('../assets/Images/staticLakshmiProgramIcon.png')} style={styles.subeejIcon} />}
         </View>
         <View style={styles.profileContainer}>
           <View style={styles.profileSubContainer}>
@@ -2508,7 +2508,7 @@ const HomeScreenEmpSDK = ({ route }) => {
               <View>
                 <View style={styles.greetingSmileContainer}>
                   <Text style={[styles.greetingstText, { color: dynamicStyles.secondaryColor, fontFamily: fonts.Regular }]}>{greeting}</Text>
-                  <Image source={require('../../assets/Images/smileIconImg.png')} style={[styles.smileIcon, { tintColor: dynamicStyles.secondaryColor }]} />
+                  <Image source={require('../assets/Images/smileIconImg.png')} style={[styles.smileIcon, { tintColor: dynamicStyles.secondaryColor }]} />
                 </View>
                 <Text style={[styles.userNameText, { color: dynamicStyles.secondaryColor, fontFamily: fonts.SemiBold }]}>{userData?.userName}</Text>
               </View>
@@ -2521,7 +2521,7 @@ const HomeScreenEmpSDK = ({ route }) => {
           <TouchableOpacity onPress={() => onRefresh()} style={{
             alignSelf: "flex-start", marginLeft: 10, marginRight: 5
           }}>
-            <Image source={require("../../assets/Images/RefreshIcon.png")} style={{ height: 30, width: 30, tintColor: dynamicStyles.secondaryColor }} />
+            <Image source={require("../assets/Images/RefreshIcon.png")} style={{ height: 30, width: 30, tintColor: dynamicStyles.secondaryColor }} />
           </TouchableOpacity>
         </View>
 
@@ -2541,10 +2541,10 @@ const HomeScreenEmpSDK = ({ route }) => {
                 </View>
                 <View style={styles.line} />
                 <View style={styles.degreenSecondPartContainer}>
-                  <Image source={require('../../assets/Images/cloudeIconImg.png')} style={styles.cloudImgIcon} />
+                  <Image source={require('../assets/Images/cloudeIconImg.png')} style={styles.cloudImgIcon} />
                   <View style={styles.locationDetailsMainContainer}>
                     <View style={styles.locationDetailsContainer}>
-                      <Image source={require('../../assets/Images/locationImgIcon.png')} style={styles.locationIcon} />
+                      <Image source={require('../assets/Images/locationImgIcon.png')} style={styles.locationIcon} />
                       <Text style={[styles.locationText, { color: dynamicStyles.textColor, fontFamily: fonts.SemiBold }]}>{normalizeText(weatherInfo?.city)}</Text>
                     </View>
                     <Text style={[styles.weatherReportText, { fontFamily: fonts.SemiBold }]}>{weatherInfo?.weather_description}</Text>
@@ -2556,7 +2556,7 @@ const HomeScreenEmpSDK = ({ route }) => {
           </>
         }
 
-        <Image source={require('../../assets/Images/flowerIcon.png')} style={styles.flowerIcon} />
+        <Image source={require('../assets/Images/flowerIcon.png')} style={styles.flowerIcon} />
       </View>
       <View style={styles.flatListContainer}>
         <ScrollView
@@ -2578,7 +2578,7 @@ const HomeScreenEmpSDK = ({ route }) => {
               <View style={styles.modalSelectCalMainContainer}>
                 <Text style={[styles.modalSelectText, { fontFamily: fonts.SemiBold }]}>{employeeDashboardData?.farmerServices?.sectionTitleTranslated || translate('select')}</Text>
                 <TouchableOpacity onPress={farmerServiceHandleClose}>
-                  <Image source={require('../../assets/Images/crossIcon.png')} style={styles.modalCrossIcon} />
+                  <Image source={require('../assets/Images/crossIcon.png')} style={styles.modalCrossIcon} />
                 </TouchableOpacity>
               </View>
               <FlatList nestedScrollEnabled={true} data={employeeDashboardData?.farmerServices?.sectionItems?.filter((item) => item.visible)} renderItem={renderFarmerService} />
@@ -2596,13 +2596,13 @@ const HomeScreenEmpSDK = ({ route }) => {
               <View style={styles.modalSelectCalMainContainer}>
                 <Text style={[styles.modalSelectText, { fontFamily: fonts.SemiBold }]}>{translate('select')}</Text>
                 <TouchableOpacity onPress={closeCalculatorModal}>
-                  <Image source={require('../../assets/Images/crossIcon.png')} style={styles.modalCrossIcon} />
+                  <Image source={require('../assets/Images/crossIcon.png')} style={styles.modalCrossIcon} />
                 </TouchableOpacity>
               </View>
               <View style={styles.calculatorOptionsContainer}>
                 <TouchableOpacity onPress={seedScreenNavigation} style={styles.selectedCalculatorContainer}>
                   <View style={[styles.calculatorIconContainer, { borderColor: selectedCalculator === 'Seed' ? dynamicStyles.primaryColor : '#F2F6F9' }]}>
-                    <Image source={require('../../assets/Images/seedcalIcon.png')} style={styles.subeejIcon1} />
+                    <Image source={require('../assets/Images/seedcalIcon.png')} style={styles.subeejIcon1} />
                   </View>
                   <Text style={[styles.selectedCalculatorText, { color: selectedCalculator === 'Seed' ? dynamicStyles.primaryColor : '#33527D', fontFamily: fonts.Bold }]}>
                     {translate('seed_population_calculator')}
@@ -2610,7 +2610,7 @@ const HomeScreenEmpSDK = ({ route }) => {
                 </TouchableOpacity>
                 <TouchableOpacity onPress={fertilizerScreenNavigation} style={styles.selectedCalculatorContainer}>
                   <View style={[styles.calculatorIconContainer, { borderColor: selectedCalculator === 'fertilizer' ? dynamicStyles.primaryColor : '#F2F6F9' }]}>
-                    <Image source={require('../../assets/Images/fertilizerIcon.png')} style={styles.subeejIcon1} />
+                    <Image source={require('../assets/Images/fertilizerIcon.png')} style={styles.subeejIcon1} />
                   </View>
                   <Text style={[styles.selectedCalculatorText, { color: selectedCalculator === 'fertilizer' ? dynamicStyles.primaryColor : '#33527D', fontFamily: fonts.Bold }]}>
                     {translate('fertilizer_calculator')}
@@ -2618,7 +2618,7 @@ const HomeScreenEmpSDK = ({ route }) => {
                 </TouchableOpacity>
                 <TouchableOpacity onPress={yieldScreenNavigation} style={styles.selectedCalculatorContainer}>
                   <View style={[styles.calculatorIconContainer, { borderColor: selectedCalculator === 'Yield' ? dynamicStyles.primaryColor : '#F2F6F9' }]}>
-                    <Image source={require('../../assets/Images/yieldIcon.png')} style={styles.subeejIcon1} />
+                    <Image source={require('../assets/Images/yieldIcon.png')} style={styles.subeejIcon1} />
                   </View>
                   <Text style={[styles.selectedCalculatorText, { color: selectedCalculator === 'Yield' ? dynamicStyles.primaryColor : '#33527D', fontFamily: fonts.Bold }]}>
                     {translate('yield_calculator')}
@@ -2637,14 +2637,14 @@ const HomeScreenEmpSDK = ({ route }) => {
               <View style={styles.modalSelectCalMainContainer}>
                 <Text style={[styles.modalSelectText, { fontFamily: fonts.SemiBold }]}>{translate('select')}</Text>
                 <TouchableOpacity onPress={() => dispatch(setCashBackModal(false))}>
-                  <Image source={require('../../assets/Images/crossIcon.png')} style={styles.modalCrossIcon} />
+                  <Image source={require('../assets/Images/crossIcon.png')} style={styles.modalCrossIcon} />
                 </TouchableOpacity>
               </View>
               <View style={styles.calculatorOptionsContainer2}>
                 <TouchableOpacity onPress={() => rewardPointsCashbackNavigation("RewardsScreen", REWARDS)} style={styles.selectedCalculatorContainer2}>
                   <View style={[styles.calculatorIconContainer2, { backgroundColor: cashBackSelected === REWARDS ? dynamicStyles.primaryColor : '#fff', borderColor: cashBackSelected === REWARDS ? dynamicStyles.primaryColor : '#D6D6D6' }]}>
                     <View style={{ flexDirection: "row", alignItems: "center" }}>
-                      <Image source={cashBackSelected === REWARDS ? require('../../assets/Images/rewardsGiftIcon2.png') : require('../../assets/Images/rewardsGiftIcon.png')} style={[styles.subeejIcon2]} />
+                      <Image source={cashBackSelected === REWARDS ? require('../assets/Images/rewardsGiftIcon2.png') : require('../assets/Images/rewardsGiftIcon.png')} style={[styles.subeejIcon2]} />
                       <Text style={[styles.selectedCalculatorText2, { color: cashBackSelected === REWARDS ? dynamicStyles.secondaryColor : '#000000', fontFamily: fonts.Bold }]}>
                         {translate('Reward_Points')}
                       </Text>
@@ -2654,7 +2654,7 @@ const HomeScreenEmpSDK = ({ route }) => {
                 <TouchableOpacity onPress={() => rewardPointsCashbackNavigation("CashFreeTransactionsActivity", CASHBACK)} style={styles.selectedCalculatorContainer2}>
                   <View style={[styles.calculatorIconContainer2, { backgroundColor: cashBackSelected === CASHBACK ? dynamicStyles.primaryColor : '#fff', borderColor: cashBackSelected === CASHBACK ? dynamicStyles.primaryColor : '#D6D6D6' }]}>
                     <View style={{ flexDirection: "row", alignItems: "center" }}>
-                      <Image source={cashBackSelected === CASHBACK ? require('../../assets/Images/cashbackIcon2.png') : require('../../assets/Images/cashbackIcon.png')} style={[styles.subeejIcon2]} />
+                      <Image source={cashBackSelected === CASHBACK ? require('../assets/Images/cashbackIcon2.png') : require('../assets/Images/cashbackIcon.png')} style={[styles.subeejIcon2]} />
                       <Text style={[styles.selectedCalculatorText2, { color: cashBackSelected === CASHBACK ? dynamicStyles.secondaryColor : '#000000', fontFamily: fonts.Bold }]}>
                         {translate('Cashback_History')}
                       </Text>
@@ -2677,7 +2677,7 @@ const HomeScreenEmpSDK = ({ route }) => {
                   <View style={styles.modalSelectCalMainContainer}>
                     <Text style={[styles.modalSelectText, { fontFamily: fonts.SemiBold }]}>{translate('select')}</Text>
                     <TouchableOpacity style={{ height: 35, width: 35, borderRadius: 30, borderWidth: 1, borderColor: dynamicStyles.primaryColor, alignItems: "center", justifyContent: "center" }} onPress={handleCloseModal}>
-                      <Image source={require('../../assets/Images/crossIcon.png')} style={[styles.modalCrossIcon, { tintColor: dynamicStyles.primaryColor }]} />
+                      <Image source={require('../assets/Images/crossIcon.png')} style={[styles.modalCrossIcon, { tintColor: dynamicStyles.primaryColor }]} />
                     </TouchableOpacity>
                   </View>
                   <View>
@@ -2694,7 +2694,7 @@ const HomeScreenEmpSDK = ({ route }) => {
                   <View style={styles.modalSelectCalMainContainer}>
                     <Text style={[styles.modalSelectText, { fontFamily: fonts.SemiBold }]}>{translate('Fellow_Farmer_Details')}</Text>
                     <TouchableOpacity style={{ height: 35, width: 35, borderRadius: 30, borderWidth: 1, borderColor: dynamicStyles.primaryColor, alignItems: "center", justifyContent: "center" }} onPress={handleCloseModal}>
-                      <Image source={require('../../assets/Images/crossIcon.png')} style={[styles.modalCrossIcon, { tintColor: dynamicStyles.primaryColor }]} />
+                      <Image source={require('../assets/Images/crossIcon.png')} style={[styles.modalCrossIcon, { tintColor: dynamicStyles.primaryColor }]} />
                     </TouchableOpacity>
                   </View>
                   <View>
