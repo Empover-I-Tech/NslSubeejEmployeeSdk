@@ -380,7 +380,7 @@ const CropDiagonstic = ({ route }) => {
         </View>
         <View style={[{ backgroundColor: dynamicStyles?.highLightedColor }, styleSheetStyles.tabMain]}>
           <TouchableOpacity activeOpacity={0.5} onPress={() => setSelectedFilter(translate('Crop_Diagnostic'))} style={[selectedFilter === translate('Crop_Diagnostic') && { backgroundColor: dynamicStyles.primaryColor }, styleSheetStyles.tabBtn]}>
-            <Text style={[selectedFilter === translate('Crop_Diagnostic') ? { color: dynamicStyles.secondaryColor } : { color: dynamicStyles.textColor, lineHeight : Platform.OS == 'android' ? 24 : 30 }, styleSheetStyles.tabTxt,{fontFamily:fonts.SemiBold}]}>{translate('Crop_Diagnostic')}</Text></TouchableOpacity>
+            <Text style={[selectedFilter === translate('Crop_Diagnostic') ? { color: dynamicStyles.secondaryColor } : { color: dynamicStyles.textColor }, styleSheetStyles.tabTxt,{fontFamily:fonts.SemiBold}]}>{translate('Crop_Diagnostic')}</Text></TouchableOpacity>
           <TouchableOpacity activeOpacity={0.5} onPress={() => {
             setSelectedFilter(translate('history'));
           }} style={[selectedFilter === translate('history') && { backgroundColor: dynamicStyles.primaryColor }, styleSheetStyles.tabBtn]}>
@@ -677,7 +677,7 @@ const styleSheetStyles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2
   },
-  tabTxt: { fontSize: 14,},
+  tabTxt: { fontSize: 14, lineHeight : Platform.OS == 'android' ? 24 : 30},
 });
 
 const stylesheetStyes = StyleSheet.create({
