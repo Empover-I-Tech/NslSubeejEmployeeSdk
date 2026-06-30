@@ -35,7 +35,7 @@ const YieldCalculator = () => {
         deleteYieldCalc,
         hasYieldCalc,
     } = useOfflineCalculatorsCRUD();
-    const fonts=useFontStyles()
+    const fonts = useFontStyles()
     const { incrementOfflineCount, decrementOfflineCount, updateOfflineCount } = useOfflineSync();
     const viewShotRef = useRef();
     const dynamicStyles = useSelector(state => state.companyStyles.companyStyles);
@@ -107,7 +107,7 @@ const YieldCalculator = () => {
     const [alertTextContent, setAlertTextContent] = useState("")
     const [isNetAvail, setIsNetAvail] = useState(isConnected)
     const navigation = useNavigation()
-    const [roleId,setRoleId]=useState("")
+    const [roleId, setRoleId] = useState("")
 
     const roundToNearestInteger = (value) => {
         return Math.round(value).toString();
@@ -341,26 +341,53 @@ const YieldCalculator = () => {
         setAlertModal(false)
     }
 
-    let setSeaonsArray = () => {
-        let a = allSeasonsList;
-        let crops = []
-        a?.forEach((item) => {
-            if (crops?.includes(item.crop)) return
-            else crops?.push(item.crop)
-        })
-        crops?.forEach((crop) => {
-            let cropList = a?.filter(item => item.crop === crop);
-            cropList?.forEach((item, index) => {
-                item.name = item.seasonOrSoilType;
-                item.code = `${index + 1}`;
-            });
-            this[crop.toLowerCase()] = cropList;
+    const setSeaonsArray = () => {
+        const seasonMap = {};
+        const crops = [];
+
+        allSeasonsList?.forEach(item => {
+            if (!crops.includes(item.crop)) {
+                crops.push(item.crop);
+            }
         });
 
-        if (selectedCrop !== '') {
-            setSeasonsalList(this[selectedCrop?.toLowerCase()]);
+        crops.forEach(crop => {
+            const cropList = allSeasonsList
+                ?.filter(item => item.crop === crop)
+                ?.map((item, index) => ({
+                    ...item,
+                    name: item.seasonOrSoilType,
+                    code: `${index + 1}`,
+                }));
+
+            seasonMap[crop.toLowerCase()] = cropList;
+        });
+
+        if (selectedCrop) {
+            setSeasonsalList(seasonMap[selectedCrop.toLowerCase()] || []);
         }
-    }
+    };
+
+    // let setSeaonsArray = () => {
+    //     let a = allSeasonsList;
+    //     let crops = []
+    //     a?.forEach((item) => {
+    //         if (crops?.includes(item.crop)) return
+    //         else crops?.push(item.crop)
+    //     })
+    //     crops?.forEach((crop) => {
+    //         let cropList = a?.filter(item => item.crop === crop);
+    //         cropList?.forEach((item, index) => {
+    //             item.name = item.seasonOrSoilType;
+    //             item.code = `${index + 1}`;
+    //         });
+    //         this[crop.toLowerCase()] = cropList;
+    //     });
+
+    //     if (selectedCrop !== '') {
+    //         setSeasonsalList(this[selectedCrop?.toLowerCase()]);
+    //     }
+    // }
 
     let setArraysList = () => {
         let list = vrtyOrPlntngList;
@@ -475,8 +502,10 @@ const YieldCalculator = () => {
 
         //row spacing 
         //reset values
-        setRowSpacing('')
-        setListRowSpace([])
+        if (!retreivedFrmSavedData) {
+            setRowSpacing('');
+        }
+        setListRowSpace([]);
         // find if single val of row spacing
         let selectedRowSpc = rowSpcLst?.find(item => item.crop === selectedCrop && item.seasonOrSoilType === selectedSoil)?.selectRowToRowSpacingCm;
         // filter objects as per the selection of crop and soil
@@ -496,12 +525,18 @@ const YieldCalculator = () => {
             if (rowSspc.length === 1) {
                 setRowSpacing(selectedRowSpc);
             }
+            // ← ADD ONLY THESE 3 LINES:
+            if (retreivedFrmSavedData && selectedRowSpc) {
+                setRowSpacing(selectedRowSpc);
+            }
         }
 
         //plant spacing
         //reset values
-        setPlantSpacing('')
-        setPlantToPlantArr([])
+        if (!retreivedFrmSavedData) {
+            setPlantSpacing('');
+        }
+        setPlantToPlantArr([]);
         // find if single val of row spacing
         let selectedPlantSpc = plantoPlanLs?.find(item => item.crop === selectedCrop && item.seasonOrSoilType === selectedSoil)?.selectPlantToplantSpacingCm;
         // filter objects as per the selection of crop and soil
@@ -602,48 +637,74 @@ const YieldCalculator = () => {
 
     useEffect(() => {
         // setRetreivedFrmSavedData(false)
+
         setArraysList()
+
+
     }, [selectedCrop, selectedSoil])
 
     useEffect(() => {
-        if (rowSpacing !== '') {
-            // !retreivedFrmSavedData && 
-            let plantoPlanLs = plantToPlantList;
-            setPlantSpacing('')
-            setPlantToPlantArr([])
-            // find if single val of row spacing
-            let selectedPlantSpc = plantoPlanLs?.find(item => item.crop === selectedCrop && item.seasonOrSoilType === selectedSoil && (rowSpacing != null ? item.selectRowToRowSpacingCm == rowSpacing : true))?.selectPlantToplantSpacingCm;
-            // filter objects as per the selection of crop and soil
-            let plantObj = plantoPlanLs?.filter(item => item.crop === selectedCrop && item.seasonOrSoilType === selectedSoil && (rowSpacing != null ? item.selectRowToRowSpacingCm == rowSpacing : true))
-            if (plantObj !== undefined && plantObj.length > 0) {
-                plantObj = plantObj.reduce((acc, item) => {    // to avoid duplication i have used this
-                    if (!acc.some(existingItem => existingItem.selectPlantToplantSpacingCm === item.selectPlantToplantSpacingCm)) {
-                        item.code = acc.length + 1;
-                        item.name = item.selectPlantToplantSpacingCm;
-                        acc.push(item);
-                    }
-                    return acc;
-                }, []);
-                // set plant arr
-                setPlantToPlantArr(plantObj)
-                if (plantObj.length === 1) {
-                    //set direct value if length is 1
-                    setPlantSpacing(selectedPlantSpc);
+        setTimeout(() => {
+            if (rowSpacing !== '') {
+                // !retreivedFrmSavedData && 
+                let plantoPlanLs = plantToPlantList;
+                console.log("retreivedFrmSavedData===>", retreivedFrmSavedData)
+                if (!retreivedFrmSavedData) {
+                    setPlantSpacing('');
+                    setPlantToPlantArr([]);
                 }
+                console.log("plantoPlanLs==", plantoPlanLs)
+                // find if single val of row spacing
+                let selectedPlantSpc = plantoPlanLs?.find(item => item.crop === selectedCrop && item.seasonOrSoilType === selectedSoil && (rowSpacing != null ? item.selectRowToRowSpacingCm == rowSpacing : true))?.selectPlantToplantSpacingCm;
+                // filter objects as per the selection of crop and soil
+                let plantObj = plantoPlanLs?.filter(item => item.crop === selectedCrop && item.seasonOrSoilType === selectedSoil && (rowSpacing != null ? item.selectRowToRowSpacingCm == rowSpacing : true))
+                if (plantObj !== undefined && plantObj.length > 0) {
+                    plantObj = plantObj.reduce((acc, item) => {    // to avoid duplication i have used this
+                        if (!acc.some(existingItem => existingItem.selectPlantToplantSpacingCm === item.selectPlantToplantSpacingCm)) {
+                            item.code = acc.length + 1;
+                            item.name = item.selectPlantToplantSpacingCm;
+                            acc.push(item);
+                        }
+                        return acc;
+                    }, []);
+                    // set plant arr
+                    setPlantToPlantArr(plantObj)
+                    console.log("selectedPlantSpc==", selectedPlantSpc)
+                    console.log("plantObj==", plantObj)
+                    if (plantObj.length === 1) {
+                        setPlantSpacing(selectedPlantSpc);
+                    }
+
+                    // ✅ ADD THIS
+                    else if (retreivedFrmSavedData && selectedPlantSpc) {
+                        setPlantSpacing(selectedPlantSpc);
+                    }
+                }
+                // callApiRowPlant()
             }
-            // callApiRowPlant()
-        }
+        }, 600);
+
     }, [rowSpacing])
 
     useEffect(() => {
+        // setTimeout(() => {
         if (rowSpacing !== '' && plantSpacing !== '') {
+            console.log("===== AREA EFFECT =====");
+            console.log("selectedCrop =", selectedCrop);
+            console.log("selectedSoil =", selectedSoil);
+            console.log("rowSpacing =", rowSpacing);
+            console.log("plantSpacing =", plantSpacing);
+            console.log("VarietyOrPlantingSystem =", VarietyOrPlantingSystem);
+            console.log("areaPlantedValues =", areaPlantedValues?.length);
             let areaPlantedValues = areaToPlantedList;
             let grainCobLs = grainYieldCobsList;
             let prdctTillerLs = productiveTillersList;
 
             // Reset values   
-            setAreaToPlanted('');
-            setAreaPlantedArr([]);
+            if (!retreivedFrmSavedData) {
+                setAreaToPlanted('');
+                setAreaPlantedArr([]);
+            }
 
             // Add varietyOrPlantingSys condition
             let selectedAreaPlantedVal = areaPlantedValues?.find(item =>
@@ -653,7 +714,7 @@ const YieldCalculator = () => {
                 (plantSpacing != null ? item.selectPlantToplantSpacingCm === plantSpacing : true) &&
                 (item.varietyOrPlantingSys ? item.varietyOrPlantingSys.includes(VarietyOrPlantingSystem) : true)
             )?.areaPlantedAcres;
-
+            console.log("selectedAreaPlantedVal", selectedAreaPlantedVal)
             // Filter objects based on selection of crop, soil, row spacing, plant spacing, and varietyOrPlantingSys
             let areaToPlantedObj = areaPlantedValues?.filter(item =>
                 item.crop === selectedCrop &&
@@ -672,10 +733,15 @@ const YieldCalculator = () => {
                     }
                     return acc;
                 }, []);
+                console.log("areaToPlantedObj", areaToPlantedObj)
                 // Set area planted array
                 setAreaPlantedArr(areaToPlantedObj);
                 if (areaToPlantedObj.length === 1) {
                     // Set direct value if length is 1
+                    setAreaToPlanted(selectedAreaPlantedVal);
+                }
+                else if (retreivedFrmSavedData && selectedAreaPlantedVal) {
+                    // Restore saved value
                     setAreaToPlanted(selectedAreaPlantedVal);
                 }
             }
@@ -754,6 +820,8 @@ const YieldCalculator = () => {
 
             callApiRowPlant();
         }
+        // }, 700);
+
     }, [rowSpacing, plantSpacing, VarietyOrPlantingSystem]);
 
 
@@ -832,7 +900,7 @@ const YieldCalculator = () => {
 
                 // console.log(typeof Number.parseInt(getUserID),"finfkjlsk;sl;sdl=-=-=-=-=>" )
                 const jsonData = {
-                     "id": getUserID,
+                    "id": getUserID,
                     "farmerId": getUserID,
                     "crop": selectedCrop,
                     "season": selectedSoil,
@@ -979,7 +1047,7 @@ const YieldCalculator = () => {
             var headers = await GetApiHeaders();
             var getUserID = headers.userId
             const jsonData = {
-                 "id": getUserID,
+                "id": getUserID,
                 "farmerId": getUserID,
                 "crop": selectedCrop,
                 "season": selectedSoil,
@@ -1098,7 +1166,7 @@ const YieldCalculator = () => {
                 }, 1000);
             }
         } else {
-           // SimpleToast.show(translate("no_internet_conneccted"))
+            // SimpleToast.show(translate("no_internet_conneccted"))
             let dashboardResp = await getExpectedYieldQtl(
                 selectedCrop,
                 actualIdealPlantPopulationPerAcre,
@@ -1179,7 +1247,7 @@ const YieldCalculator = () => {
                 }, 1000);
             }
         } else {
-          //  SimpleToast.show(translate("no_internet_conneccted"))
+            //  SimpleToast.show(translate("no_internet_conneccted"))
             let dashboardResp = await getTotalSeedRequiredKgPerPkt(selectedCrop, actualSeedRateKgPerAcre, actualSeedRateKgPerAcre, areaToPlanted)
             setTotalSeedRequired(dashboardResp?.totalSeedRequiredKgPerPkt)
             setTotalSeedRequiredUnits(dashboardResp?.totalSeedRequiredUnits)
@@ -1190,13 +1258,13 @@ const YieldCalculator = () => {
     let callApiRowPlant = async () => {
         // var networkStatus = await getNetworkStatus()
         let dashboardResp = await getYieldAndSeedRates(selectedCrop, rowSpacing, plantSpacing)
-            setActualIdealPlantPopulationPerAcre(dashboardResp?.actualIdealPlantPopulationPerAcre)
-            setActualSeedRateKgPerAcre(selectedCrop === 'Cotton' ? dashboardResp?.actualCottonSeedRatePktsPerAcre : dashboardResp?.actualSeedRateKgPerAcre)
-            setIdealPlantPopulationOrAcre(dashboardResp?.idealPlantPopulationPerAcre)
-            setCottonSeedRate(selectedCrop === 'Cotton' ? dashboardResp?.cottonSeedRatePktsPerAcre : dashboardResp?.seedRateKgPerAcre)
-            setSeedRateUnits(dashboardResp?.seedRateUnits)
+        setActualIdealPlantPopulationPerAcre(dashboardResp?.actualIdealPlantPopulationPerAcre)
+        setActualSeedRateKgPerAcre(selectedCrop === 'Cotton' ? dashboardResp?.actualCottonSeedRatePktsPerAcre : dashboardResp?.actualSeedRateKgPerAcre)
+        setIdealPlantPopulationOrAcre(dashboardResp?.idealPlantPopulationPerAcre)
+        setCottonSeedRate(selectedCrop === 'Cotton' ? dashboardResp?.cottonSeedRatePktsPerAcre : dashboardResp?.seedRateKgPerAcre)
+        setSeedRateUnits(dashboardResp?.seedRateUnits)
         return;
-        
+
         if (isConnected) {
             try {
 
@@ -1428,6 +1496,7 @@ const YieldCalculator = () => {
                                             setRowSpacing(wholeData?.selectRowTorowSpacingCm);
                                         }
                                         //end
+                                        console.log("masterResp?.selectPlantToplantSpacingCmList44", masterResp?.selectPlantToplantSpacingCmList)
                                         setPlantToPlantList(masterResp?.selectPlantToplantSpacingCmList)
                                         let plantoPlanLs = masterResp?.selectPlantToplantSpacingCmList;
                                         // staart setting plant to plant values
@@ -1481,6 +1550,7 @@ const YieldCalculator = () => {
                                             }, []);
                                             // set plant arr
                                             setAreaPlantedArr(areaToPlantedObj)
+                                            console.log("areaToPlantedObj", areaToPlantedObj)
                                             // if (areaToPlantedObj.length === 1) {
                                             //set direct value if length is 1
                                             // setAreaToPlanted(selectedAreaPlantedVal);
@@ -1679,6 +1749,7 @@ const YieldCalculator = () => {
                                 setAllSeasonsList(masterResp?.seasonOrSoilTypeList)
                                 setVrtyOrPlntngList(masterResp?.varietyOrPlantingSysList)
                                 setRowSpacingCmList(masterResp?.selectRowToRowSpacingCmList)
+                                console.log("masterResp?.selectPlantToplantSpacingCmList", masterResp?.selectPlantToplantSpacingCmList)
                                 setPlantToPlantList(masterResp?.selectPlantToplantSpacingCmList)
                                 setAreaPlantedList(masterResp?.areaPlantedAcresList)
                                 setProductiveTillersList(masterResp?.productiveTillersPer10HillsList)
@@ -1689,7 +1760,7 @@ const YieldCalculator = () => {
                                 // setYieldNote(masterResp?.yieldCalculatorTitle)
                                 // setYieldNoteDesc(masterResp?.yieldCalculatorDescription)
                                 setYieldNote(translate('Note'))
-                                        setYieldNoteDesc(translate('noteDesc'))
+                                setYieldNoteDesc(translate('noteDesc'))
                             }
                         }
                     }
@@ -1735,10 +1806,10 @@ const YieldCalculator = () => {
                     const YieldArray = Array.from(yieldCalcData);
                     if (YieldArray != undefined && yieldCalcData.length !== 0) {
                         checkRealData()
-                    }else{
+                    } else {
                         getYieldCalcutlor()
                     }
-                 
+
                 } else {
                     checkRealData()
                 }
@@ -1757,12 +1828,13 @@ const YieldCalculator = () => {
 
             let data = yieldCalcData[0]?.YieldMastersList;
             const masterResp = JSON.parse(data);
-            
+
             if (JSON.parse(masterResp.YieldCalculatoroExist).crop) {
                 setRetreivedFrmSavedData(true)
                 setTimeout(async () => {
                     let wholeData = JSON.parse(masterResp?.YieldCalculatoroExist);
                     if (wholeData?.seasonSoilType && wholeData?.areaPlantedAcres) {
+                        console.log("wholeData?.areaPlantedAcres", wholeData?.areaPlantedAcres)
                         setSelectedCrop(wholeData?.crop);
                         setSelectedSoil(wholeData?.seasonSoilType);
                         // setVarietyOrPlantingSystem(wholeData?.varietyTypeOrPlantingSystem);
@@ -1790,7 +1862,7 @@ const YieldCalculator = () => {
                         // setYieldNote(masterResp?.yieldCalculatorTitle)
                         // setYieldNoteDesc(masterResp?.yieldCalculatorDescription)
                         setYieldNote(translate('Note'))
-                                        setYieldNoteDesc(translate('noteDesc'))
+                        setYieldNoteDesc(translate('noteDesc'))
 
                         // set dropdowns
                         setYieldCalcRes(masterResp)
@@ -1876,7 +1948,7 @@ const YieldCalculator = () => {
                             setRowSpacing(wholeData?.selectRowTorowSpacingCm);
                         }
                         //end
-
+                        console.log("masterResp?.selectPlantToplantSpacingCmList==", masterResp?.selectPlantToplantSpacingCmList)
                         setPlantToPlantList(masterResp?.selectPlantToplantSpacingCmList)
                         let plantoPlanLs = masterResp?.selectPlantToplantSpacingCmList;
                         // staart setting plant to plant values
@@ -2107,7 +2179,7 @@ const YieldCalculator = () => {
                     }
                 }, 100)
                 // selectedRowSpc
-            }else {
+            } else {
                 setYieldCalcRes(masterResp)
                 let cropLis = masterResp.cropList
                 cropLis.forEach((crop, index) => {
@@ -2120,6 +2192,7 @@ const YieldCalculator = () => {
                 setAllSeasonsList(masterResp?.seasonOrSoilTypeList)
                 setVrtyOrPlntngList(masterResp?.varietyOrPlantingSysList)
                 setRowSpacingCmList(masterResp?.selectRowToRowSpacingCmList)
+                console.log("masterResp?.selectPlantToplantSpacingCmList22", masterResp?.selectPlantToplantSpacingCmList)
                 setPlantToPlantList(masterResp?.selectPlantToplantSpacingCmList)
                 setAreaPlantedList(masterResp?.areaPlantedAcresList)
                 setProductiveTillersList(masterResp?.productiveTillersPer10HillsList)
@@ -2130,7 +2203,7 @@ const YieldCalculator = () => {
                 // setYieldNote(masterResp?.yieldCalculatorTitle)
                 // setYieldNoteDesc(masterResp?.yieldCalculatorDescription)
                 setYieldNote(translate('Note'))
-                                        setYieldNoteDesc(translate('noteDesc'))
+                setYieldNoteDesc(translate('noteDesc'))
             }
         }
         else {
@@ -2264,7 +2337,7 @@ const YieldCalculator = () => {
                     <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
                         <Image source={require("../../assets/Images/samadhanBackIcon.png")} style={[styles.backIcon, { tintColor: dynamicStyles.secondaryColor }]} />
                     </TouchableOpacity>
-                    <Text style={[styles.headerText, { color: dynamicStyles.secondaryColor,fontFamily:fonts.SemiBold }]}>
+                    <Text style={[styles.headerText, { color: dynamicStyles.secondaryColor, fontFamily: fonts.SemiBold }]}>
                         {translate("yield_calculator")}
                     </Text>
                 </View>
@@ -2273,7 +2346,7 @@ const YieldCalculator = () => {
                     <ViewShot ref={viewShotRef} style={styles.viewShot} captureMode="mount" options={{ format: 'jpg', quality: 0.9 }} onCapture={(uri) => console.log("Auto-Captured URI:", uri)}>
                         <View style={styles.contentContainer}>
                             <View style={styles.contentSubContainer}>
-                                <Text style={[styles.selectedCropText, { color: dynamicStyles.textColor,fontFamily:fonts.Regular }]}  >
+                                <Text style={[styles.selectedCropText, { color: dynamicStyles.textColor, fontFamily: fonts.Regular }]}  >
                                     {translate("selectCrop")}
                                 </Text>
                                 <CustomFertilizerCalBorderInputDropDown
@@ -2287,7 +2360,7 @@ const YieldCalculator = () => {
                                         setRetreivedFrmSavedData(false)
                                     }}
                                 />
-                                <Text style={[styles.selectedCropText2, { color: dynamicStyles.textColor,fontFamily:fonts.Regular }]}  >
+                                <Text style={[styles.selectedCropText2, { color: dynamicStyles.textColor, fontFamily: fonts.Regular }]}  >
                                     {translate("yieldTwo")}
                                 </Text>
                                 <CustomFertilizerCalBorderInputDropDown
@@ -2303,7 +2376,7 @@ const YieldCalculator = () => {
                                 />
                                 {selectedCrop !== 'Maize' &&
                                     <>
-                                        <Text style={[styles.selectedCropText2, { color: dynamicStyles.textColor,fontFamily:fonts.Regular }]}  >
+                                        <Text style={[styles.selectedCropText2, { color: dynamicStyles.textColor, fontFamily: fonts.Regular }]}  >
                                             {translate("yieldThree")}
                                         </Text>
                                         <CustomFertilizerCalBorderInputDropDown
@@ -2321,7 +2394,7 @@ const YieldCalculator = () => {
                                         />
                                     </>
                                 }
-                                <Text style={[styles.selectedCropText2, { color: dynamicStyles.textColor,fontFamily:fonts.Regular }]}  >
+                                <Text style={[styles.selectedCropText2, { color: dynamicStyles.textColor, fontFamily: fonts.Regular }]}  >
                                     {translate("yieldFour")}
                                 </Text>
                                 <CustomFertilizerCalBorderInputDropDown
@@ -2337,7 +2410,7 @@ const YieldCalculator = () => {
                                         // selectedFilter === strings.TotalSeed && changeDropDownData(listRowSpace, translate("yieldFour"), rowSpacing)
                                     }}
                                 />
-                                <Text style={[styles.selectedCropText2, { color: dynamicStyles.textColor,fontFamily:fonts.Regular }]}  >
+                                <Text style={[styles.selectedCropText2, { color: dynamicStyles.textColor, fontFamily: fonts.Regular }]}  >
                                     {translate("yieldFive")}
                                 </Text>
                                 <CustomFertilizerCalBorderInputDropDown
@@ -2357,14 +2430,14 @@ const YieldCalculator = () => {
                                 <View style={{ marginTop: 10, paddingHorizontal: 15, }}>
                                     <View style={{ flexDirection: "row", alignItems: "center" }}>
                                         <View style={{ width: '60%' }}>
-                                            <Text style={[{ color: dynamicStyles.textColor }, { fontFamily:fonts.Regular,fontSize: RFValue(15, height) }]}  >
+                                            <Text style={[{ color: dynamicStyles.textColor }, { fontFamily: fonts.Regular, fontSize: RFValue(15, height) }]}  >
                                                 {translate("IdealPlantPopulationOrAcre")}
                                             </Text>
                                         </View>
-                                        <Text style={[{ color: dynamicStyles.textColor, fontSize: RFValue(14, 680),fontFamily:fonts.Regular }]}  >
+                                        <Text style={[{ color: dynamicStyles.textColor, fontSize: RFValue(14, 680), fontFamily: fonts.Regular }]}  >
                                             {":  "}
                                         </Text>
-                                        <Text style={[{ color: IdealPlantPopulationOrAcre ? dynamicStyles.textColor : "grey" }, { fontFamily:fonts.SemiBold,fontSize: RFValue(17, height) }]}  >
+                                        <Text style={[{ color: IdealPlantPopulationOrAcre ? dynamicStyles.textColor : "grey" }, { fontFamily: fonts.SemiBold, fontSize: RFValue(17, height) }]}  >
                                             {IdealPlantPopulationOrAcre ? IdealPlantPopulationOrAcre : 0}
                                         </Text>
                                     </View>
@@ -2396,14 +2469,14 @@ const YieldCalculator = () => {
                                         <View>
                                             <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 15 }}>
                                                 <View style={{ width: '60%', }}>
-                                                    <Text style={[{ color: dynamicStyles.textColor }, { fontFamily:fonts.Regular, fontSize: RFValue(14, height) }]}  >
+                                                    <Text style={[{ color: dynamicStyles.textColor }, { fontFamily: fonts.Regular, fontSize: RFValue(14, height) }]}  >
                                                         {selectedCrop === 'Cotton' ? translate("Cotton_Seed_Rate") : translate("SeedRateKg")}
                                                     </Text>
                                                 </View>
-                                                <Text style={[{ color: dynamicStyles.textColor, fontSize: RFValue(14, height),fontFamily:fonts.Regular }]}  >
+                                                <Text style={[{ color: dynamicStyles.textColor, fontSize: RFValue(14, height), fontFamily: fonts.Regular }]}  >
                                                     {":"}
                                                 </Text>
-                                                <Text style={[{ color: CottonSeedRate ? dynamicStyles.textColor : "grey" }, {fontFamily:fonts.SemiBold, marginLeft: 10, fontSize: RFValue(17, height) }]}  >{CottonSeedRate ? CottonSeedRate : 0}  <Text style={[{ fontWeight: "400", color: dynamicStyles.textColor, marginLeft: 5, fontSize: RFValue(14, height) },]}  >
+                                                <Text style={[{ color: CottonSeedRate ? dynamicStyles.textColor : "grey" }, { fontFamily: fonts.SemiBold, marginLeft: 10, fontSize: RFValue(17, height) }]}  >{CottonSeedRate ? CottonSeedRate : 0}  <Text style={[{ fontWeight: "400", color: dynamicStyles.textColor, marginLeft: 5, fontSize: RFValue(14, height) },]}  >
                                                     {/* {selectedCrop === 'Cotton' ? 'pkt' : 'kg'} */}
                                                     {seedRateUnits}
                                                 </Text>
@@ -2464,17 +2537,17 @@ const YieldCalculator = () => {
                                         <View style={{ marginTop: 10 }}>
                                             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: -1, marginTop: 15, marginLeft: 15 }}>
                                                 {/* <View style={{ width: '60%' }}> */}
-                                                <Text style={[{ color: dynamicStyles.textColor }, { fontSize: RFValue(14, height), fontFamily:fonts.Regular }]}  >
+                                                <Text style={[{ color: dynamicStyles.textColor }, { fontSize: RFValue(14, height), fontFamily: fonts.Regular }]}  >
                                                     {translate("totalSeedRequired")}
                                                 </Text>
                                                 {/* </View> */}
-                                                <Text style={[{ color: dynamicStyles.textColor, marginLeft: 5, fontSize: RFValue(14, height),fontFamily:fonts.Regular }]}  >
+                                                <Text style={[{ color: dynamicStyles.textColor, marginLeft: 5, fontSize: RFValue(14, height), fontFamily: fonts.Regular }]}  >
                                                     {": "}
                                                 </Text>
-                                                <Text style={[{ color: totalSeedRequired ? dynamicStyles.textColor : "grey" }, {fontFamily:fonts.SemiBold, marginLeft: 10, fontSize: RFValue(17, height) }]}  >
+                                                <Text style={[{ color: totalSeedRequired ? dynamicStyles.textColor : "grey" }, { fontFamily: fonts.SemiBold, marginLeft: 10, fontSize: RFValue(17, height) }]}  >
                                                     {totalSeedRequired ? totalSeedRequired : 0}
                                                 </Text>
-                                                <Text style={[{ color: dynamicStyles.textColor, marginLeft: 5, fontSize: RFValue(14, height),fontFamily:fonts.Regular },]}  >
+                                                <Text style={[{ color: dynamicStyles.textColor, marginLeft: 5, fontSize: RFValue(14, height), fontFamily: fonts.Regular },]}  >
                                                     {/* {selectedCrop === 'Cotton' ? 'pkt' : 'kg'} */}
                                                     {totalSeedRequiredUnits}
                                                 </Text>
@@ -2503,7 +2576,7 @@ const YieldCalculator = () => {
 
                                 {/* {selectedCrop === 'Cotton' ? selectedFilter !== strings.TotalSeed && <View> */}
                                 {selectedCrop === 'Cotton' ? <View>
-                                    <Text style={[styles.selectedCropText4, { color: dynamicStyles.textColor,fontFamily:fonts.Regular }]}  >
+                                    <Text style={[styles.selectedCropText4, { color: dynamicStyles.textColor, fontFamily: fonts.Regular }]}  >
                                         {translate("AvgBollsPerPlant")}
                                     </Text>
                                     <CustomFertilizerCalBorderInputDropDown
@@ -2517,7 +2590,7 @@ const YieldCalculator = () => {
                                             AvgBollsPerPlantListtt.length !== 1 && changeDropDownData(AvgBollsPerPlantListtt, "Avg Bolls per plant(Count on 10plants)", AvgBollsPerPlant)
                                         }}
                                     />
-                                    <Text style={[styles.selectedCropText5, { color: dynamicStyles.textColor,fontFamily:fonts.Regular }]}  >
+                                    <Text style={[styles.selectedCropText5, { color: dynamicStyles.textColor, fontFamily: fonts.Regular }]}  >
                                         {translate("AvgBollWt")}
                                     </Text>
                                     <CustomFertilizerCalBorderInputDropDown
@@ -2533,7 +2606,7 @@ const YieldCalculator = () => {
                                 </View> : selectedCrop === 'Maize' ?
                                     // </View> : selectedCrop === 'Maize' ? selectedFilter !== strings.TotalSeed &&
                                     <View>
-                                        <Text style={[styles.selectedCropText4, { color: dynamicStyles.textColor,fontFamily:fonts.Regular }]}  >
+                                        <Text style={[styles.selectedCropText4, { color: dynamicStyles.textColor, fontFamily: fonts.Regular }]}  >
                                             {translate("GrainYield")}
                                         </Text>
                                         <CustomFertilizerCalBorderInputDropDown
@@ -2549,7 +2622,7 @@ const YieldCalculator = () => {
                                     </View>
                                     : <View>
                                         {/* : selectedFilter !== strings.TotalSeed && <View> */}
-                                        <Text style={[styles.selectedCropText4, { color: dynamicStyles.textColor,fontFamily:fonts.Regular }]}  >
+                                        <Text style={[styles.selectedCropText4, { color: dynamicStyles.textColor, fontFamily: fonts.Regular }]}  >
                                             {translate("productiveTillers")}
                                         </Text>
                                         <CustomFertilizerCalBorderInputDropDown
@@ -2562,7 +2635,7 @@ const YieldCalculator = () => {
                                                 productiveTillersListt.length !== 1 && changeDropDownData(productiveTillersListt, "Total number of productive tillers on 10 hills", productiveTillers)
                                             }}
                                         />
-                                        <Text style={[styles.selectedCropText5, { color: dynamicStyles.textColor,fontFamily:fonts.Regular }]}  >
+                                        <Text style={[styles.selectedCropText5, { color: dynamicStyles.textColor, fontFamily: fonts.Regular }]}  >
                                             {translate("AvgGrainsPannicle")}
                                         </Text>
                                         <CustomFertilizerCalBorderInputDropDown
@@ -2582,14 +2655,14 @@ const YieldCalculator = () => {
                                     <View style={{ marginTop: 10 }}>
                                         <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 2.5, marginLeft: 15, marginTop: 10 }}>
                                             {/* <View style={{ width: '62%' }}> */}
-                                            <Text style={[{ color: dynamicStyles.textColor }, { fontSize: RFValue(14, height), fontFamily:fonts.Regular }]}  >
+                                            <Text style={[{ color: dynamicStyles.textColor }, { fontSize: RFValue(14, height), fontFamily: fonts.Regular }]}  >
                                                 {translate("ExpectedYieldQtlPerAcre")}
                                             </Text>
                                             {/* </View> */}
-                                            <Text style={[{ color: dynamicStyles.textColor, marginLeft: 5, fontSize: RFValue(14, height),fontFamily:fonts.Regular }]}  >
+                                            <Text style={[{ color: dynamicStyles.textColor, marginLeft: 5, fontSize: RFValue(14, height), fontFamily: fonts.Regular }]}  >
                                                 {": "}
                                             </Text>
-                                            <Text style={[{ color: ExpectedYieldQtlPerAcre ? dynamicStyles.textColor : "grey" }, {fontFamily:fonts.SemiBold, marginLeft: 10, fontSize: RFValue(17, height) }]}  >
+                                            <Text style={[{ color: ExpectedYieldQtlPerAcre ? dynamicStyles.textColor : "grey" }, { fontFamily: fonts.SemiBold, marginLeft: 10, fontSize: RFValue(17, height) }]}  >
                                                 {ExpectedYieldQtlPerAcre ? ExpectedYieldQtlPerAcre : 0}
                                             </Text>
                                         </View>
@@ -2635,10 +2708,10 @@ const YieldCalculator = () => {
                                         closeModal={() => setShowDropDowns(false)}
                                     />
                                 }
-                                <Text style={[styles.selectedCropText6, { color: dynamicStyles.textColor ,fontFamily:fonts.Regular}]}  >
+                                <Text style={[styles.selectedCropText6, { color: dynamicStyles.textColor, fontFamily: fonts.Regular }]}  >
                                     {yieldNote}
                                 </Text>
-                                <Text style={[styles.selectedCropText7, { color: dynamicStyles.textColor,fontFamily:fonts.Regular }]}  >
+                                <Text style={[styles.selectedCropText7, { color: dynamicStyles.textColor, fontFamily: fonts.Regular }]}  >
                                     {yieldNoteDesc}
                                 </Text>
                             </View>
@@ -2668,7 +2741,7 @@ const YieldCalculator = () => {
             </TouchableOpacity> */}
                 <TouchableOpacity disabled={!showStatus() || isSharing} onPress={() => takeScreenshot()}
                     style={{ marginVertical: 10, borderRadius: 8, marginBottom: 20, alignItems: "center", justifyContent: "center", alignSelf: "center", height: 50, backgroundColor: !showStatus() ? "#D6D6D6" : dynamicStyles.primaryColor, width: "85%" }}>
-                    <Text style={{ textAlign: "center", color: !showStatus() ? "#000" : dynamicStyles.secondaryColor, fontSize: RFValue(14, 680), fontFamily:fonts.Bold }}>{translate("Share")}</Text>
+                    <Text style={{ textAlign: "center", color: !showStatus() ? "#000" : dynamicStyles.secondaryColor, fontSize: RFValue(14, 680), fontFamily: fonts.Bold }}>{translate("Share")}</Text>
                     <Image source={require("../../assets/Images/whatsAppImgIcon.png")} style={styles.whatsAppIcon} />
                 </TouchableOpacity>
                 {/* <CustomButton shouldDisable={!showStatus()} title={strings.Share} onPress={() => { takeScreenshot() }}
@@ -2717,7 +2790,7 @@ const styles = StyleSheet.create({
         width: '85%',
         alignSelf: 'center',
     },
-    tabTxt: {fontSize: 14, fontWeight: "500" },
+    tabTxt: { fontSize: 14, fontWeight: "500" },
     tabBtn: { width: "50%", height: "100%", borderRadius: 5, alignItems: "center", justifyContent: "center" },
     tabMain: {
         height: 45, width: responsiveWidth(90), alignSelf: "center", marginTop: responsiveHeight(2), borderRadius: 5, marginBottom: responsiveHeight(0.5),
