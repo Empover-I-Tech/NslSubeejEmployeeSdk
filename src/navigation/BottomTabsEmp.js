@@ -117,7 +117,7 @@ const BottomTabsNavigatorEmp = () => {
           options={{
             tabBarLabel: ({ focused }) => (
               <View style={{ alignItems: 'center' }}>
-                <Text style={{ color: focused ? dynamicStyles.primaryColor : dynamicStyles.textColor, fontFamily: fonts.Regular, fontSize: RFValue(11, height) }}> {translate('Help_Desk')}</Text>
+                <Text style={{ color: focused ? dynamicStyles.primaryColor : dynamicStyles.textColor, fontFamily: fonts.Regular, fontSize: RFValue(11, height), lineHeight : Platform.OS == 'android' ? 24 : 30 }}> {translate('Help_Desk')}</Text>
                 {focused && <View style={[{ backgroundColor: dynamicStyles.primaryColor }]} />}
               </View>
             ),

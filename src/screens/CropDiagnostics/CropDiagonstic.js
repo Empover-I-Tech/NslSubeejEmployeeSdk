@@ -372,13 +372,15 @@ const CropDiagonstic = ({ route }) => {
           <TouchableOpacity style={styleSheetStyles.backButton} onPress={() => navigation.goBack()}>
             <Image source={require('../../../assets/Images/samadhanBackIcon.png')} style={{ height: 20, width: 34, tintColor: dynamicStyles.secondaryColor, marginTop: 15, marginLeft: 10 }} />
           </TouchableOpacity>
-          <Text style={[styleSheetStyles.headerText, { color: dynamicStyles.secondaryColor,fontFamily:fonts.SemiBold }]}>
+          <Text style={[styleSheetStyles.headerText, { color: dynamicStyles.secondaryColor,fontFamily:fonts.SemiBold, 
+            lineHeight : Platform.OS == 'android' ? 24 : 30
+          }]}>
             {translate('Crop_Diagnostic_Tool')}
           </Text>
         </View>
         <View style={[{ backgroundColor: dynamicStyles?.highLightedColor }, styleSheetStyles.tabMain]}>
           <TouchableOpacity activeOpacity={0.5} onPress={() => setSelectedFilter(translate('Crop_Diagnostic'))} style={[selectedFilter === translate('Crop_Diagnostic') && { backgroundColor: dynamicStyles.primaryColor }, styleSheetStyles.tabBtn]}>
-            <Text style={[selectedFilter === translate('Crop_Diagnostic') ? { color: dynamicStyles.secondaryColor } : { color: dynamicStyles.textColor }, styleSheetStyles.tabTxt,{fontFamily:fonts.SemiBold}]}>{translate('Crop_Diagnostic')}</Text></TouchableOpacity>
+            <Text style={[selectedFilter === translate('Crop_Diagnostic') ? { color: dynamicStyles.secondaryColor } : { color: dynamicStyles.textColor, lineHeight : Platform.OS == 'android' ? 24 : 30 }, styleSheetStyles.tabTxt,{fontFamily:fonts.SemiBold}]}>{translate('Crop_Diagnostic')}</Text></TouchableOpacity>
           <TouchableOpacity activeOpacity={0.5} onPress={() => {
             setSelectedFilter(translate('history'));
           }} style={[selectedFilter === translate('history') && { backgroundColor: dynamicStyles.primaryColor }, styleSheetStyles.tabBtn]}>
